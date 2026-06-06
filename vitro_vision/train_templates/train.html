@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VitroVision Trainer</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { background:#0f172a; color:#e2e8f0; font-family:'Segoe UI',sans-serif; }
+  .card { background:#1e293b; border:1px solid #334155; border-radius:12px; }
+  .badge-healthy { background:#14532d; color:#86efac; }
+  .badge-contaminated { background:#450a0a; color:#fca5a5; }
+  .badge-dead { background:#1c1917; color:#a8a29e; }
+  #log { height:220px; overflow-y:auto; font-family:monospace; font-size:12px; }
+  .bar { height:8px; border-radius:4px; transition:width 0.4s; }
+</style>
+</head>
+<body class="min-h-screen p-6">
+
+<div class="max-w-3xl mx-auto space-y-5">
+
+  <!-- Header -->
+  <div class="flex items-center gap-3">
+    <span class="text-2xl">🌱</span>
+    <div>
+      <h1 class="text-xl font-bold text-white">VitroVision Trainer</h1>
+      <p class="text-slate-400 text-sm">Transfer Learning — EfficientNet-B0</p>
+    </div>
+    {% if model_exists %}
+    <span class="ml-auto text-xs px-3 py-1 rounded-full bg-green-900 text-green-300">✓ มี model แล้ว</span>
+    {% else %}
+    <span class="ml-auto text-xs px-3 py-1 rounded-full bg-slate-700 text-slate-400">ยังไม่มี model</span>
+    {% endif %}
+  </div>
+
+  <!-- Dataset Stats -->
+  <div class="card p-5">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="font-semibold text-white">Dataset</h2>
+      <button onclick="refreshStats()" class="text-xs text-slate-400 hover:text-white">↻ รีเฟรช</button>
+    </div>
+    <div class="flex gap-3 mb-4" id="classBadges">
+      <span class="badge-healthy px-3 py-1 rounded-full text-sm font-medium">
+        healthy: <span id="cnt-healthy">{{ stats.per_class.healthy }}</span>
+      </span>
+      <span class="badge-contaminated px-3 py-1 rounded-full text-sm font-medium">
+        contaminated: <span id="cnt-contaminated">{{ stats.per_class.contaminated }}</span>
+      </span>
+      <span class="badge-dead px-3 py-1 rounded-full text-sm font-medium">
+        dead: <span id="cnt-dead">{{ stats.per_class.dead }}</span>
+      </span>
+    </div>
+    <p class="text-slate-400 text-sm">
+      รวม <span id="cnt-total" class="text-white font-semibold">{{ stats.total }}</span> ภาพ
+      {% if stats.total < 30 %}
+      — <span class="text-yellow-400">⚠ แนะนำ ≥200 ต่อ class สำหรับ production</span>
+      {% endif %}
+    </p>
+  </div>
+
+  <!-- Config -->
+  <div class="card p-5">
+    <h2 class="font-semibold text-white mb-4">Training Config</h2>
+    <div class="grid grid-cols-3 gap-4">
+      <div>
+        <label class="text-xs text-slate-400 block mb-1">Phase 1 Epochs (head)</label>
+        <input id="cfgEpHead" type="number" value="15" min="5" max="100"
+          class="w-full bg-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
+      </div>
+      <div>
+        <label class="text-xs text-slate-400 block mb-1">Phase 2 Epochs (fine-tune)</label>
+        <input id="cfgEpFull" type="number" value="25" min="5" max="200"
+          class="w-full bg-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
+      </div>
+      <div>
+        <label class="text-xs text-slate-400 block mb-1">Learning Rate</label>
+        <input id="cfgLr" type="number" value="0.0001" min="0.00001" max="0.01" step="0.00001"
+          class="w-full bg-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
+      </div>
+    </div>
+    <div class="flex gap-3 mt-5">
+      <button id="btnStart" onclick="startTraining()"
+        class="flex-1 bg-green-600 hover:bg-green-500 text-white font-semibold py-2.5 rounded-xl transition">
+        ▶ เริ่ม Train
+      </button>
+      <button id="btnStop" onclick="stopTraining()" disabled
+        class="px-5 bg-slate-700 text-slate-400 font-semibold py-2.5 rounded-xl transition disabled:opacity-40 hover:bg-red-900 hover:text-red-300">
+        ■ หยุด
+      </button>
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div class="card p-5" id="progressCard">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="font-semibold text-white">Progress</h2>
+      <span id="phaseLabel" class="text-xs px-2 py-1 bg-slate-700 rounded-full text-slate-300">รอเริ่ม</span>
+    </div>
+
+    <!-- Progress bar -->
+    <div class="bg-slate-700 rounded-full mb-2">
+      <div id="progBar" class="bar bg-green-500 w-0"></div>
+    </div>
+    <div class="flex justify-between text-xs text-slate-400 mb-4">
+      <span id="epochLabel">Epoch 0 / 0</span>
+      <span id="pctLabel">0%</span>
+    </div>
+
+    <!-- Metrics -->
+    <div class="grid grid-cols-4 gap-3 mb-4">
+      <div class="bg-slate-700 rounded-lg p-3 text-center">
+        <div class="text-xs text-slate-400 mb-1">Train Loss</div>
+        <div id="mTL" class="text-lg font-bold text-white">—</div>
+      </div>
+      <div class="bg-slate-700 rounded-lg p-3 text-center">
+        <div class="text-xs text-slate-400 mb-1">Val Loss</div>
+        <div id="mVL" class="text-lg font-bold text-white">—</div>
+      </div>
+      <div class="bg-slate-700 rounded-lg p-3 text-center">
+        <div class="text-xs text-slate-400 mb-1">Train Acc</div>
+        <div id="mTA" class="text-lg font-bold text-green-400">—</div>
+      </div>
+      <div class="bg-slate-700 rounded-lg p-3 text-center">
+        <div class="text-xs text-slate-400 mb-1">Val Acc</div>
+        <div id="mVA" class="text-lg font-bold text-green-400">—</div>
+      </div>
+    </div>
+
+    <!-- Log -->
+    <div id="log" class="bg-slate-900 rounded-lg p-3 text-slate-300 space-y-0.5"></div>
+  </div>
+
+</div>
+
+<script>
+let evtSource = null;
+let phase1Total = 15, phase2Total = 25, epochOffset = 0;
+
+function appendLog(text, cls='text-slate-300') {
+  const log = document.getElementById('log');
+  const line = document.createElement('div');
+  line.className = cls;
+  line.textContent = text;
+  log.appendChild(line);
+  log.scrollTop = log.scrollHeight;
+}
+
+function setProgress(ep, total, pct) {
+  document.getElementById('epochLabel').textContent = `Epoch ${ep} / ${total}`;
+  document.getElementById('pctLabel').textContent = `${Math.round(pct)}%`;
+  document.getElementById('progBar').style.width = pct + '%';
+}
+
+function handleMsg(data) {
+  if (data.type === 'phase') {
+    const label = data.phase === 1 ? 'Phase 1 — Head only' : 'Phase 2 — Fine-tune';
+    document.getElementById('phaseLabel').textContent = label;
+    if (data.phase === 1) { phase1Total = data.total; epochOffset = 0; }
+    else { epochOffset = phase1Total; }
+    appendLog('── ' + label + ' ──', 'text-yellow-400 font-medium');
+  }
+  else if (data.type === 'epoch') {
+    const totalAll = phase1Total + phase2Total;
+    const epAll = epochOffset + data.epoch;
+    setProgress(data.epoch, data.total, (epAll / totalAll) * 100);
+    document.getElementById('mTL').textContent = data.tl;
+    document.getElementById('mVL').textContent = data.vl;
+    document.getElementById('mTA').textContent = data.ta + '%';
+    document.getElementById('mVA').textContent = data.va + '%';
+    appendLog(`Ep ${data.epoch}/${data.total}  loss ${data.tl}/${data.vl}  acc ${data.ta}%/${data.va}%`);
+  }
+  else if (data.type === 'log') {
+    appendLog(data.msg);
+  }
+  else if (data.type === 'error') {
+    appendLog('❌ ' + data.msg, 'text-red-400');
+    setDone(false);
+  }
+  else if (data.type === 'done') {
+    appendLog('✅ ' + data.msg, 'text-green-400 font-semibold');
+    setProgress(phase1Total + phase2Total, phase1Total + phase2Total, 100);
+    document.getElementById('phaseLabel').textContent = 'เสร็จแล้ว';
+    document.getElementById('phaseLabel').className = 'text-xs px-2 py-1 bg-green-900 rounded-full text-green-300';
+    setDone(true);
+    if (evtSource) evtSource.close();
+  }
+}
+
+function setDone(success) {
+  document.getElementById('btnStart').disabled = false;
+  document.getElementById('btnStart').textContent = success ? '↺ Train ใหม่' : '▶ เริ่ม Train';
+  document.getElementById('btnStop').disabled = true;
+}
+
+function startTraining() {
+  const cfg = {
+    epochs_head: parseInt(document.getElementById('cfgEpHead').value),
+    epochs_full: parseInt(document.getElementById('cfgEpFull').value),
+    lr: parseFloat(document.getElementById('cfgLr').value),
+  };
+  phase1Total = cfg.epochs_head;
+  phase2Total = cfg.epochs_full;
+
+  document.getElementById('log').innerHTML = '';
+  document.getElementById('btnStart').disabled = true;
+  document.getElementById('btnStop').disabled = false;
+  document.getElementById('phaseLabel').textContent = 'กำลังเริ่ม...';
+  document.getElementById('phaseLabel').className = 'text-xs px-2 py-1 bg-blue-900 rounded-full text-blue-300';
+  setProgress(0, phase1Total + phase2Total, 0);
+
+  fetch('/train', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(cfg),
+  }).then(r => r.json()).then(d => {
+    if (d.error) { alert(d.error); setDone(false); return; }
+    if (evtSource) evtSource.close();
+    evtSource = new EventSource('/stream');
+    evtSource.onmessage = e => handleMsg(JSON.parse(e.data));
+    evtSource.onerror = () => { appendLog('⚠ connection ขาด', 'text-yellow-400'); setDone(false); };
+  });
+}
+
+function stopTraining() {
+  fetch('/stop', {method:'POST'});
+  document.getElementById('btnStop').disabled = true;
+}
+
+function refreshStats() {
+  fetch('/api/stats').then(r=>r.json()).then(d=>{
+    document.getElementById('cnt-healthy').textContent     = d.per_class.healthy;
+    document.getElementById('cnt-contaminated').textContent = d.per_class.contaminated;
+    document.getElementById('cnt-dead').textContent        = d.per_class.dead;
+    document.getElementById('cnt-total').textContent       = d.total;
+  });
+}
+</script>
+</body>
+</html>
