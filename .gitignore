@@ -41,3 +41,15 @@ desktop.ini
 # Logs
 *.log
 logs/
+
+# VitroShelf — Google credentials (ห้าม push เด็ดขาด)
+shelf_manager/oauth_token.json
+shelf_manager/oauth_client.json
+shelf_manager/gdrive_key.json
+shelf_manager/vitroshelf.db
+
+# VitroShelf — generated files (ไม่ push)
+shelf_manager/cert.pem
+shelf_manager/key.pem
+shelf_manager/error.txt
+shelf_manager/preview_*.jpg
