@@ -1,0 +1,67 @@
+{
+  "confusion_matrix": [
+    [
+      6,
+      2,
+      2
+    ],
+    [
+      0,
+      7,
+      2
+    ],
+    [
+      0,
+      1,
+      8
+    ]
+  ],
+  "labels": [
+    "healthy",
+    "contaminated",
+    "dead"
+  ],
+  "classification_report": {
+    "healthy": {
+      "precision": 1.0,
+      "recall": 0.6,
+      "f1-score": 0.75,
+      "support": 10.0
+    },
+    "contaminated": {
+      "precision": 0.7,
+      "recall": 0.7777777777777778,
+      "f1-score": 0.7368421052631579,
+      "support": 9.0
+    },
+    "dead": {
+      "precision": 0.6666666666666666,
+      "recall": 0.8888888888888888,
+      "f1-score": 0.7619047619047619,
+      "support": 9.0
+    },
+    "macro avg": {
+      "precision": 0.7888888888888889,
+      "recall": 0.7555555555555555,
+      "f1-score": 0.7495822890559732,
+      "support": 28.0
+    },
+    "weighted avg": {
+      "precision": 0.7964285714285715,
+      "recall": 0.75,
+      "f1-score": 0.7495972073039743,
+      "support": 28.0
+    }
+  },
+  "cohen_kappa": 0.6274,
+  "weighted_f1": 0.7496,
+  "class_weights": {
+    "healthy": 1.0,
+    "contaminated": 1.0,
+    "dead": 1.0
+  },
+  "n_train": 126,
+  "n_val": 27,
+  "n_test": 28,
+  "is_separate_test": true
+}
