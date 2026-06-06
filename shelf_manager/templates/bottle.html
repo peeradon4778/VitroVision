@@ -1,0 +1,717 @@
+{% extends "base.html" %}
+{% block title %}{{ bottle.bottle_id }} — VitroShelf{% endblock %}
+
+{% block content %}
+
+<!-- Capture overlay backdrop -->
+<div id="capture-overlay"
+  class="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/70">
+
+  <!-- Card: full-width sheet on mobile, centered card on desktop -->
+  <div class="w-full md:max-w-md bg-gray-900 rounded-t-3xl md:rounded-2xl md:border md:border-gray-700 flex flex-col max-h-[95dvh] md:max-h-[90vh]">
+
+    <!-- Header -->
+    <div class="flex-none px-5 pt-4 pb-3 flex items-center justify-between border-b border-gray-800">
+      <div>
+        <p class="text-gray-500 text-xs">{{ bottle.shelf }}</p>
+        <h1 class="text-xl font-bold text-green-400 leading-tight">{{ bottle.bottle_id }}</h1>
+        {% if bottle.species %}<p class="text-gray-400 text-xs">{{ bottle.species }}{% if bottle.cultivar %} · {{ bottle.cultivar }}{% endif %}</p>{% endif %}
+      </div>
+      <div id="overlay-day-badge"
+        class="hidden px-3 py-1 rounded-full bg-gray-800 border border-gray-700 text-green-400 text-sm font-mono font-bold">
+        Day <span id="overlay-day-val">0</span>
+      </div>
+    </div>
+
+    <!-- Scrollable form -->
+    <div class="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+
+      <!-- Status -->
+      <div>
+        <p class="text-xs text-gray-500 mb-2">สถานะ</p>
+        <div class="grid grid-cols-2 gap-2">
+          <button id="os-healthy"      onclick="setOverlayStatus('healthy')"      type="button"></button>
+          <button id="os-contaminated" onclick="setOverlayStatus('contaminated')" type="button"></button>
+          <button id="os-dead"         onclick="setOverlayStatus('dead')"         type="button"></button>
+          <button id="os-unknown"      onclick="setOverlayStatus('unknown')"      type="button"></button>
+        </div>
+      </div>
+
+      <!-- Shoot count + Vigor (2 คอลัมน์) -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <p class="text-xs text-gray-500 mb-2">ยอด <span class="text-gray-700 text-xs">นับที่เห็นชัด</span></p>
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="stepOvShoot(-1)"
+              class="w-10 h-10 rounded-xl bg-gray-800 active:bg-gray-700 text-white text-xl font-bold flex items-center justify-center select-none shrink-0">−</button>
+            <span id="ov-shoot-display" class="flex-1 text-center text-2xl font-bold text-green-400">—</span>
+            <button type="button" onclick="stepOvShoot(1)"
+              class="w-10 h-10 rounded-xl bg-gray-800 active:bg-gray-700 text-white text-xl font-bold flex items-center justify-center select-none shrink-0">+</button>
+          </div>
+          <input id="ov-shoot" type="hidden" value="-1">
+        </div>
+        <div>
+          <p class="text-xs text-gray-500 mb-2">Vigor</p>
+          <div class="flex gap-1">
+            {% for v in [1,2,3,4,5] %}
+            <button type="button" onclick="setOvVigor({{ v }})" id="ov-vigor-{{ v }}"
+              class="flex-1 h-10 rounded-lg text-sm font-bold bg-gray-800 text-gray-500 transition">{{ v }}</button>
+            {% endfor %}
+          </div>
+          <p id="ov-vigor-tip" class="text-xs text-gray-600 mt-1 leading-tight"></p>
+          <input id="ov-vigor" type="hidden" value="0">
+        </div>
+      </div>
+
+      <!-- Height -->
+      <div>
+        <p class="text-xs text-gray-500 mb-1">ความสูงยอด
+          <span class="text-gray-700">สั้น &lt;1cm · กลาง 1–3cm · สูง &gt;3cm</span></p>
+        <div class="grid grid-cols-4 gap-1.5">
+          <button type="button" onclick="setOvHeight('')"       id="ov-h-none"   class="py-2.5 rounded-lg text-xs font-medium bg-gray-800 text-gray-500 transition">—</button>
+          <button type="button" onclick="setOvHeight('short')"  id="ov-h-short"  class="py-2.5 rounded-lg text-xs font-medium bg-gray-800 text-gray-500 transition">สั้น</button>
+          <button type="button" onclick="setOvHeight('medium')" id="ov-h-medium" class="py-2.5 rounded-lg text-xs font-medium bg-gray-800 text-gray-500 transition">กลาง</button>
+          <button type="button" onclick="setOvHeight('tall')"   id="ov-h-tall"   class="py-2.5 rounded-lg text-xs font-medium bg-gray-800 text-gray-500 transition">สูง</button>
+        </div>
+        <input id="ov-height" type="hidden" value="">
+      </div>
+
+      <!-- Root + Callus (2 คอลัมน์) -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <p class="text-xs text-gray-500 mb-1">ราก <span class="text-gray-700">น้อย=1–3 · มาก=&gt;3</span></p>
+          <div class="flex gap-1">
+            <button type="button" onclick="setOvRoot('none')"   id="ov-r-none"   class="flex-1 py-2.5 rounded-lg text-xs font-medium bg-gray-800 text-gray-500 transition">ไม่มี</button>
+            <button type="button" onclick="setOvRoot('sparse')" id="ov-r-sparse" class="flex-1 py-2.5 rounded-lg text-xs font-medium bg-gray-800 text-gray-500 transition">น้อย</button>
+            <button type="button" onclick="setOvRoot('dense')"  id="ov-r-dense"  class="flex-1 py-2.5 rounded-lg text-xs font-medium bg-gray-800 text-gray-500 transition">มาก</button>
+          </div>
+          <input id="ov-root" type="hidden" value="none">
+        </div>
+        <div>
+          <p class="text-xs text-gray-500 mb-1">Callus <span class="text-gray-700">ก้อนสีขาว/เหลืองที่โคน</span></p>
+          <button type="button" onclick="toggleOvCallus()" id="ov-callus-btn"
+            class="w-full py-2.5 rounded-lg text-xs font-medium bg-gray-800 text-gray-500 transition">ไม่มี</button>
+          <input id="ov-callus" type="hidden" value="0">
+        </div>
+      </div>
+
+    </div>
+
+    <!-- AI Prediction badge (แสดงหลังจากถ่ายภาพ) -->
+    <div id="ov-ai-area" class="hidden px-5 pt-3">
+      <div class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-gray-800 border border-gray-700">
+        <img id="ov-thumb" src="" alt="" class="w-12 h-12 rounded-lg object-cover flex-shrink-0 bg-gray-700">
+        <div class="flex-1 min-w-0">
+          <p class="text-xs text-gray-500 mb-0.5">AI วิเคราะห์</p>
+          <div id="ov-ai-badge" class="text-sm font-semibold text-yellow-400 flex items-center gap-1.5">
+            <span class="inline-block w-3 h-3 rounded-full bg-yellow-400 animate-pulse"></span>
+            กำลังวิเคราะห์...
+          </div>
+        </div>
+        <button onclick="saveRecord()" id="ov-save-btn"
+          class="hidden flex-shrink-0 bg-green-600 hover:bg-green-500 active:bg-green-700 text-white text-sm font-bold px-4 py-2 rounded-xl transition">
+          💾 บันทึก
+        </button>
+      </div>
+    </div>
+
+    <!-- Sticky bottom: camera -->
+    <div id="ov-camera-area" class="flex-none px-5 pt-4 pb-6 border-t border-gray-800 flex flex-col items-center gap-3">
+      <button onclick="openCameraFromOverlay()"
+        class="w-24 h-24 rounded-full bg-green-500 border-[6px] border-green-300/25 shadow-xl shadow-green-900/50 active:scale-95 transition-transform flex items-center justify-center">
+        <span class="text-4xl leading-none">📷</span>
+      </button>
+      <div class="flex items-center gap-6">
+        <button onclick="document.getElementById('input-gallery').click()"
+          class="text-xs text-blue-400 py-1">🖼️ คลังภาพ</button>
+        <button onclick="document.getElementById('capture-overlay').classList.add('hidden')"
+          class="text-xs text-gray-600 py-1">ข้ามไปดูข้อมูลขวด</button>
+      </div>
+    </div>
+
+    <!-- After save -->
+    <div id="ov-after-save" class="hidden flex-none px-5 pt-3 pb-6 border-t border-gray-800 flex flex-col items-center gap-3">
+      <p class="text-center text-green-400 font-bold text-lg">✅ บันทึกสำเร็จ</p>
+      <p class="text-xs text-gray-500">กำลังไปขวดถัดไป...</p>
+      <button id="btn-retake" onclick="clearTimeout(window._navTimer); location.reload()"
+        class="text-xs text-gray-600 underline py-1">ถ่ายขวดนี้อีกครั้ง</button>
+    </div>
+
+  </div>
+</div>
+
+<div class="flex items-center gap-3 mb-6">
+  <a href="/shelf/{{ bottle.shelf }}" class="text-gray-400 hover:text-white text-sm">← ชั้น {{ bottle.shelf }}</a>
+  <h1 class="text-2xl font-bold text-green-400">{{ bottle.bottle_id }}</h1>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+  <!-- Bottle info form -->
+  <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+    <h2 class="text-lg font-semibold mb-4">ข้อมูลขวด</h2>
+    <form method="POST" action="/bottle/{{ bottle.bottle_id }}/update">
+      <div class="space-y-3">
+        <div>
+          <label class="text-xs text-gray-400 block mb-1">ชนิดพืช (Species)</label>
+          <input name="species" value="{{ bottle.species }}"
+            class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-green-500">
+        </div>
+        <div>
+          <label class="text-xs text-gray-400 block mb-1">พันธุ์ (Cultivar)</label>
+          <input name="cultivar" value="{{ bottle.cultivar or '' }}"
+            placeholder="เช่น จินดา, ซุปเปอร์ฮอต"
+            class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-green-500">
+        </div>
+        <div>
+          <label class="text-xs text-gray-400 block mb-1">สูตรอาหาร (Media)</label>
+          <input name="media_formula" value="{{ bottle.media_formula or '' }}"
+            placeholder="เช่น MS, B5, WPM"
+            class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-green-500">
+        </div>
+        <div>
+          <label class="text-xs text-gray-400 block mb-1">สารควบคุมการเจริญ (PGR)</label>
+          <input name="pgr_detail" value="{{ bottle.pgr_detail or '' }}"
+            placeholder="เช่น BAP 1mg/L + NAA 0.1mg/L"
+            class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-green-500">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs text-gray-400 block mb-1">วันที่เพาะ</label>
+            <input name="date_planted" type="date" value="{{ bottle.date_planted }}"
+              class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-green-500">
+          </div>
+          <div>
+            <label class="text-xs text-gray-400 block mb-1">รุ่น subculture</label>
+            <input name="passage_number" type="number" min="1" value="{{ bottle.passage_number or 1 }}"
+              class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-green-500">
+          </div>
+        </div>
+        <div>
+          <label class="text-xs text-gray-400 block mb-1">หมายเหตุ</label>
+          <textarea name="notes" rows="2"
+            class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-green-500">{{ bottle.notes }}</textarea>
+        </div>
+        <button type="submit"
+          class="bg-green-600 hover:bg-green-500 text-white text-sm font-medium px-4 py-2 rounded-lg transition">
+          บันทึก
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ปุ่มเปิด overlay + status indicators -->
+  <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 flex flex-col gap-4">
+    <h2 class="text-lg font-semibold">บันทึกภาพ</h2>
+    <button id="btn-open-overlay" onclick="openCaptureOverlay()"
+      class="w-full py-4 rounded-2xl bg-green-600 hover:bg-green-500 active:bg-green-700 text-white font-bold text-base flex items-center justify-center gap-2">
+      <span class="text-xl">📷</span> เปิดหน้าถ่ายภาพ
+    </button>
+    <div id="upload-status" class="hidden text-center py-3 text-base font-medium text-yellow-400">
+      ⏳ กำลังอัปโหลด...
+    </div>
+    <img id="photo-preview" src="" alt=""
+      class="w-full rounded-xl hidden aspect-square object-cover border-2 border-green-500">
+    <div id="save-status" class="hidden text-center py-2 text-sm text-green-400"></div>
+    <div id="after-save" class="hidden space-y-2">
+      <a href="/bottle/{{ next_bottle_id }}"
+        class="flex items-center justify-center gap-2 w-full bg-green-600 hover:bg-green-500 active:bg-green-700 text-white font-bold px-4 py-4 rounded-xl transition text-base">
+        ขวดถัดไป — {{ next_bottle_id }} →
+      </a>
+      <button onclick="location.reload()"
+        class="w-full bg-gray-700 hover:bg-gray-600 text-gray-300 font-medium px-4 py-3 rounded-xl transition text-sm">
+        📷 ถ่ายขวดนี้อีกครั้ง
+      </button>
+    </div>
+  </div>
+</div>
+
+<input id="input-camera" type="file" accept="image/*" capture="environment" class="hidden" onchange="handleFallbackFile(this)">
+<input id="input-gallery" type="file" accept="image/*" class="hidden" onchange="handleFallbackFile(this)">
+<input id="day-input" type="hidden" value="0">
+<select id="status-select" class="hidden">
+  {% for s in status_choices %}
+  <option value="{{ s }}">{{ s }}</option>
+  {% endfor %}
+</select>
+
+<!-- Growth Timeline -->
+<div class="mt-6 bg-gray-900 border border-gray-800 rounded-2xl p-6">
+  <div class="flex items-center justify-between mb-4">
+    <div>
+      <h2 class="text-lg font-semibold">Growth Timeline</h2>
+      <p class="text-xs text-gray-500 mt-0.5" id="tl-method">—</p>
+    </div>
+    <button onclick="loadTimeline()" class="text-xs text-gray-500 hover:text-white px-2 py-1 rounded bg-gray-800">↻</button>
+  </div>
+
+  <!-- summary cards -->
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+    <div class="bg-gray-800 rounded-xl p-3 text-center">
+      <p class="text-xs text-gray-500 mb-1">Green Coverage</p>
+      <p id="tl-green" class="text-2xl font-bold font-mono text-green-400">—</p>
+      <p class="text-xs text-gray-600">% (ล่าสุด)</p>
+    </div>
+    <div class="bg-gray-800 rounded-xl p-3 text-center">
+      <p class="text-xs text-gray-500 mb-1">Leaf Color Index</p>
+      <p id="tl-lci" class="text-2xl font-bold font-mono text-yellow-300">—</p>
+      <p id="tl-lci-hint" class="text-xs text-gray-600">G/R ratio</p>
+    </div>
+    <div class="bg-gray-800 rounded-xl p-3 text-center">
+      <p class="text-xs text-gray-500 mb-1">Shoot Count</p>
+      <p id="tl-shoot" class="text-2xl font-bold font-mono text-blue-300">—</p>
+      <p class="text-xs text-gray-600">ยอด (ล่าสุด)</p>
+    </div>
+    <div class="bg-gray-800 rounded-xl p-3 text-center">
+      <p class="text-xs text-gray-500 mb-1">Media Color</p>
+      <p id="tl-media" class="text-lg font-bold text-gray-300">—</p>
+      <p class="text-xs text-gray-600">สีอาหารเลี้ยงเชื้อ</p>
+    </div>
+  </div>
+
+  <!-- status timeline -->
+  <div class="bg-gray-800 rounded-xl p-3 mb-4">
+    <p class="text-xs text-gray-500 mb-2 font-medium">สถานะตามเวลา</p>
+    <canvas id="chartStatus" height="55"></canvas>
+  </div>
+
+  <!-- growth charts -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+    <div class="bg-gray-800 rounded-xl p-3">
+      <p class="text-xs text-gray-500 mb-2 font-medium">Green Coverage (%)</p>
+      <canvas id="chartGreen" height="130"></canvas>
+    </div>
+    <div class="bg-gray-800 rounded-xl p-3">
+      <p class="text-xs text-gray-500 mb-2 font-medium">Leaf Color Index (G/R)</p>
+      <canvas id="chartLCI" height="130"></canvas>
+    </div>
+  </div>
+
+  <div class="bg-gray-800 rounded-xl p-3">
+    <p class="text-xs text-gray-500 mb-2 font-medium">Shoot Count — มือ vs CV</p>
+    <canvas id="chartShoot" height="110"></canvas>
+  </div>
+
+  <p id="tl-empty" class="hidden text-center text-gray-600 text-sm py-4 mt-2">ยังไม่มีข้อมูล — ถ่ายภาพแล้วระบบจะวัดอัตโนมัติ</p>
+</div>
+
+<!-- Image history -->
+<div class="mt-6 bg-gray-900 border border-gray-800 rounded-2xl p-6">
+  <h2 class="text-lg font-semibold mb-4">ประวัติภาพ ({{ images|length }} รายการ)</h2>
+  {% if images %}
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="text-gray-400 border-b border-gray-800">
+          <th class="text-left py-2 pr-4">Day</th>
+          <th class="text-left py-2 pr-4">วันที่บันทึก</th>
+          <th class="text-left py-2 pr-4">สถานะ</th>
+          <th class="text-left py-2 pr-4">Green%</th>
+          <th class="text-left py-2 pr-4">LCI</th>
+          <th class="text-left py-2">ภาพ</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for img in images %}
+        <tr class="border-b border-gray-800 hover:bg-gray-800 transition">
+          <td class="py-2 pr-4 font-mono text-green-400">Day {{ img.day_point }}</td>
+          <td class="py-2 pr-4 text-gray-300">{{ img.date_taken }}</td>
+          <td class="py-2 pr-4">
+            <span class="px-2 py-0.5 rounded-full text-xs font-medium
+              {% if img.status == 'healthy' %}bg-green-900 text-green-300
+              {% elif img.status == 'contaminated' %}bg-orange-900 text-orange-300
+              {% elif img.status == 'dead' %}bg-red-900 text-red-300
+              {% else %}bg-gray-800 text-gray-400{% endif %}">
+              {{ img.status }}
+            </span>
+          </td>
+          <td class="py-2 pr-4 font-mono text-xs text-green-400">
+            {% if img.green_coverage_pct is not none %}{{ "%.1f"|format(img.green_coverage_pct) }}%{% else %}—{% endif %}
+          </td>
+          <td class="py-2 pr-4 font-mono text-xs text-yellow-300">
+            {% if img.leaf_color_index is not none %}{{ "%.3f"|format(img.leaf_color_index) }}{% else %}—{% endif %}
+          </td>
+          <td class="py-2">
+            {% if img.drive_url %}
+            <a href="{{ img.drive_url }}" target="_blank"
+              class="text-blue-400 hover:text-blue-300 text-xs underline">ดูภาพ</a>
+            {% else %}
+            <span class="text-gray-600 text-xs">ไม่มีภาพ</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="text-gray-500 text-sm">ยังไม่มีภาพที่บันทึก</p>
+  {% endif %}
+</div>
+
+<script>
+// ── Growth Timeline ──────────────────────────────────────────
+const STATUS_COLOR = { healthy:'#4ade80', contaminated:'#f97316', dead:'#a8a29e', unknown:'#475569' };
+const STATUS_TH    = { healthy:'สุขภาพดี', contaminated:'ปนเปื้อน', dead:'ตาย', unknown:'?' };
+
+const _lineCfg = (label, color, fill=true) => ({
+  label, data: [],
+  borderColor: color, backgroundColor: color + '22',
+  borderWidth: 2, pointRadius: 3.5, pointHoverRadius: 5,
+  tension: 0.4, fill,
+});
+const _axisStyle = {
+  ticks: { color:'#475569', font:{size:10} },
+  grid:  { color:'#1e293b' },
+};
+const _baseOpts = {
+  responsive: true, maintainAspectRatio: true,
+  animation: { duration: 150 },
+  plugins: { legend: { labels:{ color:'#94a3b8', font:{size:10}, boxWidth:10, padding:8 } } },
+  scales: { x: _axisStyle, y: _axisStyle },
+};
+
+let _charts = {};
+
+function _mkChart(id, datasets, opts={}) {
+  if (_charts[id]) _charts[id].destroy();
+  _charts[id] = new Chart(document.getElementById(id), {
+    type: 'line',
+    data: { labels:[], datasets },
+    options: { ..._baseOpts, ...opts },
+  });
+  return _charts[id];
+}
+
+async function loadTimeline() {
+  const res  = await fetch('/api/bottle_timeline/{{ bottle.bottle_id }}');
+  const rows = await res.json();
+
+  if (!rows.length) {
+    document.getElementById('tl-empty').classList.remove('hidden'); return;
+  }
+  document.getElementById('tl-empty').classList.add('hidden');
+
+  // ── หา latest record ที่มี phenotype ──
+  const withPheno = rows.filter(r => r.green_coverage_pct != null);
+  if (withPheno.length) {
+    const lt = withPheno[withPheno.length - 1];
+    document.getElementById('tl-green').textContent = lt.green_coverage_pct.toFixed(1) + '%';
+    const lci = lt.leaf_color_index;
+    document.getElementById('tl-lci').textContent   = lci ? lci.toFixed(3) : '—';
+    document.getElementById('tl-lci-hint').textContent =
+      lci >= 1.5 ? 'สุขภาพดี (≥1.5)' : lci >= 1.0 ? 'ปกติ' : 'เครียด (<1.0)';
+    document.getElementById('tl-lci-hint').style.color =
+      lci >= 1.5 ? '#4ade80' : lci >= 1.0 ? '#94a3b8' : '#f87171';
+    document.getElementById('tl-media').textContent = lt.media_color_cv || '—';
+    document.getElementById('tl-method').textContent =
+      lt.phenotype_method === 'yolov8_seg' ? 'YOLOv8-seg ✓' : 'Classic CV (HSV)';
+  }
+
+  // ── shoot count (manual หรือ CV) ──
+  const latestWithShoot = [...rows].reverse()
+    .find(r => (r.shoot_count != null && r.shoot_count >= 0) || r.shoot_count_cv != null);
+  if (latestWithShoot) {
+    const v = latestWithShoot.shoot_count >= 0
+              ? latestWithShoot.shoot_count
+              : latestWithShoot.shoot_count_cv;
+    document.getElementById('tl-shoot').textContent = v != null ? v : '—';
+  }
+
+  const dayLabels = rows.map(r => 'Day ' + r.day_point);
+
+  // ── Status timeline (scatter) ──
+  const statusGroups = {};
+  rows.forEach(r => {
+    const s = r.status || 'unknown';
+    if (!statusGroups[s]) statusGroups[s] = [];
+    statusGroups[s].push({ x: r.day_point, y: 0 });
+  });
+  const statusDatasets = Object.entries(statusGroups).map(([s, pts]) => ({
+    label: STATUS_TH[s] || s,
+    data:  pts,
+    backgroundColor: STATUS_COLOR[s] || '#475569',
+    pointRadius: 9, pointHoverRadius: 11,
+  }));
+  if (_charts['chartStatus']) _charts['chartStatus'].destroy();
+  _charts['chartStatus'] = new Chart(document.getElementById('chartStatus'), {
+    type: 'scatter',
+    data: { datasets: statusDatasets },
+    options: {
+      responsive: true, maintainAspectRatio: true, animation:{ duration:150 },
+      plugins: { legend:{ labels:{ color:'#94a3b8', font:{size:10}, boxWidth:8, padding:8 } } },
+      scales: {
+        x: { ..._axisStyle, title:{ display:true, text:'Day Point', color:'#475569', font:{size:10} } },
+        y: { display:false, min:-0.8, max:0.8 },
+      },
+    },
+  });
+
+  // ── Green Coverage + LCI ──
+  const gchart = _mkChart('chartGreen', [_lineCfg('Green %', '#4ade80')]);
+  const lchart = _mkChart('chartLCI',   [_lineCfg('LCI',     '#facc15')]);
+  gchart.data.labels = withPheno.map(r => 'Day ' + r.day_point);
+  lchart.data.labels = withPheno.map(r => 'Day ' + r.day_point);
+  gchart.data.datasets[0].data = withPheno.map(r => r.green_coverage_pct);
+  lchart.data.datasets[0].data = withPheno.map(r => r.leaf_color_index);
+  gchart.update(); lchart.update();
+
+  // ── Shoot Count: manual vs CV ──
+  const schart = _mkChart('chartShoot', [
+    _lineCfg('Manual', '#60a5fa', false),
+    _lineCfg('CV',     '#a78bfa', false),
+  ]);
+  schart.data.labels = dayLabels;
+  schart.data.datasets[0].data = rows.map(r => r.shoot_count >= 0 ? r.shoot_count : null);
+  schart.data.datasets[1].data = rows.map(r => r.shoot_count_cv);
+  schart.options.plugins.legend.display = true;
+  schart.update();
+}
+
+// โหลดตอนเปิดหน้า
+if (typeof Chart !== 'undefined') loadTimeline();
+else {
+  const s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js';
+  s.onload = loadTimeline;
+  document.head.appendChild(s);
+}
+
+// ─── Overlay observation controls ────────────────────────────────
+const VIGOR_TIPS = {
+  0: '',
+  1: '1 — เหลืองหรือน้ำตาลทั้งต้น ไม่เจริญเลย หรือเกือบตาย',
+  2: '2 — สีซีด ใบเหี่ยว เจริญช้ามาก มีอาการเครียดเห็นชัด',
+  3: '3 — สีเขียวปกติ เจริญได้ตามคาด ไม่มีอาการผิดปกติชัดเจน',
+  4: '4 — สีเขียวสด ใบแผ่ดี เจริญดีกว่าเฉลี่ย ดูแข็งแรง',
+  5: '5 — สีเขียวเข้ม ใบหนาแน่น เจริญดีมากเห็นชัด สมบูรณ์ที่สุด',
+};
+
+function stepOvShoot(d) {
+  const inp = document.getElementById('ov-shoot');
+  const val = Math.max(-1, parseInt(inp.value, 10) + d);
+  inp.value = val;
+  document.getElementById('ov-shoot-display').textContent = val === -1 ? '—' : val;
+}
+
+function setOvVigor(v) {
+  document.getElementById('ov-vigor').value = v;
+  document.getElementById('ov-vigor-tip').textContent = VIGOR_TIPS[v] || '';
+  for (let i = 1; i <= 5; i++) {
+    document.getElementById('ov-vigor-' + i).className = i === v
+      ? 'flex-1 h-10 rounded-lg text-sm font-bold bg-green-700 text-white transition'
+      : 'flex-1 h-10 rounded-lg text-sm font-bold bg-gray-800 text-gray-500 transition';
+  }
+}
+
+function setOvHeight(h) {
+  document.getElementById('ov-height').value = h;
+  ['none','short','medium','tall'].forEach(k => {
+    document.getElementById('ov-h-' + k).className =
+      ((h==='' && k==='none') || h===k)
+        ? 'py-2.5 rounded-lg text-xs font-medium bg-green-700 text-white transition'
+        : 'py-2.5 rounded-lg text-xs font-medium bg-gray-800 text-gray-500 transition';
+  });
+}
+
+function setOvRoot(r) {
+  document.getElementById('ov-root').value = r;
+  ['none','sparse','dense'].forEach(k => {
+    document.getElementById('ov-r-' + k).className = r === k
+      ? 'flex-1 py-2.5 rounded-lg text-xs font-medium bg-green-700 text-white transition'
+      : 'flex-1 py-2.5 rounded-lg text-xs font-medium bg-gray-800 text-gray-500 transition';
+  });
+}
+
+function toggleOvCallus() {
+  const inp = document.getElementById('ov-callus');
+  const btn = document.getElementById('ov-callus-btn');
+  const on = inp.value === '0';
+  inp.value = on ? '1' : '0';
+  btn.className = on
+    ? 'w-full py-2.5 rounded-lg text-xs font-medium bg-green-700 text-white transition'
+    : 'w-full py-2.5 rounded-lg text-xs font-medium bg-gray-800 text-gray-500 transition';
+  btn.textContent = on ? 'มี' : 'ไม่มี';
+}
+
+// init overlay defaults
+setOvHeight(''); setOvRoot('none');
+
+// ─── Status ──────────────────────────────────────────────────────
+const STATUS_BASE = 'py-3 rounded-xl text-sm font-bold border-2 transition w-full';
+const STATUS_STYLES = {
+  healthy:      { on: STATUS_BASE+' bg-green-600 border-green-600 text-white',    off: STATUS_BASE+' bg-transparent border-green-600 text-green-400' },
+  contaminated: { on: STATUS_BASE+' bg-orange-600 border-orange-600 text-white',  off: STATUS_BASE+' bg-transparent border-orange-600 text-orange-400' },
+  dead:         { on: STATUS_BASE+' bg-red-600 border-red-600 text-white',         off: STATUS_BASE+' bg-transparent border-red-600 text-red-400' },
+  unknown:      { on: STATUS_BASE+' bg-gray-600 border-gray-600 text-white',       off: STATUS_BASE+' bg-transparent border-gray-600 text-gray-400' },
+};
+const STATUS_LABELS = { healthy: 'Healthy', contaminated: 'Contaminated', dead: 'Dead', unknown: 'Unknown' };
+
+function setOverlayStatus(s) {
+  document.getElementById('status-select').value = s;
+  Object.keys(STATUS_STYLES).forEach(st => {
+    const btn = document.getElementById('os-' + st);
+    btn.className = STATUS_STYLES[st][st === s ? 'on' : 'off'];
+    btn.textContent = STATUS_LABELS[st];
+  });
+}
+
+function syncOverlayStatus(s) {
+  Object.keys(STATUS_STYLES).forEach(st => {
+    const btn = document.getElementById('os-' + st);
+    btn.className = STATUS_STYLES[st][st === s ? 'on' : 'off'];
+    btn.textContent = STATUS_LABELS[st];
+  });
+}
+
+// ─── Day Point ────────────────────────────────────────────────────
+const datePlanted = "{{ bottle.date_planted }}";
+
+function setDay(val) {
+  val = Math.max(0, val);
+  document.getElementById('day-input').value = val;
+  document.getElementById('overlay-day-val').textContent = val;
+  document.getElementById('overlay-day-badge').classList.remove('hidden');
+}
+
+// Global Day init
+const globalDay = localStorage.getItem('vitro_global_day');
+if (globalDay !== null) {
+  setDay(parseInt(globalDay));
+} else if (datePlanted) {
+  setDay(Math.max(0, Math.floor((new Date() - new Date(datePlanted)) / 86400000)));
+} else {
+  setDay(0);
+}
+
+// Status init
+setOverlayStatus(document.getElementById('status-select').value);
+
+// ─── Overlay open/close ───────────────────────────────────────────
+function openCaptureOverlay() {
+  document.getElementById('ov-camera-area').classList.remove('hidden');
+  document.getElementById('ov-after-save').classList.add('hidden');
+  document.getElementById('ov-after-save').classList.remove('flex');
+  document.getElementById('capture-overlay').classList.remove('hidden');
+}
+
+function openCameraFromOverlay() {
+  document.getElementById('capture-overlay').classList.add('hidden');
+  document.getElementById('input-camera').click();
+}
+
+// ─── Upload ───────────────────────────────────────────────────────
+let _pendingBlob = null;
+
+function compressForUpload(file, maxSize=640, quality=0.72) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const side = Math.min(img.width, img.height);
+      const size = Math.min(side, maxSize);
+      const canvas = document.createElement('canvas');
+      canvas.width = size; canvas.height = size;
+      canvas.getContext('2d').drawImage(
+        img, (img.width-side)/2, (img.height-side)/2, side, side, 0, 0, size, size
+      );
+      canvas.toBlob(blob => resolve(blob || file), 'image/jpeg', quality);
+    };
+    img.onerror = () => resolve(file);
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+async function runAIPrediction(blob) {
+  const badge   = document.getElementById('ov-ai-badge');
+  const saveBtn = document.getElementById('ov-save-btn');
+  try {
+    const form = new FormData();
+    form.append('photo', blob, 'photo.jpg');
+    const res  = await fetch('/api/predict', { method: 'POST', body: form });
+    const data = await res.json();
+    if (data.model_ready && data.ai_status !== 'unknown') {
+      const pct   = Math.round(data.ai_confidence * 100);
+      const color = pct >= 85 ? '#4ade80' : pct >= 65 ? '#facc15' : '#fb923c';
+      const icon  = data.ai_status === 'healthy' ? '🟢'
+                  : data.ai_status === 'contaminated' ? '🟠' : '⚫';
+      badge.innerHTML = icon + ' <span style="color:' + color + ';font-weight:700">' + data.ai_status + '</span>'
+                      + ' <span style="color:#64748b;font-size:11px">' + pct + '%</span>';
+      setOverlayStatus(data.ai_status);
+    } else if (!data.model_ready) {
+      badge.innerHTML = '<span style="color:#64748b">ยังไม่มี model — label เอง</span>';
+    } else {
+      badge.innerHTML = '<span style="color:#94a3b8">ไม่แน่ใจ — กรุณาเลือก label</span>';
+    }
+  } catch(e) {
+    badge.innerHTML = '<span style="color:#f87171">predict ไม่สำเร็จ</span>';
+  }
+  saveBtn.classList.remove('hidden');
+}
+
+async function handleFallbackFile(input) {
+  if (!input.files || !input.files[0]) return;
+  const file = input.files[0];
+
+  const preview = document.getElementById('photo-preview');
+  preview.src   = URL.createObjectURL(file);
+  preview.classList.remove('hidden');
+
+  const blob   = await compressForUpload(file);
+  _pendingBlob = blob;
+
+  openCaptureOverlay();
+  document.getElementById('ov-thumb').src = URL.createObjectURL(blob);
+  document.getElementById('ov-ai-area').classList.remove('hidden');
+  document.getElementById('ov-ai-badge').innerHTML =
+    '<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#facc15;margin-right:6px;animation:pulse 1.5s infinite"></span>กำลังวิเคราะห์...';
+  document.getElementById('ov-save-btn').classList.add('hidden');
+
+  runAIPrediction(blob);
+}
+
+async function saveRecord() {
+  if (!_pendingBlob) return;
+  const saveBtn = document.getElementById('ov-save-btn');
+  saveBtn.disabled = true;
+  saveBtn.textContent = '⏳ กำลังบันทึก...';
+
+  const form = new FormData();
+  form.append('day_point',          document.getElementById('day-input').value);
+  form.append('status',             document.getElementById('status-select').value);
+  form.append('shoot_count',        document.getElementById('ov-shoot').value);
+  form.append('shoot_height_class', document.getElementById('ov-height').value);
+  form.append('root_density',       document.getElementById('ov-root').value);
+  form.append('callus_present',     document.getElementById('ov-callus').value);
+  form.append('vigor_score',        document.getElementById('ov-vigor').value);
+  form.append('photo', _pendingBlob, 'photo.jpg');
+
+  try {
+    const res  = await fetch('/bottle/{{ bottle.bottle_id }}/add_record_json', {
+      method: 'POST', body: form
+    });
+    const data = await res.json();
+    if (data.ok) {
+      document.getElementById('ov-ai-area').classList.add('hidden');
+      document.getElementById('ov-camera-area').classList.add('hidden');
+      document.getElementById('ov-after-save').classList.remove('hidden');
+      document.getElementById('ov-after-save').classList.add('flex');
+      document.getElementById('capture-overlay').classList.remove('hidden');
+      _pendingBlob = null;
+      window._navTimer = setTimeout(() => {
+        window.location.href = '/bottle/{{ next_bottle_id }}';
+      }, 1200);
+    } else {
+      saveBtn.disabled = false;
+      saveBtn.textContent = '💾 บันทึก';
+      document.getElementById('save-status').textContent = 'บันทึกไม่สำเร็จ';
+      document.getElementById('save-status').classList.remove('hidden');
+    }
+  } catch(e) {
+    saveBtn.disabled = false;
+    saveBtn.textContent = '💾 บันทึก';
+    document.getElementById('save-status').textContent = 'เกิดข้อผิดพลาด';
+    document.getElementById('save-status').classList.remove('hidden');
+  }
+}
+</script>
+{% endblock %}

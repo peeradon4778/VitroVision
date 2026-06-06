@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Scanner — VitroShelf</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background:#000; overflow:hidden; font-family:'Segoe UI',sans-serif; touch-action:none; }
+
+#video, #overlay {
+  position:fixed; inset:0; width:100%; height:100%; object-fit:cover;
+}
+#overlay { z-index:10; pointer-events:none; }
+
+/* ── top bar ── */
+#topbar {
+  position:fixed; top:0; left:0; right:0; z-index:20;
+  padding:10px 14px;
+  padding-top: calc(10px + env(safe-area-inset-top));
+  display:flex; align-items:center; gap:10px;
+  background:linear-gradient(to bottom, rgba(0,0,0,.65) 70%, transparent);
+}
+#back {
+  width:36px; height:36px; border-radius:50%;
+  background:rgba(255,255,255,.15); backdrop-filter:blur(6px);
+  border:none; color:#fff; font-size:17px;
+  display:flex; align-items:center; justify-content:center;
+  text-decoration:none; flex-shrink:0;
+}
+/* day picker */
+#day-btn {
+  background:rgba(0,0,0,.45); backdrop-filter:blur(6px);
+  border:1px solid rgba(255,255,255,.2);
+  color:#fff; font-size:13px; font-weight:600;
+  padding:6px 14px; border-radius:99px; cursor:pointer;
+  display:flex; align-items:center; gap:6px;
+}
+#day-btn .dot { width:8px; height:8px; border-radius:50%; background:#f97316; flex-shrink:0; }
+#day-btn.set .dot { background:#4ade80; }
+
+#hint {
+  background:rgba(0,0,0,.4); backdrop-filter:blur(6px);
+  border:1px solid rgba(255,255,255,.1);
+  color:#94a3b8; font-size:12px; padding:5px 12px; border-radius:99px;
+}
+#count { margin-left:auto; color:#94a3b8; font-size:12px; font-weight:600; flex-shrink:0; }
+
+/* ── day picker modal ── */
+#day-modal {
+  display:none; position:fixed; inset:0; z-index:50;
+  background:rgba(0,0,0,.6); backdrop-filter:blur(4px);
+  align-items:center; justify-content:center;
+}
+#day-modal.show { display:flex; }
+#day-card {
+  background:#1e293b; border:1px solid #334155; border-radius:18px;
+  padding:24px; width:260px;
+}
+#day-card h3 { color:#fff; font-size:15px; font-weight:700; margin-bottom:16px; }
+#day-input {
+  width:100%; padding:12px; border-radius:10px; font-size:24px;
+  text-align:center; font-weight:700; color:#fff;
+  background:#0f172a; border:1px solid #475569;
+  outline:none;
+}
+#day-input:focus { border-color:#4ade80; }
+#day-ok {
+  margin-top:14px; width:100%; padding:12px; border-radius:12px;
+  font-weight:700; font-size:15px; color:#fff; cursor:pointer; border:none;
+  background:linear-gradient(135deg,#16a34a,#22c55e);
+}
+
+/* ── bottom session log ── */
+#session-bar {
+  position:fixed; bottom:0; left:0; right:0; z-index:20;
+  padding:10px 12px;
+  padding-bottom: calc(10px + env(safe-area-inset-bottom));
+  display:flex; gap:8px; overflow-x:auto;
+  background:linear-gradient(to top, rgba(0,0,0,.7) 60%, transparent);
+  scrollbar-width:none; min-height:58px; align-items:flex-end;
+}
+#session-bar::-webkit-scrollbar { display:none; }
+.chip {
+  flex-shrink:0; border-radius:10px; padding:6px 10px;
+  text-decoration:none; display:flex; flex-direction:column; gap:1px;
+  background:rgba(15,23,42,.85); backdrop-filter:blur(6px);
+  border:1px solid; transition:transform .15s;
+  min-width:72px;
+}
+.chip:active { transform:scale(.95); }
+.chip .c-id  { color:#f1f5f9; font-weight:700; font-size:11px; }
+.chip .c-st  { font-size:10px; font-weight:600; }
+.chip .c-new { font-size:9px; color:#4ade80; }
+
+/* ── no-aruco ── */
+#no-aruco {
+  position:fixed; top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  background:rgba(30,41,59,.92); border:1px solid #475569;
+  border-radius:14px; padding:20px 24px; text-align:center;
+  color:#94a3b8; font-size:13px; max-width:280px; z-index:30;
+}
+</style>
+</head>
+<body>
+
+<video id="video" autoplay playsinline muted></video>
+<canvas id="overlay"></canvas>
+
+{% if not aruco_ok %}
+<div id="no-aruco">
+  <p style="color:#fbbf24;font-weight:600;margin-bottom:6px">ArUco ไม่พร้อม</p>
+  <p>รัน VitroShelf ด้วย conda env <code>ml</code></p>
+  <a href="/" style="display:block;margin-top:12px;color:#60a5fa">← กลับ</a>
+</div>
+{% endif %}
+
+<!-- top bar -->
+<div id="topbar">
+  <a href="/" id="back">←</a>
+  <button id="day-btn" onclick="showDayModal()">
+    <span class="dot"></span>
+    <span id="day-label">ตั้ง Day Point</span>
+  </button>
+  <span id="hint">เปิดกล้อง...</span>
+  <span id="count"></span>
+</div>
+
+<!-- day modal -->
+<div id="day-modal">
+  <div id="day-card">
+    <h3>วันที่เพาะ (Day Point)</h3>
+    <input id="day-input" type="number" min="0" max="365" placeholder="0"
+           inputmode="numeric" onkeydown="if(event.key==='Enter')confirmDay()">
+    <button id="day-ok" onclick="confirmDay()">ยืนยัน</button>
+  </div>
+</div>
+
+<!-- session log -->
+<div id="session-bar"></div>
+
+<canvas id="cap" style="display:none"></canvas>
+
+<script>
+// ── state ──────────────────────────────────────────────────────
+const THRESHOLD = 75;        // clarity % ที่ auto-save
+const SAVE_COOLDOWN = 10000; // ms ก่อน save ขวดเดิมซ้ำได้
+
+const STATUS_COLOR = { healthy:'#4ade80', contaminated:'#f97316', dead:'#a8a29e', unknown:'#475569' };
+const STATUS_BG    = { healthy:'#14532d', contaminated:'#431407', dead:'#1c1917', unknown:'#1e293b' };
+const STATUS_TH    = { healthy:'สุขภาพดี', contaminated:'ปนเปื้อน', dead:'ตาย', unknown:'?' };
+
+let dayPoint    = null;
+let savedMap    = new Map();   // bottle_id → timestamp ที่ save ล่าสุด
+let sessionLog  = new Map();   // bottle_id → {status, ai_status, savedAt}
+let clearTimer  = null;
+
+const video    = document.getElementById('video');
+const overlay  = document.getElementById('overlay');
+const ovCtx    = overlay.getContext('2d');
+const cap      = document.getElementById('cap');
+const capCtx   = cap.getContext('2d');
+const hint     = document.getElementById('hint');
+const countEl  = document.getElementById('count');
+const dayBtn   = document.getElementById('day-btn');
+const dayLabel = document.getElementById('day-label');
+
+// ── กล้อง ────────────────────────────────────────────────────
+navigator.mediaDevices.getUserMedia({
+  video:{ facingMode:'environment', width:{ideal:1280}, height:{ideal:720} }
+}).then(s => {
+  video.srcObject = s;
+  hint.textContent = 'ส่องขวดที่มี ArUco marker';
+}).catch(() => { hint.textContent = 'เปิดกล้องไม่ได้'; });
+
+// ── day picker ────────────────────────────────────────────────
+function showDayModal() {
+  document.getElementById('day-modal').classList.add('show');
+  setTimeout(() => document.getElementById('day-input').focus(), 100);
+}
+function confirmDay() {
+  const v = parseInt(document.getElementById('day-input').value);
+  if (isNaN(v) || v < 0) return;
+  dayPoint = v;
+  dayLabel.textContent = `Day ${v}`;
+  dayBtn.classList.add('set');
+  document.getElementById('day-modal').classList.remove('show');
+}
+document.getElementById('day-modal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) e.currentTarget.classList.remove('show');
+});
+
+// ── clarity คำนวณ ─────────────────────────────────────────────
+function dist([x1,y1], [x2,y2]) {
+  return Math.sqrt((x2-x1)**2 + (y2-y1)**2);
+}
+function calcClarity(corners) {
+  const d1 = dist(corners[0], corners[2]);
+  const d2 = dist(corners[1], corners[3]);
+  const sizePx = (d1 + d2) / 2;
+  const sizeScore = Math.min(sizePx / 80, 1.0);
+
+  const sides = [0,1,2,3].map(i => dist(corners[i], corners[(i+1)%4]));
+  const mean  = sides.reduce((a,b)=>a+b) / 4;
+  const std   = Math.sqrt(sides.map(s=>(s-mean)**2).reduce((a,b)=>a+b)/4);
+  const shapeScore = mean > 0 ? Math.max(0, 1 - std/mean) : 0;
+
+  return Math.round((sizeScore*0.7 + shapeScore*0.3) * 100);
+}
+
+// ── วาด clarity arc ──────────────────────────────────────────
+function drawArc(ctx, cx, cy, r, pct, color, saved) {
+  const start = -Math.PI/2;
+  const end   = start + (pct/100) * 2 * Math.PI;
+
+  // bg ring
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, 2*Math.PI);
+  ctx.strokeStyle = 'rgba(255,255,255,.15)'; ctx.lineWidth = 3.5; ctx.stroke();
+
+  // arc
+  ctx.beginPath(); ctx.arc(cx, cy, r, start, end);
+  ctx.strokeStyle = saved ? '#4ade80' : color;
+  ctx.lineWidth = 3.5; ctx.lineCap = 'round'; ctx.stroke();
+
+  // text
+  ctx.font = `bold ${Math.max(10,r*0.65)}px sans-serif`;
+  ctx.fillStyle = saved ? '#4ade80' : (pct >= THRESHOLD ? '#fff' : color);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(saved ? '✓' : pct+'%', cx, cy);
+}
+
+// ── round-rect helper ─────────────────────────────────────────
+function rr(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.arcTo(x+w,y,x+w,y+r,r);
+  ctx.lineTo(x+w,y+h-r); ctx.arcTo(x+w,y+h,x+w-r,y+h,r);
+  ctx.lineTo(x+r,y+h); ctx.arcTo(x,y+h,x,y+h-r,r);
+  ctx.lineTo(x,y+r); ctx.arcTo(x,y,x+r,y,r); ctx.closePath();
+}
+
+// ── draw overlay ───────────────────────────────────────────────
+function drawOverlay(data, captureBlob) {
+  const dets = data.detections || [];
+  const W = video.videoWidth || 640;
+  const H = video.videoHeight || 360;
+  overlay.width = W; overlay.height = H;
+  ovCtx.clearRect(0,0,W,H);
+
+  if (dets.length === 0) {
+    hint.textContent = 'ส่องขวดที่มี ArUco marker';
+    countEl.textContent = '';
+    clearTimeout(clearTimer);
+    return;
+  }
+
+  hint.textContent = dayPoint !== null ? `Day ${dayPoint} · ส่องอยู่` : 'ตั้ง Day Point ก่อน →';
+  countEl.textContent = `${dets.length} ขวด`;
+
+  clearTimeout(clearTimer);
+  clearTimer = setTimeout(() => {
+    ovCtx.clearRect(0,0,overlay.width,overlay.height);
+    hint.textContent = 'ส่องขวดที่มี ArUco marker';
+    countEl.textContent = '';
+  }, 1800);
+
+  for (const d of dets) {
+    const sc = d.corners.map(([x,y]) => [x*(W/d.frame_w), y*(H/d.frame_h)]);
+    const clarity = calcClarity(sc);
+    const status  = (d.bottle && d.bottle.status) || 'unknown';
+    const color   = STATUS_COLOR[status] || '#475569';
+    const now     = Date.now();
+    const recentlySaved = savedMap.has(d.bottle_id) && (now - savedMap.get(d.bottle_id)) < SAVE_COOLDOWN;
+
+    // polygon
+    ovCtx.beginPath();
+    ovCtx.moveTo(sc[0][0], sc[0][1]);
+    sc.slice(1).forEach(([x,y]) => ovCtx.lineTo(x,y));
+    ovCtx.closePath();
+    const lineColor = recentlySaved ? '#4ade80' : (clarity >= THRESHOLD ? color : '#94a3b8');
+    ovCtx.strokeStyle = lineColor; ovCtx.lineWidth = recentlySaved ? 4 : 2.5; ovCtx.stroke();
+    ovCtx.fillStyle = lineColor + '18'; ovCtx.fill();
+
+    // หาตำแหน่ง
+    const cx  = sc.reduce((s,[x])=>s+x,0)/4;
+    const cy  = sc.reduce((s,[,y])=>s+y,0)/4;
+    const top = Math.min(...sc.map(([,y])=>y));
+    const mSz = Math.max(...sc.map(([,y])=>y)) - top;  // marker height px
+    const arcR = Math.max(14, mSz * 0.35);
+
+    // label บน
+    const aiTxt = (data.model_ready && d.ai_status && d.ai_status !== 'unknown')
+                  ? `  ${d.ai_status} ${(d.ai_confidence*100).toFixed(0)}%` : '';
+    const label = d.bottle_id + aiTxt;
+    const fSize = Math.max(10, Math.min(15, mSz * 0.45));
+    ovCtx.font = `bold ${fSize}px sans-serif`;
+    ovCtx.textAlign = 'center';
+    const tw = ovCtx.measureText(label).width;
+    ovCtx.fillStyle = 'rgba(0,0,0,.65)';
+    rr(ovCtx, cx-tw/2-6, top-fSize-10, tw+12, fSize+8, 5); ovCtx.fill();
+    ovCtx.fillStyle = recentlySaved ? '#4ade80' : color;
+    ovCtx.fillText(label, cx, top-4);
+
+    // clarity arc (ขวามือของ marker)
+    const arcX = Math.max(...sc.map(([x])=>x)) + arcR + 8;
+    drawArc(ovCtx, arcX, cy, arcR, Math.min(clarity,100), color, recentlySaved);
+
+    // auto-save
+    if (clarity >= THRESHOLD && dayPoint !== null && !recentlySaved && captureBlob) {
+      savedMap.set(d.bottle_id, now);
+      const fd = new FormData();
+      fd.append('bottle_id', d.bottle_id);
+      fd.append('day_point', dayPoint);
+      fd.append('ai_status', d.ai_status || 'unknown');
+      fd.append('ai_confidence', d.ai_confidence || 0);
+      fd.append('clarity', clarity);
+      fd.append('bottle_count', dets.length);
+      fd.append('photo', captureBlob, 'scan.jpg');
+      fetch('/api/scan_save', { method:'POST', body:fd })
+        .then(r => r.json())
+        .then(res => {
+          if (res.ok) addChip(d.bottle_id, status, d.ai_status);
+        }).catch(()=>{});
+    }
+  }
+}
+
+// ── session chip ─────────────────────────────────────────────
+function addChip(bottleId, status, aiStatus) {
+  if (sessionLog.has(bottleId)) {
+    // อัปเดต chip เดิม
+    const el = document.getElementById('chip-' + bottleId.replace(/[^a-z0-9]/gi,'_'));
+    if (el) {
+      el.querySelector('.c-new').textContent = '✓ บันทึกแล้ว';
+      return;
+    }
+  }
+  sessionLog.set(bottleId, { status, aiStatus });
+  const color = STATUS_COLOR[status] || '#475569';
+  const chip  = document.createElement('a');
+  chip.id = 'chip-' + bottleId.replace(/[^a-z0-9]/gi,'_');
+  chip.href = '/bottle/' + bottleId;
+  chip.className = 'chip';
+  chip.style.borderColor = color + '55';
+  chip.innerHTML = `
+    <span class="c-id">${bottleId}</span>
+    <span class="c-st" style="color:${color}">${STATUS_TH[status]||status}</span>
+    <span class="c-new">✓ บันทึกแล้ว</span>`;
+  const bar = document.getElementById('session-bar');
+  bar.appendChild(chip);
+  bar.scrollLeft = bar.scrollWidth;
+}
+
+// ── scan loop ─────────────────────────────────────────────────
+function scan() {
+  if (!video.videoWidth) return;
+  const W = video.videoWidth, H = video.videoHeight;
+  cap.width = W; cap.height = H;
+  capCtx.drawImage(video, 0, 0, W, H);
+  cap.toBlob(blob => {
+    const fd = new FormData();
+    fd.append('photo', blob, 'f.jpg');
+    fetch('/api/scan_aruco', { method:'POST', body:fd })
+      .then(r => r.json())
+      .then(data => drawOverlay(data, blob))
+      .catch(()=>{});
+  }, 'image/jpeg', 0.8);
+}
+
+setInterval(scan, 600);
+</script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}VitroShelf{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            healthy: '#22c55e',
+            contaminated: '#f97316',
+            dead: '#ef4444',
+            unknown: '#94a3b8',
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen font-sans pb-20 md:pb-0">
+
+  <!-- Top nav (desktop) -->
+  <nav class="bg-gray-900 border-b border-gray-800 px-4 py-3 flex items-center gap-6">
+    <a href="/" class="text-green-400 font-bold text-lg tracking-wide">🌱 VitroShelf</a>
+    <a href="/shelf/S01" class="text-gray-300 hover:text-white text-sm hidden md:block">ชั้น S01</a>
+    <a href="/shelf/S02" class="text-gray-300 hover:text-white text-sm hidden md:block">ชั้น S02</a>
+    <a href="/train" class="text-purple-400 hover:text-white text-sm hidden md:block">🧠 Train Model</a>
+    <a href="/scan" class="text-cyan-400 hover:text-white text-sm hidden md:block">📷 Scanner</a>
+    <a href="/glass" class="text-slate-400 hover:text-white text-sm hidden md:block">🔬 Glass Room</a>
+  </nav>
+
+  <!-- ML loading banner -->
+  <div id="ml-banner" style="display:none;background:#1c1917;border-bottom:1px solid #292524;padding:6px 16px;font-size:12px;color:#a8a29e;display:flex;align-items:center;gap:8px">
+    <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f59e0b;animation:pulse 1s infinite"></span>
+    <span id="ml-banner-text">กำลังโหลด ML modules (torch, timm)... Train และ Scanner ยังไม่พร้อม</span>
+  </div>
+  <style>@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}</style>
+  <script>
+  (function(){
+    function check(){
+      fetch('/api/ml_status').then(r=>r.json()).then(d=>{
+        const b = document.getElementById('ml-banner');
+        if(d.ready){
+          b.style.display='none';
+        } else {
+          b.style.display='flex';
+          setTimeout(check, 2000);
+        }
+      }).catch(()=>setTimeout(check,2000));
+    }
+    check();
+  })();
+  </script>
+
+  <main class="px-4 py-5 max-w-7xl mx-auto">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Bottom nav (mobile) -->
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800 flex justify-around py-2 z-40">
+    <a href="/" class="flex flex-col items-center gap-0.5 text-gray-400 hover:text-green-400 px-4 py-1">
+      <span class="text-xl">📊</span>
+      <span class="text-xs">Dashboard</span>
+    </a>
+    <a href="/shelf/S01" class="flex flex-col items-center gap-0.5 text-gray-400 hover:text-green-400 px-4 py-1">
+      <span class="text-xl">🗄️</span>
+      <span class="text-xs">S01</span>
+    </a>
+    <a href="/shelf/S02" class="flex flex-col items-center gap-0.5 text-gray-400 hover:text-green-400 px-4 py-1">
+      <span class="text-xl">🗄️</span>
+      <span class="text-xs">S02</span>
+    </a>
+    <a href="/train" class="flex flex-col items-center gap-0.5 text-gray-400 hover:text-purple-400 px-4 py-1">
+      <span class="text-xl">🧠</span>
+      <span class="text-xs">Train</span>
+    </a>
+    <a href="/scan" class="flex flex-col items-center gap-0.5 text-gray-400 hover:text-cyan-400 px-4 py-1">
+      <span class="text-xl">📷</span>
+      <span class="text-xs">Scan</span>
+    </a>
+  </nav>
+
+</body>
+</html>

@@ -1,0 +1,1081 @@
+{% extends "base.html" %}
+{% block title %}VitroVision Trainer{% endblock %}
+
+{% block content %}
+{% set total_safe = stats.total if stats.total > 0 else 1 %}
+
+<style>
+  @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.8)} }
+  @keyframes bar-flow {
+    0%   { background-position: 200% center; }
+    100% { background-position: -200% center; }
+  }
+  .pulse-dot { animation: pulse-dot 1.4s ease-in-out infinite; }
+  .prog-active {
+    background: linear-gradient(90deg, #7c3aed 0%, #4ade80 60%, #7c3aed 100%);
+    background-size: 200%;
+    animation: bar-flow 2s linear infinite;
+  }
+  .card  { background:#1e293b; border:1px solid #334155; border-radius:14px; }
+  .inner { background:#0f172a; border-radius:10px; }
+  .phase-node { width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0; transition:all .3s; }
+  #log-scroll { height:190px; overflow-y:auto; scrollbar-width:thin; scrollbar-color:#334155 transparent; }
+  #log-scroll::-webkit-scrollbar { width:4px; }
+  #log-scroll::-webkit-scrollbar-thumb { background:#334155; border-radius:2px; }
+  .log-row { display:grid; grid-template-columns:54px 14px 1fr; gap:6px; padding:2.5px 0; border-bottom:1px solid #0f172a; font-size:11px; font-family:monospace; align-items:start; }
+  input[type=number]::-webkit-inner-spin-button { opacity:.5; }
+
+  /* ── Evaluation section ── */
+  .cm-cell {
+    width:52px; height:52px; border-radius:8px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    font-size:11px; font-weight:700; transition: opacity .3s;
+  }
+  .cm-label { font-size:9px; font-weight:400; opacity:.6; margin-top:2px; }
+  .metric-bar-wrap { height:6px; border-radius:3px; overflow:hidden; background:#0f172a; flex:1; }
+  .metric-bar { height:100%; border-radius:3px; transition:width .6s ease; }
+</style>
+
+<div class="max-w-4xl mx-auto space-y-4 pb-10">
+
+  <!-- ══════════════════ HEADER ══════════════════ -->
+  <div class="card p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-4">
+    <div class="flex items-center gap-3">
+      <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-xl"
+           style="background:linear-gradient(135deg,#7c3aed,#16a34a)">🧠</div>
+      <div>
+        <h1 class="text-xl font-bold text-white leading-tight">VitroVision Trainer</h1>
+        <div class="flex flex-wrap items-center gap-1.5 mt-1">
+          <span class="text-xs px-2 py-0.5 rounded bg-slate-700 text-slate-400">EfficientNet-B0</span>
+          <span class="text-xs px-2 py-0.5 rounded bg-slate-700 text-slate-400">Transfer Learning</span>
+          <span class="text-xs px-2 py-0.5 rounded bg-slate-700 text-slate-400">3 classes</span>
+        </div>
+      </div>
+    </div>
+    <div class="sm:ml-auto flex items-center gap-3 flex-wrap">
+      <div class="flex items-center gap-2">
+        <span id="statusDotEl" class="w-2.5 h-2.5 rounded-full bg-slate-600 inline-block"></span>
+        <span id="statusText" class="text-sm text-slate-400">ว่าง</span>
+      </div>
+      {% if model_exists %}
+      <div style="text-align:right">
+        <div class="text-xs px-3 py-1.5 rounded-full border font-medium inline-block"
+             style="background:#14532d44;border-color:#166534;color:#86efac">✓ มี model แล้ว</div>
+        {% if model_info %}
+        <div style="font-size:10px;color:#475569;margin-top:4px;line-height:1.6">
+          <span style="color:#4ade80">F1 {{ model_info.f1 }}</span>
+          &nbsp;·&nbsp;
+          <span style="color:#c084fc">κ {{ model_info.kappa }}</span>
+          &nbsp;·&nbsp;
+          <span>train {{ model_info.n_train }} / test {{ model_info.n_test }}</span>
+          <br>
+          <span>{{ model_info.mtime }}</span>
+        </div>
+        {% endif %}
+      </div>
+      {% else %}
+      <span class="text-xs px-3 py-1.5 rounded-full border"
+            style="background:#1e293b;border-color:#475569;color:#94a3b8">ยังไม่มี model</span>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if not trainer_ok %}
+  <div class="card p-4" style="border-color:#92400e;background:#451a0320">
+    <div class="flex items-start gap-3">
+      <span class="text-xl mt-0.5 flex-shrink-0">⚠️</span>
+      <div>
+        <p class="text-amber-300 font-semibold text-sm">Trainer ไม่พร้อม</p>
+        <p class="text-amber-400 text-xs mt-1 leading-relaxed">
+          กรุณารัน <code class="bg-slate-800 px-1.5 py-0.5 rounded text-amber-200">start.bat</code>
+          ด้วย conda env <code class="bg-slate-800 px-1.5 py-0.5 rounded text-amber-200">ml</code>
+          &nbsp;(ต้องการ torch · timm · albumentations)
+        </p>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ══════════════════ ACTIVE LEARNING ══════════════════ -->
+  <div class="card p-5" id="alCard">
+    <div class="flex items-center justify-between mb-3">
+      <div class="flex items-center gap-2">
+        <span class="text-lg">🔄</span>
+        <div>
+          <h2 class="font-semibold text-white text-sm">Active Learning Loop</h2>
+          <p class="text-xs text-slate-500">label ภาพใน VitroShelf → AI ช่วย predict → retrain อัตโนมัติ</p>
+        </div>
+      </div>
+      <span id="alModelBadge" class="text-xs px-2.5 py-1 rounded-full border"
+            style="background:#1e293b;border-color:#475569;color:#64748b">ตรวจสอบ model...</span>
+    </div>
+
+    <!-- Progress bar -->
+    <div class="mb-3">
+      <div class="flex justify-between text-xs mb-1.5">
+        <span class="text-slate-400">ภาพใหม่ที่ label แล้ว</span>
+        <span id="alCount" class="font-mono font-bold text-white">—/—</span>
+      </div>
+      <div class="h-2.5 rounded-full overflow-hidden" style="background:#0f172a">
+        <div id="alBar" class="h-full rounded-full transition-all duration-700"
+             style="width:0%;background:linear-gradient(90deg,#6366f1,#8b5cf6)"></div>
+      </div>
+      <p id="alHint" class="text-xs text-slate-500 mt-1.5">จะ retrain อัตโนมัติเมื่อถึง threshold</p>
+    </div>
+
+    <!-- Threshold control -->
+    <div class="flex items-center gap-3">
+      <label class="text-xs text-slate-400 flex-shrink-0">Auto-retrain ทุก</label>
+      <input id="alThreshold" type="number" value="20" min="5" max="500"
+        class="w-20 px-2 py-1 rounded-lg text-sm text-white text-center focus:outline-none"
+        style="background:#0f172a;border:1px solid #334155">
+      <span class="text-xs text-slate-500">ภาพใหม่</span>
+      <button onclick="setThreshold()"
+        class="ml-auto text-xs px-3 py-1.5 rounded-lg transition font-medium"
+        style="background:#1e3a5f;border:1px solid #1d4ed8;color:#60a5fa">บันทึก</button>
+    </div>
+    <p id="alLastRetrain" class="text-xs text-slate-600 mt-2"></p>
+  </div>
+
+  <!-- ══════════════════ DATASET ══════════════════ -->
+  <div class="card p-5">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <h2 class="font-semibold text-white">Dataset</h2>
+        <p class="text-xs text-slate-500 mt-0.5">ดึงจาก VitroShelf DB อัตโนมัติ</p>
+      </div>
+      <div class="flex items-center gap-2">
+        {% if stats.ready %}
+        <span class="text-xs px-2.5 py-1 rounded-full border font-medium"
+              style="background:#14532d44;border-color:#166534;color:#86efac">✓ พร้อม train</span>
+        {% else %}
+        <span class="text-xs px-2.5 py-1 rounded-full border"
+              style="background:#1c1917;border-color:#44403c;color:#a8a29e">⚠ ข้อมูลน้อยเกินไป</span>
+        {% endif %}
+        <button onclick="refreshStats()"
+          class="text-xs px-2.5 py-1 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-400 hover:text-white transition">
+          ↻ รีเฟรช
+        </button>
+      </div>
+    </div>
+
+    <div class="space-y-3">
+      <!-- healthy -->
+      <div>
+        <div class="flex justify-between items-center mb-1.5">
+          <span class="text-xs font-medium flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full inline-block" style="background:#22c55e"></span>
+            <span style="color:#86efac">healthy</span>
+          </span>
+          <div class="flex items-center gap-2">
+            <span id="pct-healthy" class="text-xs text-slate-500 font-mono">
+              {{ ((stats.per_class.healthy / total_safe) * 100)|int }}%
+            </span>
+            <span id="cnt-healthy" class="text-sm font-bold font-mono" style="color:#86efac;min-width:28px;text-align:right">
+              {{ stats.per_class.healthy }}
+            </span>
+          </div>
+        </div>
+        <div class="h-2 rounded-full overflow-hidden" style="background:#0f172a">
+          <div id="bar-healthy" class="h-full rounded-full transition-all duration-700"
+               style="background:linear-gradient(90deg,#16a34a,#4ade80);width:{{ ((stats.per_class.healthy / total_safe) * 100)|int }}%"></div>
+        </div>
+      </div>
+      <!-- contaminated -->
+      <div>
+        <div class="flex justify-between items-center mb-1.5">
+          <span class="text-xs font-medium flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full inline-block" style="background:#f97316"></span>
+            <span style="color:#fca5a5">contaminated</span>
+          </span>
+          <div class="flex items-center gap-2">
+            <span id="pct-contaminated" class="text-xs text-slate-500 font-mono">
+              {{ ((stats.per_class.contaminated / total_safe) * 100)|int }}%
+            </span>
+            <span id="cnt-contaminated" class="text-sm font-bold font-mono" style="color:#fca5a5;min-width:28px;text-align:right">
+              {{ stats.per_class.contaminated }}
+            </span>
+          </div>
+        </div>
+        <div class="h-2 rounded-full overflow-hidden" style="background:#0f172a">
+          <div id="bar-contaminated" class="h-full rounded-full transition-all duration-700"
+               style="background:linear-gradient(90deg,#c2410c,#fb923c);width:{{ ((stats.per_class.contaminated / total_safe) * 100)|int }}%"></div>
+        </div>
+      </div>
+      <!-- dead -->
+      <div>
+        <div class="flex justify-between items-center mb-1.5">
+          <span class="text-xs font-medium flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full inline-block" style="background:#78716c"></span>
+            <span style="color:#a8a29e">dead</span>
+          </span>
+          <div class="flex items-center gap-2">
+            <span id="pct-dead" class="text-xs text-slate-500 font-mono">
+              {{ ((stats.per_class.dead / total_safe) * 100)|int }}%
+            </span>
+            <span id="cnt-dead" class="text-sm font-bold font-mono" style="color:#a8a29e;min-width:28px;text-align:right">
+              {{ stats.per_class.dead }}
+            </span>
+          </div>
+        </div>
+        <div class="h-2 rounded-full overflow-hidden" style="background:#0f172a">
+          <div id="bar-dead" class="h-full rounded-full transition-all duration-700"
+               style="background:linear-gradient(90deg,#44403c,#a8a29e);width:{{ ((stats.per_class.dead / total_safe) * 100)|int }}%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-4 pt-3 border-t border-slate-700 flex items-center justify-between">
+      <p class="text-slate-400 text-sm">
+        รวม <span id="cnt-total" class="text-white font-bold font-mono">{{ stats.total }}</span> ภาพ
+      </p>
+      {% if stats.total < 30 %}
+      <p class="text-yellow-400 text-xs">แนะนำ ≥ 200 ต่อ class สำหรับ production</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ══════════════════ CONFIG ══════════════════ -->
+  <div class="card p-5">
+    <h2 class="font-semibold text-white mb-4">Training Config</h2>
+
+    <!-- Phase timeline -->
+    <div class="flex items-center mb-5 gap-0">
+      <div id="pnode1" class="phase-node bg-slate-700 text-slate-300">1</div>
+      <div class="flex-1 mx-2">
+        <div class="flex justify-between text-xs text-slate-500 mb-1">
+          <span>Phase 1 — Head only</span>
+          <span id="ph1label" class="font-mono">15 ep</span>
+        </div>
+        <div class="h-1.5 rounded-full overflow-hidden" style="background:#1e293b">
+          <div id="ph1bar" class="h-full rounded-full transition-all duration-500" style="background:#7c3aed;width:0%"></div>
+        </div>
+      </div>
+      <div id="pnode2" class="phase-node bg-slate-700 text-slate-300">2</div>
+      <div class="flex-1 mx-2">
+        <div class="flex justify-between text-xs text-slate-500 mb-1">
+          <span>Phase 2 — Fine-tune</span>
+          <span id="ph2label" class="font-mono">25 ep</span>
+        </div>
+        <div class="h-1.5 rounded-full overflow-hidden" style="background:#1e293b">
+          <div id="ph2bar" class="h-full rounded-full transition-all duration-500" style="background:#22c55e;width:0%"></div>
+        </div>
+      </div>
+      <div id="pnodeDone" class="phase-node bg-slate-700 text-slate-600 text-sm">✓</div>
+    </div>
+
+    <!-- Inputs -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div>
+        <label class="text-xs text-slate-400 block mb-1.5">
+          Phase 1 Epochs <span class="text-slate-600">(head)</span>
+        </label>
+        <input id="cfgEpHead" type="number" value="15" min="5" max="100"
+          oninput="document.getElementById('ph1label').textContent=this.value+' ep'"
+          class="w-full px-3 py-2 rounded-lg text-sm text-white transition focus:outline-none"
+          style="background:#0f172a;border:1px solid #334155;focus-border:#7c3aed">
+      </div>
+      <div>
+        <label class="text-xs text-slate-400 block mb-1.5">
+          Phase 2 Epochs <span class="text-slate-600">(fine-tune)</span>
+        </label>
+        <input id="cfgEpFull" type="number" value="25" min="5" max="200"
+          oninput="document.getElementById('ph2label').textContent=this.value+' ep'"
+          class="w-full px-3 py-2 rounded-lg text-sm text-white transition focus:outline-none"
+          style="background:#0f172a;border:1px solid #334155">
+      </div>
+      <div>
+        <label class="text-xs text-slate-400 block mb-1.5">Learning Rate</label>
+        <input id="cfgLr" type="number" value="0.0001" min="0.00001" max="0.01" step="0.00001"
+          class="w-full px-3 py-2 rounded-lg text-sm text-white transition focus:outline-none"
+          style="background:#0f172a;border:1px solid #334155">
+      </div>
+    </div>
+
+    <div class="flex gap-3 mt-5">
+      <button id="btnStart" onclick="startTraining()" {% if not trainer_ok %}disabled{% endif %}
+        class="flex-1 py-2.5 rounded-xl font-semibold text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+        style="background:linear-gradient(135deg,#16a34a,#22c55e);box-shadow:0 4px 20px #16a34a33">
+        ▶ เริ่ม Train
+      </button>
+      <button id="btnStop" onclick="stopTraining()" disabled
+        class="px-6 py-2.5 rounded-xl font-semibold transition-all disabled:opacity-30"
+        style="background:#1e293b;border:1px solid #334155;color:#94a3b8">
+        ■ หยุด
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════════════ PROGRESS ══════════════════ -->
+  <div class="card p-5">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="font-semibold text-white">Training Progress</h2>
+      <span id="phaseLabel"
+        class="text-xs px-2.5 py-1 rounded-full font-medium"
+        style="background:#1e293b;border:1px solid #334155;color:#64748b">รอเริ่ม</span>
+    </div>
+
+    <!-- Overall bar -->
+    <div class="mb-3">
+      <div class="flex justify-between text-xs text-slate-500 mb-1.5">
+        <span id="epochLabel">Epoch 0 / 0</span>
+        <span id="pctLabel" class="font-mono font-bold text-white">0%</span>
+      </div>
+      <div class="h-3 rounded-full overflow-hidden" style="background:#0f172a">
+        <div id="progBar" class="h-full rounded-full transition-all duration-500" style="width:0%;background:linear-gradient(90deg,#7c3aed,#22c55e)"></div>
+      </div>
+    </div>
+
+    <!-- ETA + Elapsed + Images -->
+    <div class="grid grid-cols-3 gap-2 mb-4">
+      <div class="inner p-2.5 text-center">
+        <p class="text-xs text-slate-500 mb-1">Elapsed</p>
+        <p id="mElapsed" class="font-mono font-bold text-slate-300" style="font-size:15px">—</p>
+      </div>
+      <div class="inner p-2.5 text-center">
+        <p class="text-xs text-slate-500 mb-1">ETA</p>
+        <p id="mETA" class="font-mono font-bold text-yellow-400" style="font-size:15px">—</p>
+      </div>
+      <div class="inner p-2.5 text-center">
+        <p class="text-xs text-slate-500 mb-1">Images</p>
+        <p id="mImgs" class="font-mono font-bold text-blue-400" style="font-size:15px">—</p>
+      </div>
+    </div>
+
+    <!-- Metric cards -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+      <div class="inner p-3 text-center">
+        <p class="text-xs text-slate-500 mb-1.5">Train Loss</p>
+        <p id="mTL" class="text-2xl font-bold font-mono text-white">—</p>
+        <p id="tTL" class="text-xs mt-1 h-4 text-slate-600"></p>
+      </div>
+      <div class="inner p-3 text-center">
+        <p class="text-xs text-slate-500 mb-1.5">Val Loss</p>
+        <p id="mVL" class="text-2xl font-bold font-mono text-white">—</p>
+        <p id="tVL" class="text-xs mt-1 h-4 text-slate-600"></p>
+      </div>
+      <div class="inner p-3 text-center">
+        <p class="text-xs text-slate-500 mb-1.5">Train Acc</p>
+        <p id="mTA" class="text-2xl font-bold font-mono" style="color:#4ade80">—</p>
+        <p id="tTA" class="text-xs mt-1 h-4 text-slate-600"></p>
+      </div>
+      <div class="inner p-3 text-center">
+        <p class="text-xs text-slate-500 mb-1.5">Val Acc</p>
+        <p id="mVA" class="text-2xl font-bold font-mono" style="color:#4ade80">—</p>
+        <p id="tVA" class="text-xs mt-1 h-4 text-slate-600"></p>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+      <div class="inner p-3">
+        <p class="text-xs text-slate-500 mb-2 font-medium">Loss Curve</p>
+        <canvas id="chartLoss" height="130"></canvas>
+      </div>
+      <div class="inner p-3">
+        <p class="text-xs text-slate-500 mb-2 font-medium">Accuracy Curve (%)</p>
+        <canvas id="chartAcc" height="130"></canvas>
+      </div>
+    </div>
+
+    <!-- Log -->
+    <div class="inner p-3">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs font-medium text-slate-400">Log</span>
+        <button onclick="document.getElementById('log').innerHTML=''"
+          class="text-xs text-slate-600 hover:text-slate-400 transition">ล้าง</button>
+      </div>
+      <div id="log-scroll">
+        <div id="log"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════ CLASS WEIGHTS ══════════════════ -->
+  <div class="card p-5" id="weightsCard" style="display:none">
+    <div class="flex items-center gap-2 mb-4">
+      <span class="text-lg">⚖️</span>
+      <div>
+        <h2 class="font-semibold text-white text-sm">Class Weights (แก้ Imbalanced Dataset)</h2>
+        <p class="text-xs text-slate-500 mt-0.5">class ที่มีภาพน้อย → weight สูง → model ให้ความสำคัญมากขึ้น</p>
+      </div>
+    </div>
+    <div class="space-y-3">
+      {% for cls, color in [('healthy','#22c55e'),('contaminated','#f97316'),('dead','#78716c')] %}
+      <div class="flex items-center gap-3">
+        <span class="text-xs font-medium w-24 flex-shrink-0" style="color:{{ color }}">{{ cls }}</span>
+        <div class="metric-bar-wrap flex-1">
+          <div id="wb-{{ cls }}" class="metric-bar" style="width:0%;background:{{ color }}66"></div>
+        </div>
+        <span id="wv-{{ cls }}" class="text-xs font-mono text-slate-300 w-12 text-right flex-shrink-0">—</span>
+      </div>
+      {% endfor %}
+    </div>
+    <p class="text-xs text-slate-600 mt-3">
+      weight = n_train / (n_classes × n_per_class) &nbsp;·&nbsp;
+      class balance สมบูรณ์ → weight = 1.000 ทุก class
+    </p>
+  </div>
+
+  <!-- ══════════════════ EVALUATION RESULTS ══════════════════ -->
+  <div class="card p-5" id="evalCard" style="display:none">
+    <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+      <div class="flex items-center gap-2">
+        <span class="text-lg">📊</span>
+        <div>
+          <h2 class="font-semibold text-white">Evaluation Results</h2>
+          <p class="text-xs text-slate-500 mt-0.5" id="evalSetLabel">—</p>
+        </div>
+      </div>
+      <div class="flex gap-3 flex-wrap">
+        <div class="inner px-4 py-2 text-center min-w-[90px]">
+          <p class="text-xs text-slate-500 mb-1">Weighted F1</p>
+          <p id="evalF1" class="text-xl font-bold font-mono text-green-400">—</p>
+        </div>
+        <div class="inner px-4 py-2 text-center min-w-[90px]">
+          <p class="text-xs text-slate-500 mb-1">Cohen's κ</p>
+          <p id="evalKappa" class="text-xl font-bold font-mono text-purple-400">—</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+
+      <!-- Confusion Matrix -->
+      <div class="inner p-4">
+        <p class="text-xs font-medium text-slate-400 mb-3">
+          Confusion Matrix
+          <span class="text-slate-600 font-normal ml-1">แนวทแยง = ถูกต้อง · นอก = ผิดพลาด</span>
+        </p>
+        <!-- header row -->
+        <div class="flex items-center gap-1 mb-1 pl-14">
+          <p class="text-xs text-slate-600 text-center w-full">Predicted →</p>
+        </div>
+        <div class="flex items-start gap-1">
+          <!-- Y label -->
+          <div class="flex flex-col items-center justify-center mr-1" style="writing-mode:vertical-lr;transform:rotate(180deg);height:168px;">
+            <p class="text-xs text-slate-600">← Actual</p>
+          </div>
+          <!-- col labels + grid -->
+          <div>
+            <div class="flex gap-1 mb-1 pl-14">
+              <div id="cm-col-H" class="cm-cell" style="background:transparent;color:#86efac;font-size:9px;height:16px;width:52px">H</div>
+              <div id="cm-col-C" class="cm-cell" style="background:transparent;color:#fca5a5;font-size:9px;height:16px;width:52px">C</div>
+              <div id="cm-col-D" class="cm-cell" style="background:transparent;color:#a8a29e;font-size:9px;height:16px;width:52px">D</div>
+            </div>
+            <div id="cmGrid" class="space-y-1"></div>
+          </div>
+        </div>
+        <p class="text-xs text-slate-600 mt-2">H=healthy · C=contaminated · D=dead</p>
+      </div>
+
+      <!-- Per-class metrics -->
+      <div class="inner p-4">
+        <p class="text-xs font-medium text-slate-400 mb-3">Per-class Metrics</p>
+        <div id="classMetrics" class="space-y-4"></div>
+        <div class="mt-4 pt-3 border-t border-slate-700">
+          <p class="text-xs text-slate-500">
+            <span class="text-slate-300 font-medium">Precision</span> — จากที่ทาย X ทั้งหมด ถูกกี่ %<br>
+            <span class="text-slate-300 font-medium">Recall</span> — จาก X จริงทั้งหมด จับได้กี่ %<br>
+            <span class="text-slate-300 font-medium">F1</span> — ค่าเฉลี่ย harmonic ของทั้งสอง
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Kappa interpretation -->
+    <div class="mt-4 inner p-3 flex items-center gap-3 flex-wrap">
+      <span class="text-xs text-slate-500">Cohen's κ:</span>
+      <div class="flex gap-2 flex-wrap text-xs">
+        <span class="px-2 py-0.5 rounded" style="background:#1e293b;color:#475569">&lt;0.20 แย่</span>
+        <span class="px-2 py-0.5 rounded" style="background:#1e293b;color:#64748b">0.21–0.40 พอใช้</span>
+        <span class="px-2 py-0.5 rounded" style="background:#1e293b;color:#94a3b8">0.41–0.60 ปานกลาง</span>
+        <span class="px-2 py-0.5 rounded" style="background:#1c3b2b;color:#86efac">0.61–0.80 ดี</span>
+        <span class="px-2 py-0.5 rounded" style="background:#2e1065;color:#c084fc">0.81–1.00 ดีมาก</span>
+      </div>
+      <span id="kappaVerdict" class="ml-auto text-sm font-bold"></span>
+    </div>
+  </div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+// ── state ────────────────────────────────────────────────────
+let evtSrc = null;
+let ph1Total = 15, ph2Total = 25, epOffset = 0, curPhase = 0;
+let prev = {};
+let _trainStart = null, _elapsedTimer = null;
+let _nTrain = 0;
+
+function fmt(sec) {
+  if (sec < 0 || isNaN(sec)) return '—';
+  const m = Math.floor(sec / 60), s = Math.floor(sec % 60);
+  return `${m}:${String(s).padStart(2,'0')}`;
+}
+function startElapsed() {
+  _trainStart = Date.now();
+  clearInterval(_elapsedTimer);
+  _elapsedTimer = setInterval(() => {
+    const el = document.getElementById('mElapsed');
+    if (el) el.textContent = fmt((Date.now() - _trainStart) / 1000);
+  }, 1000);
+}
+
+// ── charts ───────────────────────────────────────────────────
+const gridColor  = '#1e293b';
+const tickColor  = '#475569';
+const chartFont  = { size: 10 };
+
+function mkChart(id, d1Label, d1Color, d2Label, d2Color) {
+  return new Chart(document.getElementById(id), {
+    type: 'line',
+    data: {
+      labels: [],
+      datasets: [
+        { label: d1Label, data: [], borderColor: d1Color, backgroundColor: d1Color + '18',
+          borderWidth: 2, pointRadius: 2.5, tension: 0.45, fill: true },
+        { label: d2Label, data: [], borderColor: d2Color, backgroundColor: d2Color + '18',
+          borderWidth: 2, pointRadius: 2.5, tension: 0.45, fill: true },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: true,
+      animation: { duration: 180 },
+      plugins: {
+        legend: { labels: { color: '#94a3b8', font: chartFont, boxWidth: 10, padding: 10 } }
+      },
+      scales: {
+        x: { ticks: { color: tickColor, font: chartFont, maxTicksLimit: 8 }, grid: { color: gridColor } },
+        y: { ticks: { color: tickColor, font: chartFont }, grid: { color: gridColor } },
+      }
+    }
+  });
+}
+
+const lossChart = mkChart('chartLoss', 'Train', '#f97316', 'Val', '#fb923c');
+const accChart  = mkChart('chartAcc',  'Train', '#4ade80', 'Val', '#22d3ee');
+
+function pushCharts(ep, tl, vl, ta, va) {
+  const lbl = `P${curPhase}·${ep}`;
+  lossChart.data.labels.push(lbl);
+  accChart.data.labels.push(lbl);
+  lossChart.data.datasets[0].data.push(tl);
+  lossChart.data.datasets[1].data.push(vl);
+  accChart.data.datasets[0].data.push(ta);
+  accChart.data.datasets[1].data.push(va);
+  lossChart.update('none');
+  accChart.update('none');
+}
+
+function resetCharts() {
+  [lossChart, accChart].forEach(c => {
+    c.data.labels = [];
+    c.data.datasets.forEach(d => d.data = []);
+    c.update();
+  });
+}
+
+// ── log ──────────────────────────────────────────────────────
+const logColors = { info:'#94a3b8', phase:'#facc15', error:'#f87171', done:'#4ade80', epoch:'#475569' };
+const logIcons  = { info:'›', phase:'◉', error:'✗', done:'✓', epoch:'·' };
+
+function appendLog(text, type = 'info') {
+  const now  = new Date().toLocaleTimeString('th-TH', { hour12:false, hour:'2-digit', minute:'2-digit', second:'2-digit' });
+  const row  = document.createElement('div');
+  row.className = 'log-row';
+  row.innerHTML = `<span style="color:#334155">${now}</span>`
+                + `<span style="color:${logColors[type]||logColors.info}">${logIcons[type]||'›'}</span>`
+                + `<span style="color:${logColors[type]||logColors.info}">${text}</span>`;
+  document.getElementById('log').appendChild(row);
+  const s = document.getElementById('log-scroll');
+  s.scrollTop = s.scrollHeight;
+}
+
+// ── metrics ──────────────────────────────────────────────────
+function setMetric(id, trendId, val, prevVal, lowerBetter) {
+  document.getElementById(id).textContent = val;
+  if (prevVal === undefined) return;
+  const cur  = parseFloat(val);
+  const prv  = parseFloat(prevVal);
+  const diff = cur - prv;
+  if (Math.abs(diff) < 1e-6) { document.getElementById(trendId).textContent = ''; return; }
+  const good  = lowerBetter ? diff < 0 : diff > 0;
+  const arrow = diff > 0 ? '▲' : '▼';
+  const color = good ? '#4ade80' : '#f87171';
+  document.getElementById(trendId).innerHTML =
+    `<span style="color:${color}">${arrow} ${Math.abs(diff).toFixed(4)}</span>`;
+}
+
+function setProgress(ep, total, pct) {
+  document.getElementById('epochLabel').textContent = `Epoch ${ep} / ${total}`;
+  document.getElementById('pctLabel').textContent   = `${Math.round(pct)}%`;
+  document.getElementById('progBar').style.width    = pct + '%';
+}
+
+function setStatus(text, color, pulse = false) {
+  const dot = document.getElementById('statusDotEl');
+  dot.style.background  = color;
+  dot.className = `w-2.5 h-2.5 rounded-full inline-block${pulse ? ' pulse-dot' : ''}`;
+  document.getElementById('statusText').textContent = text;
+  document.getElementById('statusText').style.color = color;
+}
+
+function setPhaseLabel(text, bg, color) {
+  const el = document.getElementById('phaseLabel');
+  el.textContent    = text;
+  el.style.background  = bg;
+  el.style.color       = color;
+  el.style.borderColor = color + '55';
+}
+
+function setPhaseNodes(phase) {
+  const n1   = document.getElementById('pnode1');
+  const n2   = document.getElementById('pnode2');
+  const done = document.getElementById('pnodeDone');
+  n1.style.background   = phase >= 1 ? '#7c3aed' : '#1e293b';
+  n1.style.color        = phase >= 1 ? '#fff'     : '#64748b';
+  n2.style.background   = phase >= 2 ? '#16a34a' : '#1e293b';
+  n2.style.color        = phase >= 2 ? '#fff'     : '#64748b';
+  done.style.background = phase >= 3 ? '#166534' : '#1e293b';
+  done.style.color      = phase >= 3 ? '#4ade80'  : '#475569';
+}
+
+// ── SSE message handler ──────────────────────────────────────
+function handleMsg(data) {
+  if (data.type === 'phase') {
+    curPhase = data.phase;
+    if (data.phase === 1) {
+      ph1Total = data.total; epOffset = 0;
+      _nTrain  = data.n_train || 0;
+      startElapsed();
+    } else { epOffset = ph1Total; }
+    const lbl = data.phase === 1 ? 'Phase 1 — Head only' : 'Phase 2 — Fine-tune';
+    const bg  = data.phase === 1 ? '#3b0764' : '#14532d';
+    const col = data.phase === 1 ? '#c084fc' : '#86efac';
+    setPhaseLabel(lbl, bg, col);
+    setPhaseNodes(data.phase);
+    appendLog(lbl, 'phase');
+
+  } else if (data.type === 'epoch') {
+    const all  = ph1Total + ph2Total;
+    const epAll = epOffset + data.epoch;
+    setProgress(data.epoch, data.total, (epAll / all) * 100);
+    setMetric('mTL', 'tTL', data.tl, prev.tl, true);
+    setMetric('mVL', 'tVL', data.vl, prev.vl, true);
+    setMetric('mTA', 'tTA', data.ta + '%', prev.ta !== undefined ? prev.ta + '%' : undefined, false);
+    setMetric('mVA', 'tVA', data.va + '%', prev.va !== undefined ? prev.va + '%' : undefined, false);
+    prev = { tl: data.tl, vl: data.vl, ta: data.ta, va: data.va };
+    pushCharts(data.epoch, data.tl, data.vl, data.ta, data.va);
+    const pbar = data.phase === 1 ? 'ph1bar' : 'ph2bar';
+    document.getElementById(pbar).style.width = (data.epoch / data.total * 100) + '%';
+    const lrStr  = data.lr !== undefined ? `  lr ${data.lr.toExponential(2)}` : '';
+    const durStr = data.duration ? `  ${data.duration}s/ep` : '';
+    document.getElementById('mETA').textContent  = data.eta_sec != null ? fmt(data.eta_sec) : '—';
+    const phase1imgs = (curPhase > 1) ? ph1Total * _nTrain : 0;
+    const totalImgs  = phase1imgs + (data.imgs_done || 0);
+    document.getElementById('mImgs').textContent = totalImgs > 0
+      ? totalImgs.toLocaleString() : '—';
+    appendLog(`Ep ${data.epoch}/${data.total}  loss ${data.tl}/${data.vl}  acc ${data.ta}%/${data.va}%${lrStr}${durStr}`, 'epoch');
+
+  } else if (data.type === 'weights') {
+    renderClassWeights(data.weights);
+    localStorage.setItem('vv_weights', JSON.stringify(data.weights));
+
+  } else if (data.type === 'confusion') {
+    renderConfusionMatrix(data);
+    showEvalCard(data);
+    localStorage.setItem('vv_confusion', JSON.stringify(data));
+    localStorage.setItem('vv_classmetrics', JSON.stringify([]));
+    appendLog(`Confusion matrix พร้อม — Weighted F1: ${data.weighted_f1} | κ: ${data.kappa}`, 'done');
+
+  } else if (data.type === 'class_metric') {
+    renderClassMetric(data);
+    const prev = JSON.parse(localStorage.getItem('vv_classmetrics') || '[]');
+    prev.push(data);
+    localStorage.setItem('vv_classmetrics', JSON.stringify(prev));
+
+  } else if (data.type === 'log') {
+    appendLog(data.msg, 'info');
+
+  } else if (data.type === 'error') {
+    appendLog(data.msg, 'error');
+    setStatus('Error', '#f87171');
+    setDone(false);
+
+  } else if (data.type === 'done') {
+    appendLog(data.msg, 'done');
+    setProgress(ph1Total + ph2Total, ph1Total + ph2Total, 100);
+    document.getElementById('ph1bar').style.width = '100%';
+    document.getElementById('ph2bar').style.width = '100%';
+    document.getElementById('progBar').style.background = 'linear-gradient(90deg,#7c3aed,#22c55e)';
+    document.getElementById('progBar').classList.remove('prog-active');
+    setPhaseLabel('✓ เสร็จแล้ว', '#14532d', '#86efac');
+    setPhaseNodes(3);
+    setStatus('เสร็จแล้ว', '#4ade80');
+    setDone(true);
+    if (evtSrc) evtSrc.close();
+  }
+}
+
+function setDone(success) {
+  document.getElementById('btnStart').disabled = false;
+  document.getElementById('btnStart').textContent = success ? '↺ Train ใหม่' : '▶ เริ่ม Train';
+  document.getElementById('btnStop').disabled = true;
+  document.getElementById('progBar').classList.remove('prog-active');
+  document.getElementById('mETA').textContent = success ? 'เสร็จ' : '—';
+  clearInterval(_elapsedTimer);
+  if (success && _trainStart) {
+    const elapsed = Math.floor((Date.now() - _trainStart) / 1000);
+    const imgs    = document.getElementById('mImgs').textContent;
+    localStorage.setItem('vv_last_elapsed', fmt(elapsed));
+    localStorage.setItem('vv_last_imgs',    imgs);
+    localStorage.setItem('vv_last_ts',      new Date().toLocaleTimeString('th-TH', {hour:'2-digit',minute:'2-digit'}));
+  }
+}
+
+// ── restore จาก localStorage ────────────────────────────────
+(function restoreLastRun() {
+  const el = localStorage.getItem('vv_last_elapsed');
+  const im = localStorage.getItem('vv_last_imgs');
+  const ts = localStorage.getItem('vv_last_ts');
+  if (el) {
+    document.getElementById('mElapsed').textContent = el;
+    document.getElementById('mETA').textContent     = 'เสร็จ';
+    if (im) document.getElementById('mImgs').textContent = im;
+    if (ts) {
+      const hint = document.createElement('p');
+      hint.style.cssText = 'font-size:10px;color:#334155;text-align:center;margin-top:4px';
+      hint.textContent = 'รอบก่อน ' + ts;
+      document.getElementById('mElapsed').after(hint);
+    }
+  }
+
+  const confusion = localStorage.getItem('vv_confusion');
+  if (confusion) {
+    try {
+      const d = JSON.parse(confusion);
+      renderConfusionMatrix(d);
+      showEvalCard(d);
+    } catch(e) {}
+  }
+
+  const weights = localStorage.getItem('vv_weights');
+  if (weights) {
+    try { renderClassWeights(JSON.parse(weights)); } catch(e) {}
+  }
+
+  const metrics = localStorage.getItem('vv_classmetrics');
+  if (metrics) {
+    try {
+      document.getElementById('classMetrics').innerHTML = '';
+      JSON.parse(metrics).forEach(m => renderClassMetric(m));
+    } catch(e) {}
+  }
+})();
+
+// ── start / stop ─────────────────────────────────────────────
+function startTraining() {
+  const cfg = {
+    epochs_head: parseInt(document.getElementById('cfgEpHead').value),
+    epochs_full: parseInt(document.getElementById('cfgEpFull').value),
+    lr:          parseFloat(document.getElementById('cfgLr').value),
+  };
+  ph1Total = cfg.epochs_head;
+  ph2Total = cfg.epochs_full;
+  prev     = {};
+  resetCharts();
+  document.getElementById('log').innerHTML = '';
+  document.getElementById('ph1bar').style.width = '0%';
+  document.getElementById('ph2bar').style.width = '0%';
+  document.getElementById('btnStart').disabled = true;
+  document.getElementById('btnStop').disabled  = false;
+  setProgress(0, ph1Total + ph2Total, 0);
+  setPhaseNodes(0);
+  setPhaseLabel('กำลังเริ่ม…', '#1e3a5f', '#60a5fa');
+  setStatus('กำลัง train', '#4ade80', true);
+  document.getElementById('progBar').classList.add('prog-active');
+
+  fetch('/train/start', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(cfg),
+  }).then(r => r.json()).then(d => {
+    if (d.error) { alert(d.error); setDone(false); setStatus('Error', '#f87171'); return; }
+    if (evtSrc) evtSrc.close();
+    evtSrc = new EventSource('/train/stream');
+    evtSrc.onmessage = e => handleMsg(JSON.parse(e.data));
+    evtSrc.onerror   = () => { appendLog('connection ขาด', 'error'); setDone(false); setStatus('ขาด connection', '#f97316'); };
+  });
+}
+
+function stopTraining() {
+  fetch('/train/stop', { method: 'POST' });
+  document.getElementById('btnStop').disabled = true;
+  setStatus('กำลังหยุด…', '#f97316', true);
+}
+
+// ── active learning ───────────────────────────────────────────
+function refreshAL() {
+  fetch('/train/al_status').then(r => r.json()).then(d => {
+    const threshold = d.threshold;
+    const count     = d.count_since_retrain;
+    document.getElementById('alCount').textContent = count + ' / ' + threshold;
+    document.getElementById('alBar').style.width   = d.pct + '%';
+    document.getElementById('alThreshold').value   = threshold;
+
+    const badge = document.getElementById('alModelBadge');
+    if (d.model_ready) {
+      badge.textContent    = '✓ model พร้อม predict';
+      badge.style.background  = '#14532d44';
+      badge.style.borderColor = '#166534';
+      badge.style.color       = '#86efac';
+    } else {
+      badge.textContent    = 'ยังไม่มี model';
+      badge.style.background  = '#1e293b';
+      badge.style.borderColor = '#475569';
+      badge.style.color       = '#64748b';
+    }
+
+    const hint = document.getElementById('alHint');
+    if (d.is_training) {
+      hint.innerHTML = '<span style="color:#4ade80">🔄 กำลัง retrain อัตโนมัติ...</span>';
+    } else if (count >= threshold) {
+      hint.innerHTML = '<span style="color:#a78bfa">⚡ ถึง threshold แล้ว — retrain เริ่มอัตโนมัติ</span>';
+    } else {
+      const left = threshold - count;
+      hint.textContent = 'อีก ' + left + ' ภาพ → auto-retrain';
+    }
+
+    if (d.last_retrain_at) {
+      document.getElementById('alLastRetrain').textContent = 'retrain ล่าสุด: ' + d.last_retrain_at;
+    }
+  }).catch(() => {});
+}
+
+function setThreshold() {
+  const val = parseInt(document.getElementById('alThreshold').value) || 20;
+  fetch('/train/al_threshold', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ threshold: val }),
+  }).then(() => refreshAL());
+}
+
+// poll AL status ทุก 10 วินาที
+refreshAL();
+setInterval(refreshAL, 10000);
+
+// ── Class Weights renderer ────────────────────────────────────
+function renderClassWeights(weights) {
+  const card = document.getElementById('weightsCard');
+  if (!card) return;
+  const maxW = Math.max(...Object.values(weights));
+  ['healthy','contaminated','dead'].forEach(cls => {
+    const w   = weights[cls] || 0;
+    const bar = document.getElementById('wb-' + cls);
+    const val = document.getElementById('wv-' + cls);
+    if (bar) bar.style.width = Math.round(w / maxW * 100) + '%';
+    if (val) val.textContent = w.toFixed(3);
+  });
+  card.style.display = 'block';
+}
+
+// ── Eval card helper ─────────────────────────────────────────
+function showEvalCard(data) {
+  const setLbl = data.is_test
+    ? `Test Set (${data.test_n} ภาพ — แยกจาก train จริงๆ)`
+    : `Validation Set (${data.test_n} ภาพ — ใช้แทน test เพราะข้อมูล < 30 ภาพ)`;
+  document.getElementById('evalSetLabel').textContent = setLbl;
+  document.getElementById('evalF1').textContent    = data.weighted_f1.toFixed(3);
+  document.getElementById('evalKappa').textContent = data.kappa.toFixed(3);
+  const kv = document.getElementById('kappaVerdict');
+  const kappa = data.kappa;
+  if      (kappa >= 0.81) { kv.textContent = 'ดีมาก';    kv.style.color = '#c084fc'; }
+  else if (kappa >= 0.61) { kv.textContent = 'ดี';       kv.style.color = '#86efac'; }
+  else if (kappa >= 0.41) { kv.textContent = 'ปานกลาง'; kv.style.color = '#94a3b8'; }
+  else if (kappa >= 0.21) { kv.textContent = 'พอใช้';   kv.style.color = '#64748b'; }
+  else                    { kv.textContent = 'แย่';      kv.style.color = '#f87171'; }
+  document.getElementById('evalCard').style.display = 'block';
+}
+
+// ── Confusion Matrix renderer ────────────────────────────────
+const CLS_COLOR = { healthy:'#22c55e', contaminated:'#f97316', dead:'#78716c' };
+const CLS_SHORT = ['H', 'C', 'D'];
+
+function renderConfusionMatrix(data) {
+  const matrix = data.matrix;
+  const labels = data.labels;
+  const maxVal = Math.max(...matrix.flat(), 1);
+  const grid   = document.getElementById('cmGrid');
+  grid.innerHTML = '';
+
+  matrix.forEach((row, ri) => {
+    const rowEl = document.createElement('div');
+    rowEl.className = 'flex items-center gap-1.5';
+
+    // row label
+    const rl = document.createElement('div');
+    rl.style.cssText = `width:88px;font-size:10px;text-align:right;padding-right:8px;
+      color:${CLS_COLOR[labels[ri]]};font-weight:700;flex-shrink:0;letter-spacing:.02em`;
+    rl.textContent = labels[ri];
+    rowEl.appendChild(rl);
+
+    row.forEach((val, ci) => {
+      const cell    = document.createElement('div');
+      cell.className = 'cm-cell';
+      const isDiag  = ri === ci;
+      const pct     = val / maxVal;
+
+      if (isDiag) {
+        // แนวทแยง: สีของ class นั้น ความเข้มตามค่า
+        const alpha = val === 0 ? 20 : Math.round(80 + pct * 120);
+        cell.style.background = CLS_COLOR[labels[ri]] + alpha.toString(16).padStart(2,'0');
+        cell.style.color      = '#ffffff';
+        cell.style.border     = `1px solid ${CLS_COLOR[labels[ri]]}88`;
+      } else {
+        // นอกแนวทแยง: แดงถ้ามีค่า เทาถ้า 0
+        if (val === 0) {
+          cell.style.background = '#0f172a';
+          cell.style.color      = '#334155';
+        } else {
+          const alpha = Math.round(40 + pct * 160);
+          cell.style.background = '#ef4444' + alpha.toString(16).padStart(2,'0');
+          cell.style.color      = '#ffffff';
+          cell.style.border     = '1px solid #ef444455';
+        }
+      }
+
+      cell.innerHTML = `
+        <span style="font-size:16px;font-weight:800;line-height:1">${val}</span>
+        <span class="cm-label" style="font-size:9px;margin-top:2px;opacity:.7">${isDiag ? '✓' : (val>0?'✗':'')}</span>`;
+      cell.title = `Actual: ${labels[ri]} → Predicted: ${labels[ci]} = ${val}`;
+      rowEl.appendChild(cell);
+    });
+    grid.appendChild(rowEl);
+  });
+}
+
+// ── Per-class metric renderer ─────────────────────────────────
+function renderClassMetric(data) {
+  const container = document.getElementById('classMetrics');
+  const div = document.createElement('div');
+  const color = CLS_COLOR[data.label] || '#94a3b8';
+  div.innerHTML = `
+    <div class="mb-1 flex items-center justify-between">
+      <span class="text-xs font-semibold" style="color:${color}">${data.label}</span>
+      <span class="text-xs text-slate-500">n=${data.support}</span>
+    </div>
+    ${['precision','recall','f1'].map(m => `
+    <div class="flex items-center gap-2 mb-1">
+      <span class="text-xs text-slate-500 w-14 flex-shrink-0">${m}</span>
+      <div class="metric-bar-wrap">
+        <div class="metric-bar" style="width:${Math.round(data[m]*100)}%;background:${color}88"></div>
+      </div>
+      <span class="text-xs font-mono text-slate-300 w-10 text-right flex-shrink-0">${data[m].toFixed(3)}</span>
+    </div>`).join('')}`;
+  container.appendChild(div);
+}
+
+// ── refresh dataset stats ─────────────────────────────────────
+function refreshStats() {
+  fetch('/train/stats').then(r => r.json()).then(d => {
+    if (d.error) return;
+    const total = d.total || 1;
+    ['healthy', 'contaminated', 'dead'].forEach(cls => {
+      const n   = d.per_class[cls];
+      const pct = Math.min(Math.round(n / total * 100), 100);
+      document.getElementById('cnt-' + cls).textContent = n;
+      document.getElementById('pct-' + cls).textContent = pct + '%';
+      document.getElementById('bar-' + cls).style.width = pct + '%';
+    });
+    document.getElementById('cnt-total').textContent = d.total;
+  });
+}
+</script>
+
+<!-- ══════════════════ PIPELINE PREVIEW ══════════════════ -->
+<div class="card p-5 mt-4">
+  <div class="flex items-center justify-between mb-4">
+    <div class="flex items-center gap-2">
+      <span class="text-lg">🎞️</span>
+      <div>
+        <h2 class="font-semibold text-white text-sm">Pipeline Preview</h2>
+        <p class="text-xs text-slate-500 mt-0.5">ภาพตัวอย่างก่อน/หลัง augmentation — ทุกกด refresh จะเห็น random ใหม่</p>
+      </div>
+    </div>
+    <button onclick="loadPreview()"
+      class="text-xs px-3 py-1.5 rounded-lg transition font-medium"
+      style="background:#1e3a5f;border:1px solid #1d4ed8;color:#60a5fa">
+      ↻ Refresh
+    </button>
+  </div>
+
+  <!-- legend -->
+  <div class="flex gap-4 mb-3 text-xs" style="color:#64748b">
+    <span>ซ้าย = Original</span>
+    <span>ขวา = After Augmentation</span>
+  </div>
+
+  <div id="preview-grid"
+    class="grid gap-3"
+    style="grid-template-columns:repeat(auto-fill,minmax(230px,1fr))">
+    <p id="preview-empty" class="text-slate-600 text-sm col-span-full text-center py-6">
+      กด Refresh เพื่อดูตัวอย่าง — ต้องมีภาพใน dataset ก่อน
+    </p>
+  </div>
+</div>
+
+<style>
+.prev-pair {
+  background:#0f172a; border:1px solid #1e293b; border-radius:10px; overflow:hidden;
+}
+.prev-pair .imgs { display:grid; grid-template-columns:1fr 1fr; }
+.prev-pair img   { width:100%; aspect-ratio:1; object-fit:cover; display:block; }
+.prev-pair .sep  { width:2px; background:#1e293b; }
+.prev-label {
+  padding:6px 10px; font-size:11px; font-weight:600; display:flex;
+  align-items:center; justify-content:space-between;
+}
+.arr { color:#334155; font-size:14px; display:flex; align-items:center; justify-content:center; }
+</style>
+
+<script>
+const PREV_COLOR = { healthy:'#4ade80', contaminated:'#f97316', dead:'#a8a29e', unknown:'#64748b' };
+
+async function loadPreview() {
+  const grid = document.getElementById('preview-grid');
+  grid.innerHTML = '<p class="text-slate-600 text-sm col-span-full text-center py-6">กำลังโหลด...</p>';
+  try {
+    const res  = await fetch('/train/preview');
+    const data = await res.json();
+    if (data.error || !data.length) {
+      grid.innerHTML = '<p class="text-slate-600 text-sm col-span-full text-center py-6">ยังไม่มีภาพใน dataset</p>';
+      return;
+    }
+    grid.innerHTML = '';
+    data.forEach(item => {
+      const color = PREV_COLOR[item.label] || '#64748b';
+      const div   = document.createElement('div');
+      div.className = 'prev-pair';
+      div.innerHTML = `
+        <div class="prev-label">
+          <span style="color:${color}">${item.label}</span>
+          <span style="color:#334155;font-size:10px">original → augmented</span>
+        </div>
+        <div class="imgs">
+          <img src="data:image/jpeg;base64,${item.original}"  title="original">
+          <div class="sep"></div>
+          <img src="data:image/jpeg;base64,${item.augmented}" title="augmented"
+               style="border-left:2px solid ${color}33">
+        </div>`;
+      grid.appendChild(div);
+    });
+  } catch(e) {
+    grid.innerHTML = '<p style="color:#f87171" class="col-span-full text-center text-sm py-6">โหลดไม่สำเร็จ</p>';
+  }
+}
+</script>
+
+</div>
+{% endblock %}

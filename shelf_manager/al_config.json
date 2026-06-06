@@ -1,0 +1,5 @@
+{
+  "threshold": 20,
+  "count_since_retrain": 3,
+  "last_retrain_at": ""
+}

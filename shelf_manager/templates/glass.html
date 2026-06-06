@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Glass Room — VitroShelf</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { background:#0a0f1a; color:#e2e8f0; font-family:'Segoe UI',monospace; }
+
+  /* event log */
+  #log-wrap { height: calc(100vh - 120px); overflow-y: auto; scrollbar-width: thin; scrollbar-color: #1e293b transparent; }
+  #log-wrap::-webkit-scrollbar { width: 4px; }
+  #log-wrap::-webkit-scrollbar-thumb { background: #1e293b; }
+
+  .ev-row {
+    display: grid;
+    grid-template-columns: 60px 70px 100px 52px 1fr;
+    gap: 8px;
+    padding: 6px 10px;
+    border-bottom: 1px solid #0f172a;
+    align-items: center;
+    font-size: 12px;
+    transition: background .15s;
+  }
+  .ev-row:hover { background: #0f172a; }
+  .ev-row.new   { animation: flash .5s ease; }
+  @keyframes flash { 0%{background:#1e3a5f} 100%{background:transparent} }
+
+  .badge-detect { background:#1e3a5f; color:#60a5fa; padding:2px 7px; border-radius:4px; font-size:10px; font-weight:700; }
+  .badge-save   { background:#14532d; color:#4ade80; padding:2px 7px; border-radius:4px; font-size:10px; font-weight:700; }
+
+  /* shelf grid */
+  .shelf-grid { display: grid; grid-template-columns: 24px repeat(10, 1fr); gap: 3px; }
+  .cell {
+    aspect-ratio: 1; border-radius: 4px; font-size: 8px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    cursor: default; transition: all .3s; position: relative;
+  }
+  .cell.unseen   { background:#1e293b; color:#334155; }
+  .cell.detected { background:#78350f; color:#fbbf24; border: 1px solid #f59e0b44; }
+  .cell.saved    { background:#14532d; color:#4ade80; border: 1px solid #22c55e44; }
+  .cell:hover .tooltip {
+    display: block;
+  }
+  .tooltip {
+    display: none; position: absolute; bottom: 110%; left: 50%;
+    transform: translateX(-50%);
+    background: #1e293b; border: 1px solid #334155;
+    color: #e2e8f0; font-size: 10px; padding: 4px 8px;
+    border-radius: 6px; white-space: nowrap; z-index: 50;
+    pointer-events: none;
+  }
+
+  /* live dot */
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+  .live-dot { width:8px; height:8px; border-radius:50%; background:#4ade80; animation:pulse 1.5s infinite; }
+
+  /* stat cards */
+  .stat { background:#0f172a; border:1px solid #1e293b; border-radius:10px; padding:10px 14px; }
+
+  /* clarity bar */
+  .cl-bar { height:3px; border-radius:2px; margin-top:3px; }
+</style>
+</head>
+<body class="min-h-screen">
+
+<!-- Header -->
+<div style="background:#0f172a;border-bottom:1px solid #1e293b" class="px-5 py-3 flex items-center gap-4">
+  <a href="/" class="text-green-400 font-bold text-sm">🌱 VitroShelf</a>
+  <span style="color:#334155">›</span>
+  <span class="font-bold text-white">Glass Room</span>
+  <div class="flex items-center gap-2 ml-2">
+    <div class="live-dot"></div>
+    <span id="live-txt" style="font-size:11px;color:#4ade80">LIVE</span>
+  </div>
+  <div class="flex gap-3 ml-auto">
+    <div class="stat text-center">
+      <div style="font-size:10px;color:#64748b">DETECTED</div>
+      <div id="cnt-detect" class="font-bold text-yellow-400" style="font-size:18px">0</div>
+    </div>
+    <div class="stat text-center">
+      <div style="font-size:10px;color:#64748b">SAVED</div>
+      <div id="cnt-save" class="font-bold text-green-400" style="font-size:18px">0</div>
+    </div>
+    <div class="stat text-center">
+      <div style="font-size:10px;color:#64748b">COVERAGE</div>
+      <div id="cnt-cov" class="font-bold text-blue-400" style="font-size:18px">0%</div>
+    </div>
+  </div>
+  <a href="/scan" style="font-size:12px;background:#1e293b;border:1px solid #334155;color:#94a3b8;padding:6px 14px;border-radius:8px;text-decoration:none">
+    📷 Scanner
+  </a>
+</div>
+
+<!-- Body -->
+<div class="flex gap-0" style="height:calc(100vh - 57px)">
+
+  <!-- Left: Event Log -->
+  <div style="width:58%;border-right:1px solid #1e293b;display:flex;flex-direction:column">
+    <!-- log header -->
+    <div style="padding:8px 12px;border-bottom:1px solid #1e293b;display:flex;align-items:center;justify-content:space-between">
+      <span style="font-size:11px;color:#64748b;font-weight:600;letter-spacing:.05em">EVENT LOG</span>
+      <button onclick="document.getElementById('log').innerHTML='';cntD=0;cntS=0;updateStats()"
+        style="font-size:10px;color:#475569;background:none;border:none;cursor:pointer">ล้าง</button>
+    </div>
+    <!-- col headers -->
+    <div style="display:grid;grid-template-columns:60px 70px 100px 52px 1fr;gap:8px;padding:4px 10px;font-size:10px;color:#334155;border-bottom:1px solid #0f172a">
+      <span>TIME</span><span>TYPE</span><span>BOTTLE</span><span>CLARITY</span><span>METRICS</span>
+    </div>
+    <div id="log-wrap">
+      <div id="log"></div>
+    </div>
+    <div style="padding:6px 12px;border-top:1px solid #1e293b;font-size:10px;color:#1e293b" id="log-empty">
+      รอสัญญาณ...
+    </div>
+  </div>
+
+  <!-- Right: Shelf Grids -->
+  <div style="width:42%;overflow-y:auto;padding:16px 14px">
+    <p style="font-size:10px;color:#64748b;font-weight:600;letter-spacing:.05em;margin-bottom:12px">SHELF COVERAGE</p>
+
+    <!-- legend -->
+    <div style="display:flex;gap:12px;margin-bottom:14px;font-size:10px;color:#94a3b8">
+      <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#1e293b;margin-right:4px"></span>ยังไม่ scan</span>
+      <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#78350f;margin-right:4px"></span>detect แล้ว</span>
+      <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#14532d;margin-right:4px"></span>บันทึกแล้ว</span>
+    </div>
+
+    {% for shelf in shelves %}
+    <div style="margin-bottom:20px">
+      <p style="font-size:11px;font-weight:700;color:#94a3b8;margin-bottom:6px">{{ shelf }}</p>
+      <!-- col numbers -->
+      <div style="display:grid;grid-template-columns:20px repeat(10,1fr);gap:3px;margin-bottom:3px">
+        <div></div>
+        {% for col in cols %}
+        <div style="text-align:center;font-size:8px;color:#334155">{{ '%02d'|format(col) }}</div>
+        {% endfor %}
+      </div>
+      {% for row in rows %}
+      <div class="shelf-grid" style="margin-bottom:3px">
+        <div style="font-size:9px;color:#475569;display:flex;align-items:center;justify-content:center;font-weight:700">{{ row }}</div>
+        {% for col in cols %}
+        {% set bid = shelf + '-' + row + '-' + '%02d'|format(col) %}
+        <div class="cell unseen" id="cell-{{ bid }}" title="{{ bid }}">
+          {{ col }}
+          <div class="tooltip">{{ bid }}</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+
+</div>
+
+<script>
+const STATUS_COLOR = { healthy:'#4ade80', contaminated:'#f97316', dead:'#a8a29e', unknown:'#64748b' };
+let cntD = 0, cntS = 0, savedSet = new Set();
+
+function updateStats() {
+  document.getElementById('cnt-detect').textContent = cntD;
+  document.getElementById('cnt-save').textContent   = cntS;
+  const pct = Math.round(savedSet.size / 100 * 100);
+  document.getElementById('cnt-cov').textContent    = pct + '%';
+}
+
+function clarityColor(v) {
+  if (v >= 75) return '#4ade80';
+  if (v >= 50) return '#f59e0b';
+  return '#f87171';
+}
+
+function addRow(ev) {
+  const log   = document.getElementById('log');
+  const empty = document.getElementById('log-empty');
+  empty.style.display = 'none';
+
+  const isSave   = ev.type === 'save';
+  const color    = clarityColor(ev.clarity || 0);
+  const stColor  = STATUS_COLOR[ev.status] || '#64748b';
+
+  let metrics = '';
+  if (isSave) {
+    const g = ev.green_pct != null ? `<span style="color:#4ade80">${ev.green_pct.toFixed(1)}%</span>` : '';
+    const l = ev.lci       != null ? `<span style="color:#facc15"> LCI ${parseFloat(ev.lci).toFixed(2)}</span>` : '';
+    const m = ev.media     ? `<span style="color:#94a3b8"> ${ev.media}</span>` : '';
+    const s = ev.status    ? `<span style="color:${stColor}"> ${ev.status}</span>` : '';
+    metrics = g + l + m + s;
+  }
+
+  const row = document.createElement('div');
+  row.className = 'ev-row new';
+  row.innerHTML = `
+    <span style="color:#475569">${ev.time||''}</span>
+    <span class="${isSave ? 'badge-save' : 'badge-detect'}">${isSave ? 'SAVE ✓' : 'DETECT'}</span>
+    <span style="color:#f1f5f9;font-weight:600">${ev.bottle_id||''}</span>
+    <div>
+      <div style="color:${color};font-size:11px;font-weight:700">${ev.clarity||0}%</div>
+      <div class="cl-bar" style="width:${Math.min(ev.clarity||0,100)}%;background:${color}55"></div>
+    </div>
+    <span style="color:#64748b;font-size:11px">${metrics}</span>`;
+
+  log.insertBefore(row, log.firstChild);
+
+  // max 200 rows
+  while (log.children.length > 200) log.removeChild(log.lastChild);
+}
+
+function updateCell(ev) {
+  const cell = document.getElementById('cell-' + ev.bottle_id);
+  if (!cell) return;
+  if (ev.type === 'save') {
+    cell.className = 'cell saved';
+    savedSet.add(ev.bottle_id);
+  } else if (ev.type === 'detect' && !cell.classList.contains('saved')) {
+    cell.className = 'cell detected';
+  }
+}
+
+// ── SSE ──────────────────────────────────────────────────────
+const es = new EventSource('/api/glass_stream');
+es.onmessage = e => {
+  const ev = JSON.parse(e.data);
+  if (ev.type === 'detect') cntD++;
+  if (ev.type === 'save')   cntS++;
+  addRow(ev);
+  updateCell(ev);
+  updateStats();
+};
+es.onerror = () => {
+  document.getElementById('live-txt').textContent = 'RECONNECTING...';
+  document.getElementById('live-txt').style.color = '#f97316';
+};
+es.onopen = () => {
+  document.getElementById('live-txt').textContent = 'LIVE';
+  document.getElementById('live-txt').style.color = '#4ade80';
+};
+
+// โหลด state เดิม (ถ้า server รันค้างอยู่)
+fetch('/api/glass_state').then(r=>r.json()).then(state => {
+  for (const [bid, info] of Object.entries(state)) {
+    updateCell({ bottle_id: bid, type: info.state });
+    if (info.state === 'save') savedSet.add(bid);
+  }
+  updateStats();
+});
+</script>
+</body>
+</html>
