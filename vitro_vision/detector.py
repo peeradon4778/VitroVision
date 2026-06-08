@@ -2,9 +2,13 @@
 import cv2
 import numpy as np
 
-# สร้าง ArUco detector ครั้งเดียว
-_aruco_dict   = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
+# DICT_4X4_100 รองรับ 100 ขวด (ID 0–99) — ต้องตรงกับ export_aruco_png.py
+_aruco_dict   = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_100)
 _aruco_params = cv2.aruco.DetectorParameters()
+# ปรับ params สำหรับ marker ติดข้างขวด (เห็นเป็นมุมเฉียง + แสงไม่สม่ำเสมอ)
+_aruco_params.adaptiveThreshConstant = 7
+_aruco_params.perspectiveRemovePixelPerCell = 8
+_aruco_params.cornerRefinementMethod = cv2.aruco.CORNER_REFINE_SUBPIX
 _detector     = cv2.aruco.ArucoDetector(_aruco_dict, _aruco_params)
 
 # map marker_id → bottle_id (สร้างตอน label printing)
