@@ -53,3 +53,4 @@ shelf_manager/cert.pem
 shelf_manager/key.pem
 shelf_manager/error.txt
 shelf_manager/preview_*.jpg
+wandb/
