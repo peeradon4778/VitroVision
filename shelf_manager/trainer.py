@@ -162,6 +162,26 @@ def run_training(db_path, base_dir, model_out, cfg, on_log):
         cls: round(class_weights[i].item(), 3) for i, cls in enumerate(LABELS)
     }})
 
+    # ── Weights & Biases (optional) ───────────────────────────────
+    _wb_run = None
+    try:
+        import wandb as _wandb
+        _wb_run = _wandb.init(
+            project='vitrovision',
+            config={
+                'model': 'efficientnet_b0',
+                'epochs_head': ep_head, 'epochs_full': ep_full,
+                'lr': lr, 'img_size': IMG_SIZE, 'batch_size': 8,
+                'n_train': len(tr_p), 'n_val': len(vl_p), 'n_test': len(te_p),
+                'class_weights': {cls: round(class_weights[i].item(), 3)
+                                  for i, cls in enumerate(LABELS)},
+            },
+            reinit=True, tags=['capsicum', 'tc-monitoring'],
+        )
+        on_log({'type': 'log', 'msg': f'wandb: {_wb_run.url}'})
+    except Exception as _e:
+        on_log({'type': 'log', 'msg': f'wandb ไม่พร้อม — เทรนต่อโดยไม่มี wandb ({_e})'})
+
     # ── Augmentation ─────────────────────────────────────────────
     mean, std = [0.485, 0.456, 0.406], [0.229, 0.224, 0.225]
     tr_aug = A.Compose([
@@ -228,6 +248,12 @@ def run_training(db_path, base_dir, model_out, cfg, on_log):
                     'duration': round(duration, 1),
                     'eta_sec': eta_sec,
                     'imgs_done': ep * len(tr_p)})
+            if _wb_run:
+                _wb_run.log({
+                    'train/loss': tl, 'train/acc': ta * 100,
+                    'val/loss': vl,   'val/acc':   va * 100,
+                    'lr': current_lr, 'phase': phase_num,
+                })
         return True
 
     # Phase 1 — head only (lr → lr*0.01 แบบ cosine)
@@ -300,6 +326,22 @@ def run_training(db_path, base_dir, model_out, cfg, on_log):
 
     on_log({'type': 'done',
             'msg':  f'เสร็จสมบูรณ์ — Weighted F1: {wf1:.3f} | Cohen\'s κ: {kappa:.3f}'})
+
+    if _wb_run:
+        try:
+            import wandb as _wandb
+            _wb_run.log({
+                'test/kappa':       kappa,
+                'test/weighted_f1': wf1,
+                'test/confusion_matrix': _wandb.plot.confusion_matrix(
+                    probs=None, y_true=trues, preds=preds, class_names=LABELS),
+                **{f'test/{cls}/recall':    report[cls]['recall']    for cls in LABELS},
+                **{f'test/{cls}/f1':        report[cls]['f1-score']  for cls in LABELS},
+                **{f'test/{cls}/precision': report[cls]['precision'] for cls in LABELS},
+            })
+            _wb_run.finish()
+        except Exception:
+            pass
 
 
 def get_preview(db_path, base_dir, n=8):
