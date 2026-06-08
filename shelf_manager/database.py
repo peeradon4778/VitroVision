@@ -107,11 +107,13 @@ def _migrate_db():
             ("shoot_height_class",  "TEXT    DEFAULT ''"),
             ("root_density",        "TEXT    DEFAULT 'none'"),
             ("callus_present",      "INTEGER DEFAULT 0"),
-            ("vigor_score",         "INTEGER DEFAULT 0"),
+            ("vigor_score",         "REAL    DEFAULT 0"),
             ("green_coverage_pct",  "REAL    DEFAULT NULL"),
             ("leaf_color_index",    "REAL    DEFAULT NULL"),
             ("shoot_count_cv",      "INTEGER DEFAULT NULL"),
             ("media_color_cv",      "TEXT    DEFAULT ''"),
+            ("texture_entropy",     "REAL    DEFAULT NULL"),
+            ("brown_coverage_pct",  "REAL    DEFAULT NULL"),
             ("phenotype_method",    "TEXT    DEFAULT ''"),
         ]
         for col_name, col_def in new_images_growth:
@@ -305,14 +307,18 @@ def update_image_cv(image_id, shoot_count=-1, media_color="normal",
 
 
 def update_image_phenotype(image_id, green_coverage_pct, leaf_color_index,
-                           shoot_count_cv, media_color_cv, phenotype_method):
+                           shoot_count_cv, media_color_cv, phenotype_method,
+                           texture_entropy=None, brown_coverage_pct=None,
+                           vigor_score=None):
     with get_conn() as conn:
         conn.execute("""
             UPDATE images SET green_coverage_pct=?, leaf_color_index=?,
-                              shoot_count_cv=?, media_color_cv=?, phenotype_method=?
+                              shoot_count_cv=?, media_color_cv=?, phenotype_method=?,
+                              texture_entropy=?, brown_coverage_pct=?, vigor_score=?
             WHERE id=?
         """, (green_coverage_pct, leaf_color_index,
-              shoot_count_cv, media_color_cv, phenotype_method, image_id))
+              shoot_count_cv, media_color_cv, phenotype_method,
+              texture_entropy, brown_coverage_pct, vigor_score, image_id))
         conn.commit()
 
 
@@ -321,11 +327,31 @@ def get_phenotype_series(bottle_id):
     with get_conn() as conn:
         rows = conn.execute("""
             SELECT day_point, date_taken, green_coverage_pct, leaf_color_index,
-                   shoot_count_cv, media_color_cv, phenotype_method, status
+                   shoot_count_cv, media_color_cv, texture_entropy, brown_coverage_pct,
+                   vigor_score, phenotype_method, status
             FROM images
             WHERE bottle_id=? AND green_coverage_pct IS NOT NULL
             ORDER BY day_point
         """, (bottle_id,)).fetchall()
+    return [dict(r) for r in rows]
+
+
+def get_formulation_series(batch_id=None):
+    """คืน phenotype time series ทุกขวด grouped by media_formula — ใช้สำหรับ CSBI analysis"""
+    filter_sql = "WHERE b.batch_id=? AND i.green_coverage_pct IS NOT NULL" if batch_id else "WHERE i.green_coverage_pct IS NOT NULL"
+    params = (batch_id,) if batch_id else ()
+    with get_conn() as conn:
+        rows = conn.execute(f"""
+            SELECT i.bottle_id, b.media_formula, b.pgr_detail,
+                   i.day_point, i.date_taken, i.status,
+                   i.green_coverage_pct, i.leaf_color_index, i.shoot_count_cv,
+                   i.texture_entropy, i.brown_coverage_pct, i.vigor_score,
+                   i.media_color_cv, i.phenotype_method
+            FROM images i
+            JOIN bottles b ON i.bottle_id = b.bottle_id
+            {filter_sql}
+            ORDER BY b.media_formula, i.bottle_id, i.day_point
+        """, params).fetchall()
     return [dict(r) for r in rows]
 
 
@@ -338,7 +364,8 @@ def get_bottle_timeline(bottle_id):
                    root_density, callus_present,
                    green_coverage_pct, leaf_color_index,
                    shoot_count_cv, media_color_cv,
-                   ai_status, ai_confidence
+                   texture_entropy, brown_coverage_pct,
+                   ai_status, ai_confidence, phenotype_method
             FROM images
             WHERE bottle_id=?
             ORDER BY day_point, date_taken

@@ -1,0 +1,286 @@
+{% extends "base.html" %}
+{% block title %}Analytics — VitroShelf{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+  <h1 class="text-2xl font-bold text-green-400">📈 Phenotype Analytics</h1>
+  <span id="data-badge" class="text-xs px-2 py-1 rounded-full bg-gray-800 text-gray-400">กำลังโหลด...</span>
+</div>
+
+<!-- Metric selector -->
+<div class="flex flex-wrap gap-2 mb-6" id="metric-tabs">
+  <button data-metric="vigor_score"        class="metric-tab active-tab">Vigor Score</button>
+  <button data-metric="green_coverage_pct" class="metric-tab">Green Coverage</button>
+  <button data-metric="leaf_color_index"   class="metric-tab">Leaf Color Index</button>
+  <button data-metric="brown_coverage_pct" class="metric-tab">Brown Coverage</button>
+  <button data-metric="texture_entropy"    class="metric-tab">Texture Entropy</button>
+  <button data-metric="shoot_count_cv"     class="metric-tab">Shoot Count</button>
+</div>
+
+<!-- Growth curve chart -->
+<div class="bg-gray-900 border border-gray-800 rounded-2xl p-4 mb-6">
+  <h2 class="text-sm font-medium text-gray-400 mb-3" id="curve-title">Growth Curve</h2>
+  <div class="relative h-72">
+    <canvas id="chart-growth"></canvas>
+  </div>
+</div>
+
+<!-- Bottom row: heatmap + status -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+
+  <!-- Vigor heatmap table -->
+  <div class="bg-gray-900 border border-gray-800 rounded-2xl p-4">
+    <h2 class="text-sm font-medium text-gray-400 mb-3">Mean Vigor Score (สูตร × วัน)</h2>
+    <div id="vigor-heatmap" class="overflow-x-auto text-sm"></div>
+  </div>
+
+  <!-- Status distribution bar -->
+  <div class="bg-gray-900 border border-gray-800 rounded-2xl p-4">
+    <h2 class="text-sm font-medium text-gray-400 mb-3">Status Distribution (latest per bottle)</h2>
+    <div class="relative h-52">
+      <canvas id="chart-status"></canvas>
+    </div>
+  </div>
+
+</div>
+
+<!-- Scatter: green vs vigor -->
+<div class="bg-gray-900 border border-gray-800 rounded-2xl p-4 mb-6">
+  <h2 class="text-sm font-medium text-gray-400 mb-3">Green Coverage vs Vigor Score</h2>
+  <div class="relative h-72">
+    <canvas id="chart-scatter"></canvas>
+  </div>
+</div>
+
+<!-- Empty state -->
+<div id="empty-state" class="hidden text-center py-20 text-gray-500">
+  <p class="text-4xl mb-4">📷</p>
+  <p class="text-lg font-medium text-gray-400">ยังไม่มีข้อมูล phenotyping</p>
+  <p class="text-sm mt-2">เริ่มสแกนขวดจาก <a href="/scan" class="text-cyan-400 hover:underline">Scanner</a> แล้วกลับมาดูที่นี่</p>
+</div>
+
+<style>
+.metric-tab {
+  @apply text-xs px-3 py-1.5 rounded-lg bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white transition cursor-pointer border border-transparent;
+}
+.active-tab {
+  @apply bg-green-900 text-green-300 border-green-700;
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script>
+const METRIC_LABEL = {
+  vigor_score:        'Vigor Score (0–10)',
+  green_coverage_pct: 'Green Coverage (%)',
+  leaf_color_index:   'Leaf Color Index (G/R)',
+  brown_coverage_pct: 'Brown Coverage (%) — contamination',
+  texture_entropy:    'Texture Entropy',
+  shoot_count_cv:     'Shoot Count (CV)',
+};
+
+Chart.defaults.color = '#94a3b8';
+Chart.defaults.borderColor = '#1e293b';
+Chart.defaults.font.family = 'ui-sans-serif, system-ui, sans-serif';
+
+let growthChart = null;
+let statusChart = null;
+let scatterChart = null;
+let gData = null;
+let activeMetric = 'vigor_score';
+
+/* ── fetch & render ─────────────────────────────────────── */
+async function loadData() {
+  const res  = await fetch('/api/growth_data');
+  gData = await res.json();
+
+  const badge = document.getElementById('data-badge');
+  if (gData.empty) {
+    badge.textContent = 'ไม่มีข้อมูล';
+    badge.className = 'text-xs px-2 py-1 rounded-full bg-gray-800 text-gray-500';
+    document.getElementById('empty-state').classList.remove('hidden');
+    ['chart-growth','chart-status','chart-scatter'].forEach(id => {
+      document.getElementById(id).closest('.bg-gray-900').classList.add('hidden');
+    });
+    document.getElementById('vigor-heatmap').closest('.bg-gray-900').classList.add('hidden');
+    document.getElementById('metric-tabs').classList.add('hidden');
+    return;
+  }
+
+  badge.textContent = 'ข้อมูลจริง';
+  badge.className   = 'text-xs px-2 py-1 rounded-full bg-green-900 text-green-300';
+
+  renderGrowth(activeMetric);
+  renderHeatmap();
+  renderStatus();
+  renderScatter();
+}
+
+/* ── Growth curve ─────────────────────────────────────────── */
+function renderGrowth(metric) {
+  activeMetric = metric;
+  document.getElementById('curve-title').textContent = METRIC_LABEL[metric] || metric;
+
+  const metricData = gData.metrics[metric];
+  if (!metricData) return;
+
+  const datasets = metricData.datasets.map(ds => ({
+    label:           ds.label,
+    data:            ds.days.map((d, i) => ({ x: d, y: ds.means[i] })),
+    borderColor:     ds.color,
+    backgroundColor: ds.color.replace('rgb', 'rgba').replace(')', ',0.15)'),
+    tension:         0.3,
+    pointRadius:     4,
+    pointHoverRadius: 6,
+    fill:            false,
+  }));
+
+  if (growthChart) growthChart.destroy();
+  growthChart = new Chart(document.getElementById('chart-growth'), {
+    type: 'line',
+    data: { datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { position: 'top', labels: { boxWidth: 12, padding: 16 } } },
+      scales: {
+        x: { type: 'linear', title: { display: true, text: 'Day' } },
+        y: { title: { display: true, text: METRIC_LABEL[metric] } },
+      },
+    },
+  });
+}
+
+/* ── Vigor heatmap (HTML table) ──────────────────────────── */
+function renderHeatmap() {
+  const vigorData = gData.metrics['vigor_score'];
+  if (!vigorData) return;
+
+  const allDays = [...new Set(vigorData.datasets.flatMap(ds => ds.days))].sort((a,b)=>a-b);
+  const byFormula = {};
+  for (const ds of vigorData.datasets) {
+    const map = {};
+    ds.days.forEach((d, i) => map[d] = ds.means[i]);
+    byFormula[ds.formula] = { label: ds.label, color: ds.color, map };
+  }
+
+  const allVals = vigorData.datasets.flatMap(ds => ds.means);
+  const minV = Math.min(...allVals), maxV = Math.max(...allVals);
+
+  function bg(v) {
+    const t = (v - minV) / (maxV - minV + 1e-6);
+    const g = Math.round(80 + t * 120);
+    return `rgba(34,${g},94,${0.2 + t * 0.7})`;
+  }
+
+  let html = '<table class="w-full border-collapse text-xs">';
+  html += '<thead><tr><th class="text-left py-1 pr-3 text-gray-500 font-normal">สูตร</th>';
+  allDays.forEach(d => { html += `<th class="px-2 py-1 text-gray-500 font-normal">Day ${d}</th>`; });
+  html += '</tr></thead><tbody>';
+
+  for (const [f, info] of Object.entries(byFormula)) {
+    html += `<tr><td class="py-1 pr-3 text-gray-300 whitespace-nowrap font-medium">${info.label}</td>`;
+    allDays.forEach(d => {
+      const v = info.map[d];
+      const style = v != null ? `background:${bg(v)};` : 'background:rgba(30,41,59,0.5);';
+      html += `<td class="px-2 py-1.5 text-center rounded" style="${style}">${v != null ? v.toFixed(1) : '—'}</td>`;
+    });
+    html += '</tr>';
+  }
+  html += '</tbody></table>';
+  document.getElementById('vigor-heatmap').innerHTML = html;
+}
+
+/* ── Status bar chart ────────────────────────────────────── */
+function renderStatus() {
+  const STATUS_COLORS = {
+    healthy:      'rgba(34,197,94,0.8)',
+    contaminated: 'rgba(249,115,22,0.8)',
+    dead:         'rgba(239,68,68,0.8)',
+    unknown:      'rgba(148,163,184,0.5)',
+  };
+
+  const formulas = gData.formulas;
+  const labels   = formulas.map(f => f.label);
+  const statuses = ['healthy','contaminated','dead','unknown'];
+
+  const datasets = statuses.map(s => ({
+    label:           s.charAt(0).toUpperCase() + s.slice(1),
+    data:            formulas.map(f => gData.status[f.key]?.counts[s] || 0),
+    backgroundColor: STATUS_COLORS[s],
+    borderRadius:    2,
+  }));
+
+  if (statusChart) statusChart.destroy();
+  statusChart = new Chart(document.getElementById('chart-status'), {
+    type: 'bar',
+    data: { labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top', labels: { boxWidth: 10, padding: 12 } } },
+      scales: {
+        x: { stacked: true, ticks: { font: { size: 10 } } },
+        y: { stacked: true, title: { display: true, text: 'จำนวนขวด' } },
+      },
+    },
+  });
+}
+
+/* ── Scatter: green vs vigor ─────────────────────────────── */
+function renderScatter() {
+  const gm = gData.metrics['green_coverage_pct'];
+  const vm = gData.metrics['vigor_score'];
+  if (!gm || !vm) return;
+
+  const byFormula = {};
+  for (const ds of gm.datasets) {
+    byFormula[ds.formula] = { green: {}, color: ds.color, label: ds.label };
+    ds.days.forEach((d, i) => { byFormula[ds.formula].green[d] = ds.means[i]; });
+  }
+  for (const ds of vm.datasets) {
+    if (!byFormula[ds.formula]) continue;
+    byFormula[ds.formula].vigor = {};
+    ds.days.forEach((d, i) => { byFormula[ds.formula].vigor[d] = ds.means[i]; });
+  }
+
+  const datasets = Object.entries(byFormula).map(([f, info]) => {
+    const points = Object.keys(info.green || {})
+      .filter(d => info.vigor?.[d] != null)
+      .map(d => ({ x: info.green[d], y: info.vigor[d] }));
+    return {
+      label:           info.label,
+      data:            points,
+      backgroundColor: info.color.replace('rgb', 'rgba').replace(')', ',0.7)'),
+      pointRadius:     5,
+      pointHoverRadius: 7,
+    };
+  });
+
+  if (scatterChart) scatterChart.destroy();
+  scatterChart = new Chart(document.getElementById('chart-scatter'), {
+    type: 'scatter',
+    data: { datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top', labels: { boxWidth: 12, padding: 16 } } },
+      scales: {
+        x: { title: { display: true, text: 'Green Coverage (%)' } },
+        y: { title: { display: true, text: 'Vigor Score (0–10)' }, min: 0, max: 10 },
+      },
+    },
+  });
+}
+
+/* ── Metric tab clicks ───────────────────────────────────── */
+document.getElementById('metric-tabs').addEventListener('click', e => {
+  const btn = e.target.closest('[data-metric]');
+  if (!btn || !gData) return;
+  document.querySelectorAll('.metric-tab').forEach(b => b.classList.remove('active-tab'));
+  btn.classList.add('active-tab');
+  renderGrowth(btn.dataset.metric);
+});
+
+loadData();
+</script>
+{% endblock %}

@@ -89,11 +89,43 @@ def _classic_cv(bgr: np.ndarray) -> dict:
     shoots = sum(1 for i in range(1, len(stats))
                  if stats[i, cv2.CC_STAT_AREA] >= min_blob)
 
+    # ── Texture entropy ────────────────────────────────────────
+    # Shannon entropy ของ grayscale ROI
+    # สูง → พื้นผิวซับซ้อน (contamination/callus)
+    # ต่ำ → เรียบ (media ใส / ไม่มีการเจริญ)
+    gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+    hist = cv2.calcHist([gray], [0], None, [256], [0, 256]).flatten()
+    hist_norm = hist / (hist.sum() + 1e-6)
+    nonzero = hist_norm[hist_norm > 0]
+    texture_entropy = round(float(-np.sum(nonzero * np.log2(nonzero))), 4)
+
+    # ── Brown coverage % ──────────────────────────────────────
+    # ตรวจ contamination สีน้ำตาล/ส้มในขวด
+    brown_mask = cv2.inRange(hsv,
+                             np.array([5,  40, 40]),
+                             np.array([25, 255, 200]))
+    brown_mask = cv2.morphologyEx(brown_mask, cv2.MORPH_OPEN, kernel)
+    brown_px = int(brown_mask.sum() // 255)
+    brown_coverage = round(brown_px / roi_area * 100, 2)
+
+    # ── Vigor score (0–10) ────────────────────────────────────
+    # คะแนนสุขภาพรวม — ใช้เปรียบเทียบระหว่างสูตร
+    # green_coverage: 0–40% → 0–5 คะแนน
+    # lci: 1.0–2.5 → 0–3 คะแนน
+    # brown penalty: ลดตาม brown_coverage
+    green_score = min(green_coverage / 8.0, 5.0)
+    lci_score   = min(max((lci - 1.0) / 0.5, 0.0), 3.0)
+    brown_penalty = min(brown_coverage / 5.0, 3.0)
+    vigor_score = round(max(green_score + lci_score - brown_penalty, 0.0), 2)
+
     return {
         'green_coverage_pct': green_coverage,
         'leaf_color_index':   lci,
         'shoot_count_cv':     shoots,
         'media_color_cv':     media_color,
+        'texture_entropy':    texture_entropy,
+        'brown_coverage_pct': brown_coverage,
+        'vigor_score':        vigor_score,
         'method':             'classic_cv',
     }
 
@@ -138,6 +170,9 @@ def _yolov8_seg(bgr: np.ndarray) -> dict | None:
             'leaf_color_index':   lci,
             'shoot_count_cv':     shoot_count,
             'media_color_cv':     classic['media_color_cv'],
+            'texture_entropy':    classic['texture_entropy'],
+            'brown_coverage_pct': classic['brown_coverage_pct'],
+            'vigor_score':        classic['vigor_score'],
             'method':             'yolov8_seg',
         }
     except Exception as e:
@@ -153,6 +188,9 @@ def measure(image_bytes: bytes) -> dict:
         leaf_color_index    float  G/R ratio (healthy ≈ 1.5–2.5, stress ≈ 0.8–1.2)
         shoot_count_cv      int    จำนวนยอดโดยประมาณ
         media_color_cv      str    clear / normal / yellow / brown
+        texture_entropy     float  Shannon entropy ของ grayscale (สูง = ซับซ้อน/contamination)
+        brown_coverage_pct  float  % พื้นที่สีน้ำตาล (contamination indicator)
+        vigor_score         float  คะแนนสุขภาพรวม 0–10 (เปรียบเทียบระหว่างสูตรได้)
         method              str    classic_cv หรือ yolov8_seg
     """
     arr = np.frombuffer(image_bytes, np.uint8)

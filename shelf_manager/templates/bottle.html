@@ -245,8 +245,8 @@
     <button onclick="loadTimeline()" class="text-xs text-gray-500 hover:text-white px-2 py-1 rounded bg-gray-800">↻</button>
   </div>
 
-  <!-- summary cards -->
-  <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+  <!-- summary cards row 1 -->
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
     <div class="bg-gray-800 rounded-xl p-3 text-center">
       <p class="text-xs text-gray-500 mb-1">Green Coverage</p>
       <p id="tl-green" class="text-2xl font-bold font-mono text-green-400">—</p>
@@ -266,6 +266,24 @@
       <p class="text-xs text-gray-500 mb-1">Media Color</p>
       <p id="tl-media" class="text-lg font-bold text-gray-300">—</p>
       <p class="text-xs text-gray-600">สีอาหารเลี้ยงเชื้อ</p>
+    </div>
+  </div>
+  <!-- summary cards row 2: phenotyping metrics -->
+  <div class="grid grid-cols-3 gap-3 mb-5">
+    <div class="bg-gray-800 rounded-xl p-3 text-center">
+      <p class="text-xs text-gray-500 mb-1">Vigor Score</p>
+      <p id="tl-vigor" class="text-2xl font-bold font-mono text-emerald-400">—</p>
+      <p id="tl-vigor-hint" class="text-xs text-gray-600">0–10</p>
+    </div>
+    <div class="bg-gray-800 rounded-xl p-3 text-center">
+      <p class="text-xs text-gray-500 mb-1">Brown Coverage</p>
+      <p id="tl-brown" class="text-2xl font-bold font-mono text-orange-400">—</p>
+      <p class="text-xs text-gray-600">% (contamination)</p>
+    </div>
+    <div class="bg-gray-800 rounded-xl p-3 text-center">
+      <p class="text-xs text-gray-500 mb-1">Texture Entropy</p>
+      <p id="tl-entropy" class="text-2xl font-bold font-mono text-purple-400">—</p>
+      <p class="text-xs text-gray-600">complexity</p>
     </div>
   </div>
 
@@ -290,6 +308,22 @@
   <div class="bg-gray-800 rounded-xl p-3">
     <p class="text-xs text-gray-500 mb-2 font-medium">Shoot Count — มือ vs CV</p>
     <canvas id="chartShoot" height="110"></canvas>
+  </div>
+
+  <!-- phenotyping charts row -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
+    <div class="bg-gray-800 rounded-xl p-3">
+      <p class="text-xs text-gray-500 mb-2 font-medium">Vigor Score (0–10)</p>
+      <canvas id="chartVigor" height="130"></canvas>
+    </div>
+    <div class="bg-gray-800 rounded-xl p-3">
+      <p class="text-xs text-gray-500 mb-2 font-medium">Brown Coverage % <span class="text-orange-700">contamination</span></p>
+      <canvas id="chartBrown" height="130"></canvas>
+    </div>
+    <div class="bg-gray-800 rounded-xl p-3">
+      <p class="text-xs text-gray-500 mb-2 font-medium">Texture Entropy</p>
+      <canvas id="chartEntropy" height="130"></canvas>
+    </div>
   </div>
 
   <p id="tl-empty" class="hidden text-center text-gray-600 text-sm py-4 mt-2">ยังไม่มีข้อมูล — ถ่ายภาพแล้วระบบจะวัดอัตโนมัติ</p>
@@ -397,15 +431,33 @@ async function loadTimeline() {
   if (withPheno.length) {
     const lt = withPheno[withPheno.length - 1];
     document.getElementById('tl-green').textContent = lt.green_coverage_pct.toFixed(1) + '%';
+
     const lci = lt.leaf_color_index;
     document.getElementById('tl-lci').textContent   = lci ? lci.toFixed(3) : '—';
     document.getElementById('tl-lci-hint').textContent =
       lci >= 1.5 ? 'สุขภาพดี (≥1.5)' : lci >= 1.0 ? 'ปกติ' : 'เครียด (<1.0)';
     document.getElementById('tl-lci-hint').style.color =
       lci >= 1.5 ? '#4ade80' : lci >= 1.0 ? '#94a3b8' : '#f87171';
+
     document.getElementById('tl-media').textContent = lt.media_color_cv || '—';
     document.getElementById('tl-method').textContent =
-      lt.phenotype_method === 'yolov8_seg' ? 'YOLOv8-seg ✓' : 'Classic CV (HSV)';
+      lt.phenotype_method === 'yolov8_seg' ? 'YOLOv8-seg ✓' :
+      lt.phenotype_method === 'mock_data'  ? 'Mock data' : 'Classic CV (HSV)';
+
+    const vigor = lt.vigor_score;
+    document.getElementById('tl-vigor').textContent = vigor != null ? vigor.toFixed(1) : '—';
+    const vigorHint = document.getElementById('tl-vigor-hint');
+    if (vigor != null) {
+      vigorHint.textContent = vigor >= 7 ? 'ดีมาก' : vigor >= 4 ? 'ปกติ' : 'ต่ำ';
+      vigorHint.style.color = vigor >= 7 ? '#34d399' : vigor >= 4 ? '#94a3b8' : '#f87171';
+    }
+
+    const brown = lt.brown_coverage_pct;
+    document.getElementById('tl-brown').textContent = brown != null ? brown.toFixed(1) + '%' : '—';
+    document.getElementById('tl-brown').style.color = brown > 5 ? '#f87171' : brown > 2 ? '#fb923c' : '#34d399';
+
+    const ent = lt.texture_entropy;
+    document.getElementById('tl-entropy').textContent = ent != null ? ent.toFixed(2) : '—';
   }
 
   // ── shoot count (manual หรือ CV) ──
@@ -466,6 +518,26 @@ async function loadTimeline() {
   schart.data.datasets[1].data = rows.map(r => r.shoot_count_cv);
   schart.options.plugins.legend.display = true;
   schart.update();
+
+  // ── Vigor Score ──
+  const vchart = _mkChart('chartVigor', [_lineCfg('Vigor', '#34d399')]);
+  vchart.data.labels = withPheno.map(r => 'Day ' + r.day_point);
+  vchart.data.datasets[0].data = withPheno.map(r => r.vigor_score);
+  vchart.options.scales.y = { ..._axisStyle, min: 0, max: 10 };
+  vchart.update();
+
+  // ── Brown Coverage ──
+  const bchart = _mkChart('chartBrown', [_lineCfg('Brown %', '#fb923c')]);
+  bchart.data.labels = withPheno.map(r => 'Day ' + r.day_point);
+  bchart.data.datasets[0].data = withPheno.map(r => r.brown_coverage_pct);
+  bchart.options.scales.y = { ..._axisStyle, min: 0 };
+  bchart.update();
+
+  // ── Texture Entropy ──
+  const echart = _mkChart('chartEntropy', [_lineCfg('Entropy', '#a78bfa')]);
+  echart.data.labels = withPheno.map(r => 'Day ' + r.day_point);
+  echart.data.datasets[0].data = withPheno.map(r => r.texture_entropy);
+  echart.update();
 }
 
 // โหลดตอนเปิดหน้า

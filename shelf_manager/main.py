@@ -285,6 +285,9 @@ def add_record_json(bottle_id):
                     pheno.get('shoot_count_cv'),
                     pheno.get('media_color_cv', ''),
                     pheno.get('method', ''),
+                    texture_entropy=pheno.get('texture_entropy'),
+                    brown_coverage_pct=pheno.get('brown_coverage_pct'),
+                    vigor_score=pheno.get('vigor_score'),
                 )
     _al_increment_and_check(status)
     return jsonify({"ok": True, "ai_status": ai_status, "ai_confidence": ai_conf,
@@ -484,6 +487,9 @@ def api_scan_save():
                 pheno.get('shoot_count_cv'),
                 pheno.get('media_color_cv', ''),
                 pheno.get('method', ''),
+                texture_entropy=pheno.get('texture_entropy'),
+                brown_coverage_pct=pheno.get('brown_coverage_pct'),
+                vigor_score=pheno.get('vigor_score'),
             )
     _al_increment_and_check(status)
     _glass_event({
@@ -564,6 +570,116 @@ def api_scan_aruco():
             'time':      time.strftime('%H:%M:%S'),
         })
     return jsonify({'detections': detections, 'model_ready': model_ready})
+
+
+@app.route('/analytics')
+def analytics_page():
+    return render_template('analytics.html')
+
+
+@app.route('/api/growth_data')
+def api_growth_data():
+    """คืน JSON phenotype time-series ทุกขวด grouped by media_formula — ใช้กับ Chart.js"""
+    FORMULA_LABEL = {
+        'A': 'MS (control)',
+        'B': 'MS + 1 BAP',
+        'C': 'MS + 5 BAP',
+        'D': 'MS + 5 BAP + 0.05 NAA',
+        'E': 'MS + 1 IBA',
+    }
+    FORMULA_COLOR = {
+        'A': 'rgb(148,163,184)',
+        'B': 'rgb(251,191,36)',
+        'C': 'rgb(34,197,94)',
+        'D': 'rgb(99,102,241)',
+        'E': 'rgb(249,115,22)',
+    }
+
+    rows = db.get_formulation_series()
+    if not rows:
+        return jsonify({'empty': True, 'metrics': {}, 'status': {}, 'formulas': []})
+
+    import statistics as stat
+
+    FORMULAS = ['A', 'B', 'C', 'D', 'E']
+    METRICS  = ['vigor_score', 'green_coverage_pct', 'leaf_color_index',
+                'brown_coverage_pct', 'texture_entropy', 'shoot_count_cv']
+
+    # group by formula → day_point → list of values
+    from collections import defaultdict
+    raw = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+    for r in rows:
+        f = r.get('media_formula') or _infer_formula(r['bottle_id'])
+        d = r['day_point']
+        for m in METRICS:
+            v = r.get(m)
+            if v is not None:
+                raw[f][m][d].append(float(v))
+
+    # aggregate: mean ± SE per formula per day
+    metrics_out = {}
+    for m in METRICS:
+        all_days = sorted({d for f in raw for d in raw[f][m]})
+        datasets = []
+        for f in FORMULAS:
+            means, ses, days_used = [], [], []
+            for d in all_days:
+                vals = raw[f][m].get(d, [])
+                if not vals:
+                    continue
+                days_used.append(d)
+                means.append(round(stat.mean(vals), 3))
+                ses.append(round(stat.stdev(vals) / len(vals)**0.5 if len(vals) > 1 else 0, 3))
+            if means:
+                datasets.append({
+                    'formula':  f,
+                    'label':    FORMULA_LABEL.get(f, f),
+                    'color':    FORMULA_COLOR.get(f, '#888'),
+                    'days':     days_used,
+                    'means':    means,
+                    'ses':      ses,
+                })
+        metrics_out[m] = {'datasets': datasets}
+
+    # status distribution (latest per bottle)
+    latest_status = {}
+    for r in rows:
+        bid = r['bottle_id']
+        if bid not in latest_status or r['day_point'] > latest_status[bid]['day']:
+            latest_status[bid] = {'day': r['day_point'], 'status': r['status'],
+                                  'formula': r.get('media_formula') or _infer_formula(bid)}
+
+    status_counts = defaultdict(lambda: defaultdict(int))
+    for v in latest_status.values():
+        status_counts[v['formula']][v['status']] += 1
+
+    status_out = {}
+    for f in FORMULAS:
+        status_out[f] = {
+            'label':  FORMULA_LABEL.get(f, f),
+            'color':  FORMULA_COLOR.get(f, '#888'),
+            'counts': dict(status_counts[f]),
+        }
+
+    return jsonify({
+        'empty':    False,
+        'formulas': [{'key': f, 'label': FORMULA_LABEL.get(f, f),
+                      'color': FORMULA_COLOR.get(f, '#888')} for f in FORMULAS],
+        'metrics':  metrics_out,
+        'status':   status_out,
+    })
+
+
+def _infer_formula(bottle_id):
+    try:
+        n = int(bottle_id[-3:] if len(bottle_id) >= 3 else bottle_id)
+    except (ValueError, TypeError):
+        return 'A'
+    if n <= 20:  return 'A'
+    if n <= 40:  return 'B'
+    if n <= 60:  return 'C'
+    if n <= 80:  return 'D'
+    return 'E'
 
 
 if __name__ == "__main__":
