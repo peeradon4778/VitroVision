@@ -1,9 +1,9 @@
 """Training logic — เรียกจาก main.py (VitroShelf)"""
 import sqlite3, threading, json
-import cv2, torch, torch.nn as nn
+import cv2, torch, torch.nn as nn, torch.nn.functional as F
 import timm
-import albumentations as A
-from albumentations.pytorch import ToTensorV2
+from timm.data.mixup import Mixup
+from .transforms import get_train_transforms, get_val_transforms
 from torch.utils.data import Dataset, DataLoader
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from sklearn.model_selection import train_test_split
@@ -138,24 +138,18 @@ def run_training(db_path, base_dir, model_out, cfg, on_log):
     }})
 
     # ── Augmentation ─────────────────────────────────────────────
-    mean, std = [0.485, 0.456, 0.406], [0.229, 0.224, 0.225]
-    tr_aug = A.Compose([
-        A.RandomResizedCrop(height=IMG_SIZE, width=IMG_SIZE, scale=(0.65, 1.0)),
-        A.HorizontalFlip(p=0.5), A.VerticalFlip(p=0.3), A.RandomRotate90(p=0.5),
-        A.ColorJitter(0.35, 0.35, 0.3, 0.08, p=0.8),
-        A.GaussianBlur(blur_limit=(3, 7), p=0.3),
-        A.GaussNoise(var_limit=(10.0, 50.0), p=0.3),
-        A.Normalize(mean=mean, std=std), ToTensorV2(),
-    ])
-    vl_aug = A.Compose([A.Resize(IMG_SIZE, IMG_SIZE),
-                        A.Normalize(mean=mean, std=std), ToTensorV2()])
+    tr_aug = get_train_transforms(size=IMG_SIZE)
+    vl_aug = get_val_transforms(size=IMG_SIZE)
 
     tr_loader = DataLoader(_DS(tr_p, tr_l, tr_aug), batch_size=8, shuffle=True,  num_workers=0)
     vl_loader = DataLoader(_DS(vl_p, vl_l, vl_aug), batch_size=8, shuffle=False, num_workers=0)
     te_loader = DataLoader(_DS(te_p, te_l, vl_aug), batch_size=8, shuffle=False, num_workers=0)
 
-    model     = timm.create_model('efficientnet_b0', pretrained=True, num_classes=3)
-    criterion = nn.CrossEntropyLoss(weight=class_weights)
+    model     = timm.create_model('efficientnet_b0', pretrained=True, num_classes=3,
+                                   drop_rate=0.4, drop_path_rate=0.15)
+    criterion = nn.CrossEntropyLoss(weight=class_weights, label_smoothing=0.1)
+    mixup_fn  = Mixup(mixup_alpha=0.2, cutmix_alpha=0.0,
+                      label_smoothing=0.1, num_classes=3)
     ckpt_dir  = Path(model_out).parent.parent / 'checkpoints'
     ckpt_dir.mkdir(parents=True, exist_ok=True)
     best_loss = float('inf')
@@ -166,11 +160,17 @@ def run_training(db_path, base_dir, model_out, cfg, on_log):
         ctx = torch.enable_grad() if opt else torch.no_grad()
         with ctx:
             for imgs, tgts in loader:
-                out  = model(imgs)
-                loss = criterion(out, tgts)
+                if opt:
+                    imgs, soft = mixup_fn(imgs, tgts)
+                    out  = model(imgs)
+                    loss = F.cross_entropy(out, soft)
+                    correct += (out.argmax(1) == soft.argmax(1)).sum().item()
+                else:
+                    out  = model(imgs)
+                    loss = criterion(out, tgts)
+                    correct += (out.argmax(1) == tgts).sum().item()
                 if opt: opt.zero_grad(); loss.backward(); opt.step()
                 tot_loss += loss.item() * len(tgts)
-                correct  += (out.argmax(1) == tgts).sum().item()
                 n        += len(tgts)
         return tot_loss / n, correct / n
 
@@ -196,16 +196,18 @@ def run_training(db_path, base_dir, model_out, cfg, on_log):
     # Phase 1 — head only (lr → lr*0.01 แบบ cosine)
     for p in model.parameters(): p.requires_grad = False
     for p in model.classifier.parameters(): p.requires_grad = True
-    opt1 = torch.optim.Adam(
-        filter(lambda p: p.requires_grad, model.parameters()), lr=lr)
+    opt1 = torch.optim.AdamW(model.classifier.parameters(), lr=lr, weight_decay=1e-2)
     sch1 = CosineAnnealingLR(opt1, T_max=ep_head, eta_min=lr * 0.01)
     if not phase(1, ep_head, opt1, sch1):
         return
 
     # Phase 2 — fine-tune all (lr*0.1 → lr*0.001 แบบ cosine)
     for p in model.parameters(): p.requires_grad = True
-    opt2 = torch.optim.Adam(model.parameters(), lr=lr * 0.1)
-    sch2 = CosineAnnealingLR(opt2, T_max=ep_full, eta_min=lr * 0.001)
+    opt2 = torch.optim.AdamW([
+        {'params': [p for n, p in model.named_parameters() if 'classifier' not in n], 'lr': 1e-5},
+        {'params': model.classifier.parameters(), 'lr': 1e-4},
+    ], weight_decay=1e-2)
+    sch2 = CosineAnnealingLR(opt2, T_max=ep_full, eta_min=1e-7)
     if not phase(2, ep_full, opt2, sch2):
         return
 

@@ -367,6 +367,32 @@ def set_al_threshold():
     return jsonify({'ok': True, 'threshold': cfg['threshold']})
 
 
+@app.route('/api/al_query')
+def api_al_query():
+    n = int(request.args.get('n', 10))
+    bottles = db.get_unlabeled_bottles()
+    results = []
+    for b in bottles:
+        lp = b.get('local_path', '')
+        if not lp or not Path(lp).exists():
+            continue
+        img_bytes = Path(lp).read_bytes()
+        if not INFERENCE_OK:
+            continue
+        mc = _inference.predict_mc_dropout(img_bytes)
+        results.append({
+            'bottle_id':  b['bottle_id'],
+            'shelf':      b['shelf'],
+            'row':        b['row'],
+            'col':        b['col'],
+            'image_id':   b['image_id'],
+            'local_path': lp,
+            **mc,
+        })
+    results.sort(key=lambda x: x['uncertainty'], reverse=True)
+    return jsonify(results[:n])
+
+
 # --- VitroVision Trainer ---
 
 @app.route('/train')

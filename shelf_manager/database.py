@@ -434,3 +434,24 @@ def get_stats():
         "status_counts": {r["status"]: r["cnt"] for r in status_counts},
         "active_batch": active,
     }
+
+
+def get_unlabeled_bottles():
+    """คืนขวดที่มี status='unknown' และมีภาพ local — image ล่าสุดต่อขวด สำหรับ AL query"""
+    with get_conn() as conn:
+        rows = conn.execute("""
+            SELECT b.bottle_id, b.shelf, b.row, b.col,
+                   i.id AS image_id, i.local_path
+            FROM images i
+            JOIN bottles b ON i.bottle_id = b.bottle_id
+            INNER JOIN (
+                SELECT bottle_id, MAX(id) AS max_id
+                FROM images
+                WHERE status = 'unknown'
+                  AND local_path IS NOT NULL
+                  AND local_path != ''
+                GROUP BY bottle_id
+            ) latest ON i.bottle_id = latest.bottle_id AND i.id = latest.max_id
+            ORDER BY b.shelf, b.row, b.col
+        """).fetchall()
+    return [dict(r) for r in rows]
