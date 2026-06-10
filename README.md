@@ -38,7 +38,7 @@
 **Classification (vitro_vision/)**
 - EfficientNet-B0 Transfer Learning — healthy / contaminated / dead
 - ArUco DICT_4X4_100 — ระบุ bottle_id อัตโนมัติจาก marker ติดข้างขวด
-- Active Learning Loop — retrain อัตโนมัติเมื่อมีภาพใหม่ถึง threshold
+- Active Learning Loop — MC Dropout uncertainty sampling (`GET /api/al_query`), retrain อัตโนมัติเมื่อถึง threshold
 - Experiment tracking ด้วย [wandb](https://wandb.ai/peeradon4778-pcshsbr-ac-th/vitrovision)
 
 **Phenotyping (shelf_manager/)**
@@ -59,6 +59,7 @@
 | Language | Python 3.11 (conda env: `ml`) |
 | ML | PyTorch + timm (EfficientNet-B0) |
 | CV | OpenCV, albumentations |
+| Explainability | pytorch-grad-cam (GradCAM++) |
 | Detection | YOLOv8 (ultralytics), ArUco |
 | Web App | Flask (VitroShelf), SQLite, Chart.js |
 | Storage | Google Drive (auto-upload) |
@@ -74,12 +75,14 @@
 VitroVision/
 ├── vitro_vision/          # ML package หลัก
 │   ├── classifier.py      # predict healthy/contaminated/dead
+│   ├── transforms.py      # centralized augmentation pipeline (albumentations)
 │   ├── detector.py        # ArUco bottle_id detection
 │   ├── scanner.py         # live camera scanner
 │   └── batch_analyze.py   # วิเคราะห์ภาพย้อนหลัง
 ├── shelf_manager/         # VitroShelf web app
 │   ├── main.py            # Flask entry point (port 5001)
 │   ├── trainer.py         # EfficientNet training + wandb
+│   ├── inference.py       # predict_bytes + predict_mc_dropout (MC Dropout)
 │   ├── phenotyper.py      # 7-feature phenotype extraction
 │   ├── database.py        # SQLite schema + migrations
 │   ├── drive_uploader.py  # Google Drive background upload
@@ -88,7 +91,9 @@ VitroVision/
 │   ├── 01_explore.ipynb
 │   ├── 02_preprocess.ipynb
 │   ├── 03_growth_analysis.ipynb   # Kruskal-Wallis + Bonferroni
-│   └── 04_train_kaggle.ipynb      # Kaggle GPU training
+│   ├── 04_train_kaggle.ipynb      # Kaggle GPU training
+│   ├── 05_kfold_eval.ipynb        # Stratified 5-fold CV, Bootstrap CI, McNemar's test
+│   └── 06_gradcam.ipynb           # GradCAM++ visualization (pytorch-grad-cam)
 ├── models/final/          # classifier.pt (ไม่ push GitHub)
 ├── results/               # กราฟ PNG, phenotype_summary.csv
 ├── generate_aruco.py      # PDF ArUco markers สำหรับปริ้นท์
@@ -143,6 +148,8 @@ python generate_aruco.py
 - [x] Analytics dashboard — growth curves, vigor heatmap, statistics
 - [x] wandb experiment tracking
 - [x] Kaggle GPU training notebook
+- [x] Stratified 5-fold CV + Bootstrap CI (05_kfold_eval.ipynb) — รอภาพจริง
+- [x] GradCAM++ visualization notebook (06_gradcam.ipynb)
 - [ ] ภาพจริงจาก lab (เป้า 500+ ภาพ ภายใน ต.ค. 2569)
 - [ ] Kappa ≥ 0.70 จากภาพจริง
 - [ ] Human baseline Kappa (ครูที่ปรึกษา label 28 ภาพ)
