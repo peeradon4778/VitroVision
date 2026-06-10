@@ -23,7 +23,7 @@
 <body class="bg-gray-950 text-gray-100 min-h-screen font-sans pb-20 md:pb-0">
 
   <!-- Top nav (desktop) -->
-  <nav class="bg-gray-900 border-b border-gray-800 px-4 py-3 flex items-center gap-6">
+  <nav id="topnav" class="bg-gray-900 border-b border-gray-800 px-4 py-3 flex items-center gap-6">
     <a href="/" class="text-green-400 font-bold text-lg tracking-wide">🌱 VitroShelf</a>
     <a href="/shelf/S01" class="text-gray-300 hover:text-white text-sm hidden md:block">ชั้น S01</a>
     <a href="/shelf/S02" class="text-gray-300 hover:text-white text-sm hidden md:block">ชั้น S02</a>
@@ -38,7 +38,16 @@
     <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f59e0b;animation:pulse 1s infinite"></span>
     <span id="ml-banner-text">กำลังโหลด ML modules (torch, timm)... Train และ Scanner ยังไม่พร้อม</span>
   </div>
-  <style>@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}</style>
+  <style>
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+    #topnav a.nav-active { color:#fff !important; position:relative; }
+    #topnav a.nav-active::after {
+      content:''; position:absolute; bottom:-13px; left:0; right:0;
+      height:2px; background:#4ade80; border-radius:1px;
+    }
+    #bottomnav a.nav-active { color:#4ade80 !important; }
+    #bottomnav a.nav-active span.text-xl { filter:brightness(1.4) saturate(1.5); }
+  </style>
   <script>
   (function(){
     function check(){
@@ -61,7 +70,7 @@
   </main>
 
   <!-- Bottom nav (mobile) -->
-  <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800 flex justify-around py-2 z-40">
+  <nav id="bottomnav" class="md:hidden fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800 flex justify-around py-2 z-40">
     <a href="/" class="flex flex-col items-center gap-0.5 text-gray-400 hover:text-green-400 px-4 py-1">
       <span class="text-xl">📊</span>
       <span class="text-xs">Dashboard</span>
@@ -88,5 +97,16 @@
     </a>
   </nav>
 
+  <script>
+  (function(){
+    var p = location.pathname;
+    document.querySelectorAll('#topnav a[href], #bottomnav a[href]').forEach(function(a){
+      var h = a.getAttribute('href');
+      if (!h) return;
+      var active = (h === '/') ? (p === '/') : (p === h || p.startsWith(h + '/'));
+      if (active) a.classList.add('nav-active');
+    });
+  })();
+  </script>
 </body>
 </html>
