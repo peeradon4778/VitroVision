@@ -30,6 +30,27 @@ def _load_seg():
         _seg_model = None
 
 
+def _glcm_features(gray: np.ndarray, levels: int = 16) -> tuple[float, float]:
+    """GLCM contrast/homogeneity (horizontal offset, symmetric)
+    numpy ล้วน — ไม่ต้องพึ่ง scikit-image
+    contrast สูง → พื้นผิวหยาบ/ตัดกันมาก; homogeneity สูง → เรียบสม่ำเสมอ
+    """
+    q = np.clip(gray.astype(np.int32) * levels // 256, 0, levels - 1)
+    left, right = q[:, :-1].ravel(), q[:, 1:].ravel()
+    glcm = np.zeros((levels, levels), dtype=np.float64)
+    np.add.at(glcm, (left, right), 1.0)
+    glcm += glcm.T                      # symmetric (ซ้าย↔ขวา)
+    s = glcm.sum()
+    if s == 0:
+        return 0.0, 0.0
+    p = glcm / s
+    i = np.arange(levels).reshape(-1, 1)
+    j = np.arange(levels).reshape(1, -1)
+    contrast    = float(np.sum(p * (i - j) ** 2))
+    homogeneity = float(np.sum(p / (1.0 + np.abs(i - j))))
+    return round(contrast, 4), round(homogeneity, 4)
+
+
 def _classic_cv(bgr: np.ndarray) -> dict:
     """วิเคราะห์ด้วย HSV color segmentation — ไม่ต้องมี model"""
     h, w = bgr.shape[:2]
@@ -118,6 +139,32 @@ def _classic_cv(bgr: np.ndarray) -> dict:
     brown_penalty = min(brown_coverage / 5.0, 3.0)
     vigor_score = round(max(green_score + lci_score - brown_penalty, 0.0), 2)
 
+    # ── Morphological & color-index traits (research 14) ──────
+    # หมายเหตุ: green_coverage_pct = projected leaf area (normalized) อยู่แล้ว
+
+    # Convex Hull Ratio (solidity) = plant_area / hull_area
+    # ต่ำ → ทรงกระจาย/หลายยอดแยก, สูง(→1) → กระจุกแน่น (จับ shoot architecture)
+    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    if contours and green_px > 50:
+        hull_area = cv2.contourArea(cv2.convexHull(np.vstack(contours)))
+        convex_hull_ratio = round(min(green_px / hull_area, 1.0), 4) if hull_area > 0 else 0.0
+    else:
+        convex_hull_ratio = 0.0
+
+    # ExG / VARI — vegetation color indices (threshold-free, ทนต่อแสง)
+    # ใช้ normalized chromatic coords → bounded + robust กว่า HSV threshold
+    bf = roi[:, :, 0].astype(np.float32)
+    gf = roi[:, :, 1].astype(np.float32)
+    rf = roi[:, :, 2].astype(np.float32)
+    tot = bf + gf + rf + 1e-6
+    rn, gn, bn = rf / tot, gf / tot, bf / tot
+    exg_mean  = round(float((2.0 * gn - rn - bn).mean()), 4)
+    vari      = (gn - rn) / (gn + rn - bn + 1e-6)
+    vari_mean = round(float(np.clip(vari, -1.0, 1.0).mean()), 4)
+
+    # GLCM texture (contrast/homogeneity) — ละเอียดกว่า Shannon entropy เดิม
+    glcm_contrast, glcm_homogeneity = _glcm_features(gray)
+
     return {
         'green_coverage_pct': green_coverage,
         'leaf_color_index':   lci,
@@ -126,6 +173,11 @@ def _classic_cv(bgr: np.ndarray) -> dict:
         'texture_entropy':    texture_entropy,
         'brown_coverage_pct': brown_coverage,
         'vigor_score':        vigor_score,
+        'convex_hull_ratio':  convex_hull_ratio,
+        'exg_mean':           exg_mean,
+        'vari_mean':          vari_mean,
+        'glcm_contrast':      glcm_contrast,
+        'glcm_homogeneity':   glcm_homogeneity,
         'method':             'classic_cv',
     }
 
@@ -173,6 +225,11 @@ def _yolov8_seg(bgr: np.ndarray) -> dict | None:
             'texture_entropy':    classic['texture_entropy'],
             'brown_coverage_pct': classic['brown_coverage_pct'],
             'vigor_score':        classic['vigor_score'],
+            'convex_hull_ratio':  classic['convex_hull_ratio'],
+            'exg_mean':           classic['exg_mean'],
+            'vari_mean':          classic['vari_mean'],
+            'glcm_contrast':      classic['glcm_contrast'],
+            'glcm_homogeneity':   classic['glcm_homogeneity'],
             'method':             'yolov8_seg',
         }
     except Exception as e:
@@ -184,13 +241,18 @@ def measure(image_bytes: bytes) -> dict:
     """วัด phenotyping parameters — คืน dict หรือ {} ถ้าภาพอ่านไม่ได้
 
     Returns:
-        green_coverage_pct  float  % พื้นที่สีเขียวในขวด
+        green_coverage_pct  float  % พื้นที่สีเขียว = projected leaf area (normalized)
         leaf_color_index    float  G/R ratio (healthy ≈ 1.5–2.5, stress ≈ 0.8–1.2)
         shoot_count_cv      int    จำนวนยอดโดยประมาณ
         media_color_cv      str    clear / normal / yellow / brown
         texture_entropy     float  Shannon entropy ของ grayscale (สูง = ซับซ้อน/contamination)
         brown_coverage_pct  float  % พื้นที่สีน้ำตาล (contamination indicator)
         vigor_score         float  คะแนนสุขภาพรวม 0–10 (เปรียบเทียบระหว่างสูตรได้)
+        convex_hull_ratio   float  solidity = plant/hull area (ต่ำ=กระจาย, สูง=กระจุก)
+        exg_mean            float  Excess Green index เฉลี่ย (threshold-free greenness)
+        vari_mean           float  VARI เฉลี่ย (vegetation index ทนแสง, -1..1)
+        glcm_contrast       float  GLCM contrast (พื้นผิวหยาบ/ตัดกัน)
+        glcm_homogeneity    float  GLCM homogeneity (พื้นผิวเรียบสม่ำเสมอ)
         method              str    classic_cv หรือ yolov8_seg
     """
     arr = np.frombuffer(image_bytes, np.uint8)

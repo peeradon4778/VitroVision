@@ -288,6 +288,11 @@ def add_record_json(bottle_id):
                     texture_entropy=pheno.get('texture_entropy'),
                     brown_coverage_pct=pheno.get('brown_coverage_pct'),
                     vigor_score=pheno.get('vigor_score'),
+                    convex_hull_ratio=pheno.get('convex_hull_ratio'),
+                    exg_mean=pheno.get('exg_mean'),
+                    vari_mean=pheno.get('vari_mean'),
+                    glcm_contrast=pheno.get('glcm_contrast'),
+                    glcm_homogeneity=pheno.get('glcm_homogeneity'),
                 )
     _al_increment_and_check(status)
     return jsonify({"ok": True, "ai_status": ai_status, "ai_confidence": ai_conf,
@@ -516,6 +521,11 @@ def api_scan_save():
                 texture_entropy=pheno.get('texture_entropy'),
                 brown_coverage_pct=pheno.get('brown_coverage_pct'),
                 vigor_score=pheno.get('vigor_score'),
+                convex_hull_ratio=pheno.get('convex_hull_ratio'),
+                exg_mean=pheno.get('exg_mean'),
+                vari_mean=pheno.get('vari_mean'),
+                glcm_contrast=pheno.get('glcm_contrast'),
+                glcm_homogeneity=pheno.get('glcm_homogeneity'),
             )
     _al_increment_and_check(status)
     _glass_event({

@@ -115,6 +115,11 @@ def _migrate_db():
             ("texture_entropy",     "REAL    DEFAULT NULL"),
             ("brown_coverage_pct",  "REAL    DEFAULT NULL"),
             ("phenotype_method",    "TEXT    DEFAULT ''"),
+            ("convex_hull_ratio",   "REAL    DEFAULT NULL"),
+            ("exg_mean",            "REAL    DEFAULT NULL"),
+            ("vari_mean",           "REAL    DEFAULT NULL"),
+            ("glcm_contrast",       "REAL    DEFAULT NULL"),
+            ("glcm_homogeneity",    "REAL    DEFAULT NULL"),
         ]
         for col_name, col_def in new_images_growth:
             if col_name not in existing_img:
@@ -309,16 +314,22 @@ def update_image_cv(image_id, shoot_count=-1, media_color="normal",
 def update_image_phenotype(image_id, green_coverage_pct, leaf_color_index,
                            shoot_count_cv, media_color_cv, phenotype_method,
                            texture_entropy=None, brown_coverage_pct=None,
-                           vigor_score=None):
+                           vigor_score=None, convex_hull_ratio=None,
+                           exg_mean=None, vari_mean=None,
+                           glcm_contrast=None, glcm_homogeneity=None):
     with get_conn() as conn:
         conn.execute("""
             UPDATE images SET green_coverage_pct=?, leaf_color_index=?,
                               shoot_count_cv=?, media_color_cv=?, phenotype_method=?,
-                              texture_entropy=?, brown_coverage_pct=?, vigor_score=?
+                              texture_entropy=?, brown_coverage_pct=?, vigor_score=?,
+                              convex_hull_ratio=?, exg_mean=?, vari_mean=?,
+                              glcm_contrast=?, glcm_homogeneity=?
             WHERE id=?
         """, (green_coverage_pct, leaf_color_index,
               shoot_count_cv, media_color_cv, phenotype_method,
-              texture_entropy, brown_coverage_pct, vigor_score, image_id))
+              texture_entropy, brown_coverage_pct, vigor_score,
+              convex_hull_ratio, exg_mean, vari_mean,
+              glcm_contrast, glcm_homogeneity, image_id))
         conn.commit()
 
 
@@ -328,7 +339,8 @@ def get_phenotype_series(bottle_id):
         rows = conn.execute("""
             SELECT day_point, date_taken, green_coverage_pct, leaf_color_index,
                    shoot_count_cv, media_color_cv, texture_entropy, brown_coverage_pct,
-                   vigor_score, phenotype_method, status
+                   vigor_score, convex_hull_ratio, exg_mean, vari_mean,
+                   glcm_contrast, glcm_homogeneity, phenotype_method, status
             FROM images
             WHERE bottle_id=? AND green_coverage_pct IS NOT NULL
             ORDER BY day_point
@@ -346,6 +358,8 @@ def get_formulation_series(batch_id=None):
                    i.day_point, i.date_taken, i.status,
                    i.green_coverage_pct, i.leaf_color_index, i.shoot_count_cv,
                    i.texture_entropy, i.brown_coverage_pct, i.vigor_score,
+                   i.convex_hull_ratio, i.exg_mean, i.vari_mean,
+                   i.glcm_contrast, i.glcm_homogeneity,
                    i.media_color_cv, i.phenotype_method
             FROM images i
             JOIN bottles b ON i.bottle_id = b.bottle_id
@@ -365,6 +379,8 @@ def get_bottle_timeline(bottle_id):
                    green_coverage_pct, leaf_color_index,
                    shoot_count_cv, media_color_cv,
                    texture_entropy, brown_coverage_pct,
+                   convex_hull_ratio, exg_mean, vari_mean,
+                   glcm_contrast, glcm_homogeneity,
                    ai_status, ai_confidence, phenotype_method
             FROM images
             WHERE bottle_id=?
