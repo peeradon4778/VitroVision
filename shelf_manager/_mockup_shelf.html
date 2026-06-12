@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ชั้น S01 — VitroShelf (Warm Paper mockup)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: { paper:'#FAF9F5', surface:'#FFFFFF', ink:'#2A2722', muted:'#908A7E',
+        line:'#EAE7DF', clay:{DEFAULT:'#D97757', hover:'#C45D3E'},
+        st:{ healthy:'#6E8B5A', contam:'#C98A3C', dead:'#B84A3E', unknown:'#B8B3A8', empty:'#EFECE4' } },
+      fontFamily: { serif:['Fraunces','Georgia','serif'], sans:['Inter','system-ui','sans-serif'] },
+      boxShadow: { soft:'0 1px 2px rgba(42,39,34,.04), 0 1px 3px rgba(42,39,34,.03)' } } } }
+  </script>
+  <style> body{-webkit-font-smoothing:antialiased} .cell{transition:transform .08s} .cell:hover{transform:scale(1.12);z-index:5} </style>
+</head>
+<body class="bg-paper text-ink font-sans">
+
+<nav class="bg-surface/80 backdrop-blur border-b border-line px-5 py-3 flex items-center gap-3 sticky top-0 z-30">
+  <a href="#" class="font-serif text-ink font-semibold text-lg tracking-tight">🌱 VitroVision</a>
+  <span class="text-line hidden sm:inline">/</span>
+  <span class="text-sm text-muted hidden sm:inline">VitroShelf</span>
+  <div class="hidden md:flex items-center gap-5 text-sm text-muted ml-auto">
+    <a href="#" class="hover:text-ink transition">หน้าหลัก</a>
+    <a href="#" class="text-ink font-medium">ชั้น S01</a>
+    <a href="#" class="hover:text-ink transition">ชั้น S02</a>
+    <a href="#" class="hover:text-ink transition">Scanner</a>
+  </div>
+</nav>
+
+<main class="max-w-5xl mx-auto px-5 py-8 space-y-6">
+
+  <!-- header -->
+  <div class="flex items-end justify-between gap-4 flex-wrap">
+    <div>
+      <a href="#" class="text-sm text-muted hover:text-ink transition">← หน้าหลัก</a>
+      <p class="text-xs uppercase tracking-wider text-clay font-medium mt-2 mb-1">VitroShelf · ชั้นวาง</p>
+      <h1 class="font-serif text-3xl text-ink leading-tight">ชั้น S01</h1>
+      <p class="text-sm text-muted mt-1">50 ขวด · 5 แถว (A–E) × 10 ช่อง</p>
+    </div>
+    <div class="flex gap-1.5 text-xs">
+      <span class="bg-st-healthy/15 text-st-healthy px-2.5 py-1 rounded-full">40 Healthy</span>
+      <span class="bg-st-contam/15 text-st-contam px-2.5 py-1 rounded-full">6 Contam</span>
+      <span class="bg-st-dead/15 text-st-dead px-2.5 py-1 rounded-full">4 Dead</span>
+    </div>
+  </div>
+
+  <!-- grid card -->
+  <section class="bg-surface border border-line rounded-2xl shadow-soft p-5 overflow-x-auto">
+    <div id="grid" class="min-w-[520px]"></div>
+  </section>
+
+  <!-- legend -->
+  <div class="flex gap-5 text-xs text-muted items-center flex-wrap">
+    <span class="font-medium text-ink">สัญลักษณ์:</span>
+    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-st-healthy inline-block"></span> Healthy</span>
+    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-st-contam inline-block"></span> Contaminated</span>
+    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-st-dead inline-block"></span> Dead</span>
+    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-st-unknown inline-block"></span> Unknown</span>
+    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded ring-2 ring-clay inline-block"></span> ถ่ายวันนี้แล้ว</span>
+  </div>
+
+  <p class="text-center text-xs text-muted pt-6">— mockup: Warm Paper theme · ข้อมูลจำลอง · คลิกช่อง = ไปหน้าขวด —</p>
+</main>
+
+<script>
+const ROWS=['A','B','C','D','E'], COLS=10;
+const COLOR={healthy:'bg-st-healthy',contaminated:'bg-st-contam',dead:'bg-st-dead',unknown:'bg-st-unknown'};
+const LABEL={healthy:'Healthy',contaminated:'Contaminated',dead:'Dead',unknown:'Unknown'};
+function mockStatus(){const r=Math.random();if(r<0.80)return'healthy';if(r<0.89)return'contaminated';if(r<0.93)return'dead';return'unknown';}
+const shot=new Set(); while(shot.size<8) shot.add(Math.floor(Math.random()*50));
+
+// header row (col numbers) + row labels
+let html = '<div class="flex gap-1.5 mb-1.5 pl-7">';
+for(let c=1;c<=COLS;c++) html += `<div class="flex-1 text-center text-[10px] text-muted">${String(c).padStart(2,'0')}</div>`;
+html += '</div>';
+let i=0;
+for(const row of ROWS){
+  html += '<div class="flex items-center gap-1.5 mb-1.5">';
+  html += `<div class="w-5 text-xs text-muted font-medium text-center">${row}</div>`;
+  for(let c=1;c<=COLS;c++){
+    const s=mockStatus(); const id=`S01-${row}-${String(c).padStart(2,'0')}`;
+    const ring = shot.has(i)?' ring-2 ring-clay ring-offset-1 ring-offset-surface':'';
+    html += `<a href="#" title="${id} · ${LABEL[s]}${shot.has(i)?' · ถ่ายวันนี้แล้ว':''}" class="cell flex-1 aspect-square rounded-md ${COLOR[s]}${ring} block"></a>`;
+    i++;
+  }
+  html += '</div>';
+}
+document.getElementById('grid').innerHTML = html;
+</script>
+</body>
+</html>

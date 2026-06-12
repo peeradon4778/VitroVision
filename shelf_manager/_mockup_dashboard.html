@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — VitroShelf (Warm Paper mockup)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: { extend: {
+        colors: {
+          paper:'#FAF9F5', surface:'#FFFFFF', ink:'#2A2722', muted:'#908A7E',
+          line:'#EAE7DF', clay:{DEFAULT:'#D97757', hover:'#C45D3E'},
+          st:{ healthy:'#6E8B5A', contam:'#C98A3C', dead:'#B84A3E',
+               unknown:'#B8B3A8', empty:'#EFECE4' },
+        },
+        fontFamily: { serif:['Fraunces','Georgia','serif'], sans:['Inter','system-ui','sans-serif'] },
+        boxShadow: { soft:'0 1px 2px rgba(42,39,34,.04), 0 1px 3px rgba(42,39,34,.03)' },
+      } },
+    }
+  </script>
+  <style>
+    body { -webkit-font-smoothing: antialiased; }
+    .heat-cell { transition: transform .08s ease; }
+    .heat-cell:hover { transform: scale(1.35); z-index: 5; position: relative; }
+  </style>
+</head>
+<body class="bg-paper text-ink font-sans">
+
+<!-- ░░ NAV (Warm Paper) ░░ -->
+<nav class="bg-surface/80 backdrop-blur border-b border-line px-5 py-3 flex items-center gap-3 sticky top-0 z-30">
+  <a href="#" class="font-serif text-ink font-semibold text-lg tracking-tight">🌱 VitroVision</a>
+  <span class="text-line hidden sm:inline">/</span>
+  <span class="text-sm text-muted hidden sm:inline">VitroShelf</span>
+  <div class="hidden md:flex items-center gap-5 text-sm text-muted ml-auto">
+    <a href="#" class="text-ink font-medium">หน้าหลัก</a>
+    <a href="#" class="hover:text-ink transition">ชั้น S01</a>
+    <a href="#" class="hover:text-ink transition">ชั้น S02</a>
+    <a href="#" class="hover:text-ink transition">Train</a>
+    <a href="#" class="hover:text-ink transition">Scanner</a>
+    <a href="#" class="hover:text-ink transition">Analytics</a>
+  </div>
+</nav>
+
+<main class="max-w-5xl mx-auto px-5 py-8 space-y-6">
+
+  <!-- ░░ P0.1 — HEADER STATUS STRIP ░░ -->
+  <section class="bg-surface border border-line rounded-2xl shadow-soft p-5">
+    <div class="flex items-start justify-between gap-4 flex-wrap">
+      <div>
+        <p class="text-xs uppercase tracking-wider text-clay font-medium mb-1.5">VitroShelf · Dashboard</p>
+        <p class="text-xs text-muted mb-1">รอบการปลูกปัจจุบัน</p>
+        <h1 class="font-serif text-2xl md:text-3xl text-ink leading-tight">
+          รอบ 1 — มิ.ย. 2026
+          <span class="align-middle ml-2 text-xs font-sans bg-st-healthy/15 text-st-healthy px-2 py-0.5 rounded-full">Training</span>
+        </h1>
+        <div class="flex items-center gap-3 mt-2 text-sm text-muted">
+          <span>📅 <b class="text-ink font-medium">Day <span id="hdr-day">7</span></b></span>
+          <span class="text-line">·</span>
+          <span>📷 ถ่ายวันนี้ <b class="text-ink font-medium">12</b>/100</span>
+        </div>
+        <!-- progress -->
+        <div class="mt-2 w-56 max-w-full h-1.5 rounded-full bg-line overflow-hidden">
+          <div class="h-full bg-clay rounded-full" style="width:12%"></div>
+        </div>
+      </div>
+      <a href="#" class="bg-clay hover:bg-clay-hover text-white font-medium text-sm px-5 py-3 rounded-xl shadow-soft transition flex items-center gap-2 shrink-0">
+        📷 เริ่มถ่าย
+      </a>
+    </div>
+  </section>
+
+  <!-- ░░ Mobile access banner (subtle) ░░ -->
+  <div class="flex items-center justify-between gap-3 text-xs text-muted px-1">
+    <span>เปิดจากมือถือ (WiFi เดียวกัน): <a href="#" class="text-clay font-medium font-mono">http://192.168.1.42:5001</a></span>
+    <button class="text-muted hover:text-ink border border-line rounded-lg px-2.5 py-1 transition">คัดลอก</button>
+  </div>
+
+  <!-- ░░ P0.2 — OPERATIONAL ZONE (2-col) ░░ -->
+  <div class="grid md:grid-cols-2 gap-6">
+
+    <!-- Batch card -->
+    <section class="bg-surface border border-line rounded-2xl shadow-soft p-5">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="font-serif text-lg text-ink">รอบการปลูก</h2>
+        <button class="text-xs text-clay hover:text-clay-hover font-medium">+ เริ่มรอบใหม่</button>
+      </div>
+      <p class="text-sm text-ink font-medium">รอบ 1 — มิ.ย. 2026</p>
+      <p class="text-xs text-muted mt-1">เริ่ม 2026-06-01 · ขวด 100 · ภาพสะสม 348</p>
+      <details class="mt-3">
+        <summary class="text-xs text-muted cursor-pointer hover:text-ink">ประวัติรอบก่อน (1 รอบ)</summary>
+        <div class="mt-2 text-xs text-muted flex items-center gap-2">
+          <span class="text-st-unknown">■</span> รอบทดสอบ — พ.ค. 2026
+        </div>
+      </details>
+    </section>
+
+    <!-- Global Day stepper -->
+    <section class="bg-surface border border-line rounded-2xl shadow-soft p-5">
+      <div class="flex items-center justify-between mb-3">
+        <div>
+          <h2 class="font-serif text-lg text-ink">Day Point วันนี้</h2>
+          <p class="text-xs text-muted">ทุกขวดที่ถ่ายจะบันทึกเป็น Day นี้</p>
+        </div>
+        <button onclick="setDay(0)" class="text-xs text-muted hover:text-st-dead transition">ล้างค่า</button>
+      </div>
+      <div class="flex items-center gap-3">
+        <button onclick="stepDay(-1)" class="w-12 h-12 rounded-xl border border-line text-ink text-2xl font-medium hover:bg-paper active:bg-line transition flex items-center justify-center select-none">−</button>
+        <div class="flex-1 text-center">
+          <div id="day-val" class="font-serif text-4xl text-clay leading-none py-1">7</div>
+          <div class="text-xs text-st-healthy mt-1">ล็อกค่าแล้ว</div>
+        </div>
+        <button onclick="stepDay(1)" class="w-12 h-12 rounded-xl border border-line text-ink text-2xl font-medium hover:bg-paper active:bg-line transition flex items-center justify-center select-none">+</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- ░░ P0.3 — STATS ░░ -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="bg-surface border border-line rounded-2xl shadow-soft p-4">
+      <p class="text-xs text-muted mb-1">🧪 ขวดทั้งหมด</p>
+      <p class="font-serif text-3xl text-ink">100</p>
+    </div>
+    <div class="bg-surface border border-line rounded-2xl shadow-soft p-4">
+      <p class="text-xs text-muted mb-1">📷 ถ่ายวันนี้</p>
+      <p class="font-serif text-3xl text-ink">12<span class="text-lg text-muted">/100</span></p>
+      <div class="mt-2 h-1.5 rounded-full bg-line overflow-hidden">
+        <div class="h-full bg-clay rounded-full" style="width:12%"></div>
+      </div>
+    </div>
+    <div class="bg-surface border border-line rounded-2xl shadow-soft p-4">
+      <p class="text-xs text-muted mb-1">✓ Healthy</p>
+      <p class="font-serif text-3xl text-st-healthy">81</p>
+    </div>
+    <div class="bg-surface border border-line rounded-2xl shadow-soft p-4">
+      <p class="text-xs text-muted mb-1">⚠ Contaminated / Dead</p>
+      <p class="font-serif text-3xl text-st-dead">11</p>
+    </div>
+  </div>
+
+  <!-- ░░ SHELVES (heatmap, 2-col) ░░ -->
+  <div>
+    <h2 class="font-serif text-lg text-ink mb-4">ชั้นวาง</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="shelves"></div>
+  </div>
+
+  <!-- ░░ Legend ░░ -->
+  <div class="flex gap-5 text-xs text-muted items-center flex-wrap pt-1">
+    <span class="font-medium text-ink">สัญลักษณ์:</span>
+    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-st-healthy inline-block"></span> Healthy</span>
+    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-st-contam inline-block"></span> Contaminated</span>
+    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-st-dead inline-block"></span> Dead</span>
+    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-st-unknown inline-block"></span> Unknown</span>
+  </div>
+
+  <p class="text-center text-xs text-muted pt-6">— mockup: Warm Paper theme · ข้อมูลจำลอง —</p>
+</main>
+
+<script>
+// Day stepper
+let day = 7;
+function render(){ document.getElementById('day-val').textContent = day; document.getElementById('hdr-day').textContent = day; }
+function stepDay(d){ day = Math.max(0, day + d); render(); }
+function setDay(v){ day = Math.max(0, v); render(); }
+
+// Mock heatmap: 2 shelves × (5 rows × 10 cols) = 100
+const ROWS = ['A','B','C','D','E'], COLS = 10;
+const COLOR = { healthy:'bg-st-healthy', contaminated:'bg-st-contam', dead:'bg-st-dead', unknown:'bg-st-unknown' };
+const LABEL = { healthy:'Healthy', contaminated:'Contaminated', dead:'Dead', unknown:'Unknown' };
+
+function mockStatus(){
+  const r = Math.random();
+  if (r < 0.80) return 'healthy';
+  if (r < 0.89) return 'contaminated';
+  if (r < 0.93) return 'dead';
+  return 'unknown';
+}
+
+function buildShelf(shelf){
+  let cells = '', h=0,c=0,d=0;
+  const todayShot = new Set();
+  // mock: ~6 ขวด/ชั้น ถ่ายวันนี้แล้ว (ring)
+  while(todayShot.size < 6) todayShot.add(Math.floor(Math.random()*50));
+  let i = 0;
+  for (const row of ROWS){
+    for (let col=1; col<=COLS; col++){
+      const s = mockStatus();
+      if (s==='healthy') h++; else if (s==='contaminated') c++; else if (s==='dead') d++;
+      const id = `${shelf}-${row}-${String(col).padStart(2,'0')}`;
+      const ring = todayShot.has(i) ? ' ring-2 ring-clay ring-offset-1 ring-offset-surface' : '';
+      cells += `<div class="heat-cell w-full aspect-square rounded ${COLOR[s]}${ring}" title="${id} · ${LABEL[s]}${todayShot.has(i)?' · ถ่ายวันนี้แล้ว':''}"></div>`;
+      i++;
+    }
+  }
+  return `
+  <a href="#" class="bg-surface border border-line rounded-2xl shadow-soft p-4 hover:border-clay/50 transition block">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="font-serif text-xl text-ink">${shelf}</h3>
+      <div class="flex gap-1.5 text-xs">
+        <span class="bg-st-healthy/15 text-st-healthy px-2 py-0.5 rounded-full">${h} H</span>
+        <span class="bg-st-contam/15 text-st-contam px-2 py-0.5 rounded-full">${c} C</span>
+        <span class="bg-st-dead/15 text-st-dead px-2 py-0.5 rounded-full">${d} D</span>
+      </div>
+    </div>
+    <div class="grid grid-cols-10 gap-1.5">${cells}</div>
+    <p class="text-clay text-xs mt-3 font-medium">ดูรายละเอียด →</p>
+  </a>`;
+}
+
+document.getElementById('shelves').innerHTML = buildShelf('S01') + buildShelf('S02');
+render();
+</script>
+</body>
+</html>

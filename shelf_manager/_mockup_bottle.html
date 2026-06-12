@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>S01-C-03 — VitroShelf (Warm Paper mockup)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: { paper:'#FAF9F5', surface:'#FFFFFF', ink:'#2A2722', muted:'#908A7E',
+        line:'#EAE7DF', clay:{DEFAULT:'#D97757', hover:'#C45D3E'},
+        st:{ healthy:'#6E8B5A', contam:'#C98A3C', dead:'#B84A3E', unknown:'#B8B3A8', empty:'#EFECE4' } },
+      fontFamily: { serif:['Fraunces','Georgia','serif'], sans:['Inter','system-ui','sans-serif'] },
+      boxShadow: { soft:'0 1px 2px rgba(42,39,34,.04), 0 1px 3px rgba(42,39,34,.03)' } } } }
+  </script>
+  <style> body{-webkit-font-smoothing:antialiased} </style>
+</head>
+<body class="bg-paper text-ink font-sans">
+
+<nav class="bg-surface/80 backdrop-blur border-b border-line px-5 py-3 flex items-center gap-3 sticky top-0 z-30">
+  <a href="#" class="font-serif text-ink font-semibold text-lg tracking-tight">🌱 VitroVision</a>
+  <span class="text-line hidden sm:inline">/</span>
+  <span class="text-sm text-muted hidden sm:inline">VitroShelf</span>
+  <div class="hidden md:flex items-center gap-5 text-sm text-muted ml-auto">
+    <a href="#" class="hover:text-ink transition">หน้าหลัก</a>
+    <a href="#" class="hover:text-ink transition">ชั้น S01</a>
+    <a href="#" class="hover:text-ink transition">Scanner</a>
+  </div>
+</nav>
+
+<main class="max-w-5xl mx-auto px-5 py-8 space-y-6">
+
+  <!-- header -->
+  <div class="flex items-end justify-between gap-4 flex-wrap">
+    <div>
+      <a href="#" class="text-sm text-muted hover:text-ink transition">← ชั้น S01</a>
+      <p class="text-xs uppercase tracking-wider text-clay font-medium mt-2 mb-1">VitroShelf · ขวด</p>
+      <h1 class="font-serif text-3xl text-ink leading-tight">S01-C-03</h1>
+      <p class="text-sm text-muted mt-1">สูตร C (BAP 5) · ปลูก 2026-06-01 · Day 7</p>
+    </div>
+    <span class="bg-st-healthy/15 text-st-healthy text-sm font-medium px-3 py-1.5 rounded-full">● Healthy</span>
+  </div>
+
+  <div class="grid lg:grid-cols-2 gap-6">
+
+    <!-- ░░ LEFT: CAPTURE PANEL ░░ -->
+    <section class="bg-surface border border-line rounded-2xl shadow-soft p-5 space-y-5">
+      <h2 class="font-serif text-lg text-ink">บันทึกการสังเกต</h2>
+
+      <!-- status -->
+      <div>
+        <p class="text-xs text-muted mb-2">สถานะ</p>
+        <div class="grid grid-cols-4 gap-2">
+          <button onclick="pick(this,'st')" class="opt py-2.5 rounded-xl text-sm font-medium border border-st-healthy text-st-healthy bg-st-healthy/10" data-on="bg-st-healthy text-white border-st-healthy">Healthy</button>
+          <button onclick="pick(this,'st')" class="opt py-2.5 rounded-xl text-sm font-medium border border-line text-muted" data-on="bg-st-contam text-white border-st-contam">Contam</button>
+          <button onclick="pick(this,'st')" class="opt py-2.5 rounded-xl text-sm font-medium border border-line text-muted" data-on="bg-st-dead text-white border-st-dead">Dead</button>
+          <button onclick="pick(this,'st')" class="opt py-2.5 rounded-xl text-sm font-medium border border-line text-muted" data-on="bg-st-unknown text-white border-st-unknown">?</button>
+        </div>
+      </div>
+
+      <!-- shoot + vigor -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <p class="text-xs text-muted mb-2">ยอด <span class="text-muted/60">นับที่เห็นชัด</span></p>
+          <div class="flex items-center gap-2">
+            <button onclick="step(-1)" class="w-10 h-10 rounded-xl border border-line text-ink text-xl font-medium hover:bg-paper">−</button>
+            <span id="shoot" class="flex-1 text-center font-serif text-2xl text-clay">3</span>
+            <button onclick="step(1)" class="w-10 h-10 rounded-xl border border-line text-ink text-xl font-medium hover:bg-paper">+</button>
+          </div>
+        </div>
+        <div>
+          <p class="text-xs text-muted mb-2">Vigor</p>
+          <div class="flex gap-1">
+            <button onclick="pickV(this,1)" class="vg flex-1 h-10 rounded-lg text-sm font-medium border border-line text-muted">1</button>
+            <button onclick="pickV(this,2)" class="vg flex-1 h-10 rounded-lg text-sm font-medium border border-line text-muted">2</button>
+            <button onclick="pickV(this,3)" class="vg flex-1 h-10 rounded-lg text-sm font-medium border border-line text-muted">3</button>
+            <button onclick="pickV(this,4)" class="vg flex-1 h-10 rounded-lg text-sm font-medium bg-clay text-white border border-clay">4</button>
+            <button onclick="pickV(this,5)" class="vg flex-1 h-10 rounded-lg text-sm font-medium border border-line text-muted">5</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- height -->
+      <div>
+        <p class="text-xs text-muted mb-2">ความสูงยอด <span class="text-muted/60">สั้น&lt;1 · กลาง1–3 · สูง&gt;3 cm</span></p>
+        <div class="grid grid-cols-4 gap-1.5">
+          <button onclick="pick(this,'h')" class="opt py-2.5 rounded-lg text-xs font-medium border border-line text-muted" data-on="bg-clay text-white border-clay">—</button>
+          <button onclick="pick(this,'h')" class="opt py-2.5 rounded-lg text-xs font-medium border border-line text-muted" data-on="bg-clay text-white border-clay">สั้น</button>
+          <button onclick="pick(this,'h')" class="opt py-2.5 rounded-lg text-xs font-medium bg-clay text-white border border-clay" data-on="bg-clay text-white border-clay">กลาง</button>
+          <button onclick="pick(this,'h')" class="opt py-2.5 rounded-lg text-xs font-medium border border-line text-muted" data-on="bg-clay text-white border-clay">สูง</button>
+        </div>
+      </div>
+
+      <!-- developmental stage (§2.4) -->
+      <div>
+        <p class="text-xs text-muted mb-2">ระยะพัฒนาการ <span class="text-muted/60">ราก→ลำต้น→ใบเลี้ยง→ใบจริง</span></p>
+        <div class="grid grid-cols-5 gap-1.5">
+          <button onclick="pick(this,'st2')" class="opt py-2.5 rounded-lg text-xs font-medium border border-line text-muted" data-on="bg-clay text-white border-clay">—</button>
+          <button onclick="pick(this,'st2')" class="opt py-2.5 rounded-lg text-xs font-medium border border-line text-muted" data-on="bg-clay text-white border-clay">ราก</button>
+          <button onclick="pick(this,'st2')" class="opt py-2.5 rounded-lg text-xs font-medium border border-line text-muted" data-on="bg-clay text-white border-clay">ลำต้น</button>
+          <button onclick="pick(this,'st2')" class="opt py-2.5 rounded-lg text-xs font-medium bg-clay text-white border border-clay" data-on="bg-clay text-white border-clay">ใบเลี้ยง</button>
+          <button onclick="pick(this,'st2')" class="opt py-2.5 rounded-lg text-xs font-medium border border-line text-muted" data-on="bg-clay text-white border-clay">ใบจริง</button>
+        </div>
+      </div>
+
+      <!-- root + callus -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <p class="text-xs text-muted mb-2">ราก</p>
+          <div class="flex gap-1">
+            <button onclick="pick(this,'r')" class="opt flex-1 py-2.5 rounded-lg text-xs font-medium bg-clay text-white border border-clay" data-on="bg-clay text-white border-clay">ไม่มี</button>
+            <button onclick="pick(this,'r')" class="opt flex-1 py-2.5 rounded-lg text-xs font-medium border border-line text-muted" data-on="bg-clay text-white border-clay">น้อย</button>
+            <button onclick="pick(this,'r')" class="opt flex-1 py-2.5 rounded-lg text-xs font-medium border border-line text-muted" data-on="bg-clay text-white border-clay">มาก</button>
+          </div>
+        </div>
+        <div>
+          <p class="text-xs text-muted mb-2">Callus</p>
+          <button onclick="tg(this)" class="w-full py-2.5 rounded-lg text-xs font-medium border border-line text-muted" data-on="bg-st-healthy text-white border-st-healthy" data-off="ไม่มี" data-onlabel="มี">ไม่มี</button>
+        </div>
+      </div>
+
+      <!-- hyperhydric (§3.6) -->
+      <div>
+        <p class="text-xs text-muted mb-2">Hyperhydric <span class="text-muted/60">ใบใส/ฉ่ำน้ำ/บวม/ซีด</span></p>
+        <button onclick="tg(this)" class="w-full py-2.5 rounded-lg text-xs font-medium border border-line text-muted" data-on="bg-st-contam text-white border-st-contam" data-off="ปกติ" data-onlabel="⚠️ Hyperhydric">ปกติ</button>
+      </div>
+
+      <!-- camera -->
+      <div class="flex flex-col items-center gap-3 pt-2 border-t border-line">
+        <button class="w-20 h-20 rounded-full bg-clay hover:bg-clay-hover border-4 border-clay/20 shadow-soft active:scale-95 transition flex items-center justify-center text-3xl">📷</button>
+        <span class="text-xs text-muted">แตะเพื่อถ่าย</span>
+      </div>
+    </section>
+
+    <!-- ░░ RIGHT: DATA ░░ -->
+    <div class="space-y-6">
+
+      <!-- flags -->
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="px-2.5 py-1 rounded-lg bg-paper border border-line text-ink text-xs">🍃 ใบเลี้ยง</span>
+        <span class="px-2.5 py-1 rounded-lg bg-st-contam/15 text-st-contam border border-st-contam/30 text-xs">⚠️ Hyperhydric</span>
+      </div>
+
+      <!-- summary cards -->
+      <div class="grid grid-cols-2 gap-4">
+        <div class="bg-surface border border-line rounded-2xl shadow-soft p-4">
+          <p class="text-xs text-muted mb-1">Green Coverage</p>
+          <p class="font-serif text-3xl text-st-healthy">64<span class="text-lg text-muted">%</span></p>
+        </div>
+        <div class="bg-surface border border-line rounded-2xl shadow-soft p-4">
+          <p class="text-xs text-muted mb-1">Leaf Color Index</p>
+          <p class="font-serif text-3xl text-ink">1.42</p>
+        </div>
+        <div class="bg-surface border border-line rounded-2xl shadow-soft p-4">
+          <p class="text-xs text-muted mb-1">Vigor Score</p>
+          <p class="font-serif text-3xl text-clay">6.8</p>
+        </div>
+        <div class="bg-surface border border-line rounded-2xl shadow-soft p-4">
+          <p class="text-xs text-muted mb-1">Brown Coverage</p>
+          <p class="font-serif text-3xl text-st-contam">3<span class="text-lg text-muted">%</span></p>
+        </div>
+      </div>
+
+      <!-- growth chart -->
+      <div class="bg-surface border border-line rounded-2xl shadow-soft p-5">
+        <p class="text-sm text-ink font-medium mb-1">Green Coverage — Growth Curve</p>
+        <p class="text-xs text-muted mb-3">Gompertz fit · Day 1–28</p>
+        <svg viewBox="0 0 320 120" class="w-full h-32">
+          <line x1="0" y1="100" x2="320" y2="100" stroke="#EAE7DF"/>
+          <line x1="0" y1="60" x2="320" y2="60" stroke="#EAE7DF" stroke-dasharray="3"/>
+          <line x1="0" y1="20" x2="320" y2="20" stroke="#EAE7DF" stroke-dasharray="3"/>
+          <path d="M0,98 C70,96 110,80 160,45 C210,18 260,14 320,12" fill="none" stroke="#D97757" stroke-width="2.5"/>
+          <circle cx="40" cy="97" r="3" fill="#D97757"/><circle cx="120" cy="72" r="3" fill="#D97757"/>
+          <circle cx="180" cy="35" r="3" fill="#D97757"/><circle cx="240" cy="16" r="3" fill="#D97757"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <p class="text-center text-xs text-muted pt-6">— mockup: Warm Paper theme · ปุ่มกดเล่นได้ · ข้อมูลจำลอง —</p>
+</main>
+
+<script>
+let groups={};
+function pick(el,g){ (groups[g]||[]).forEach(b=>reset(b)); groups[g]=[...el.parentElement.querySelectorAll('.opt')]; groups[g].forEach(b=>reset(b)); on(el); }
+function reset(b){ b.className='opt '+b.className.split(' ').filter(c=>['py-2.5','rounded-xl','rounded-lg','text-sm','text-xs','font-medium','flex-1','h-10'].includes(c)).join(' ')+' border border-line text-muted'; }
+function on(el){ el.className='opt '+el.dataset.on+' '+[...el.classList].filter(c=>['py-2.5','rounded-xl','rounded-lg','text-sm','text-xs','font-medium','flex-1','h-10'].includes(c)).join(' '); }
+function pickV(el,v){ document.querySelectorAll('.vg').forEach(b=>b.className='vg flex-1 h-10 rounded-lg text-sm font-medium border border-line text-muted'); el.className='vg flex-1 h-10 rounded-lg text-sm font-medium bg-clay text-white border border-clay'; }
+let sc=3; function step(d){ sc=Math.max(0,sc+d); document.getElementById('shoot').textContent=sc; }
+function tg(b){ const onNow=b.textContent.trim()===b.dataset.off; if(onNow){ b.className='w-full py-2.5 rounded-lg text-xs font-medium '+b.dataset.on; b.textContent=b.dataset.onlabel; } else { b.className='w-full py-2.5 rounded-lg text-xs font-medium border border-line text-muted'; b.textContent=b.dataset.off; } }
+</script>
+</body>
+</html>
