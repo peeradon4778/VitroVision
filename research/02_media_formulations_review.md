@@ -7,6 +7,17 @@
 
 ---
 
+> ## ⚠️ หมายเหตุสำคัญ — ไฟล์นี้เขียน **ก่อน** lock design (อ่านก่อน)
+> ไฟล์นี้เขียนวันเดียวกับการตัดสินใจ แต่ **ก่อน** Research Design v1 ถูก lock (2026-06-11). ข้อเสนอ "เปลี่ยน design" ทั้งหมดในไฟล์นี้ถูกพิจารณาแล้วและ **ตัดสินใจไม่นำมาใช้** ใน v1:
+> - **5 สูตร A–E ตายตัว** — ไม่เพิ่ม BAP กลาง 2–3 mg/L (§2.2 ข้อ 2, §2.4 ข้อ 2), ไม่ยก NAA เป็น 0.1–0.5 (§2.2 ข้อ 3, §2.4 ข้อ 3), ไม่เพิ่มแขน TDZ/kinetin (§2.2 ข้อ 4, §2.4 ข้อ 4)
+> - **n:** "20 ขวด/สูตร" ในไฟล์นี้ = **ต่อ batch** ไม่ใช่ total; decision v1 = **pool ≥2 batch → n≈40/สูตร** (over-sow ~24–25/สูตร/batch). ตัวเลข "100 ขวด" = ต่อ batch ไม่ใช่ total → power analysis §2.3 อ้าง assumption n=20 จึงเป็น **lower bound; ดู `10_methods_draft.md` §1.4 สำหรับ power analysis ฉบับสมบูรณ์ที่ n≈40**
+> - **Post-hoc:** ข้อเสนอ "Dunn + Holm/BH" ในไฟล์นี้ถูก supersede — source of truth = `10_methods_draft.md`: **primary = LMM (ถ้า normal) หรือ ART-ANOVA + ART-C (ถ้าไม่ normal); Dunn + Bonferroni = secondary/preliminary เท่านั้น**
+> - ข้อ critique เรื่อง confound (E คนละ stage, dose-response 2 จุด) ยังใช้ได้ → ระบุเป็น acknowledged limitation ในรายงาน
+>
+> *(ดู `_decisions_pending.md` §1 สำหรับ decision ที่ lock ครบ)*
+
+---
+
 ## TL;DR (สรุปสั้น)
 
 1. **BAP คือ cytokinin หลักสำหรับ shoot multiplication ในพริก** — literature ส่วนใหญ่ใช้ BAP 5 mg/L ขึ้นไป (บางสูตรถึง 8 mg/L) ในขั้น shoot induction [1][3][6][7][8][9].
@@ -89,7 +100,9 @@
 - หลักการทั่วไป: sample size ที่ต้องการเพิ่มตาม variance และลดตาม effect size; การเพิ่ม n ในกลุ่มที่ variance สูงคุ้มกว่าเพิ่ม n รวม [16][18]. Kruskal-Wallis ต้องการ n ใกล้เคียงหรือมากกว่า ANOVA เล็กน้อยเมื่อข้อมูล non-normal [18].
 - **ประเมินสำหรับเรา:** TC phenotype (shoot count) มักให้ effect ขนาดกลาง-ใหญ่ระหว่าง control กับ BAP สูง. ที่ k=5 กลุ่ม, **n=20/กลุ่ม (รวม 100)** ให้ power เพียงพอ (โดยทั่วไป >0.8) สำหรับตรวจ effect ปานกลางขึ้นไป — ถือว่า **เพียงพอ**.
 - **ข้อควรระวัง:** contamination/วิตริฟิเคชัน/ตายของขวด จะลด effective n; ถ้าเหลือ ~12–15/กลุ่มยังพอ แต่ใกล้ขอบ. variance ใน TC สูง (จุดอ่อนของ KW เมื่อ variance ไม่เท่ากันระหว่างกลุ่ม [16]).
-  → **คำแนะนำ:** (a) วางแผนเผื่อ loss ~20% (ตั้งใจไว้ที่ 20 จึงดี), (b) วัด **หลาย endpoint ต่อขวด** (shoot count, length, leaf count, callus area, hyperhydricity score) เพื่อเพิ่มข้อมูลโดยไม่เพิ่มขวด, (c) ถ้าพบ omnibus KW significant ให้ทำ **Dunn's post-hoc + Holm/BH correction** สำหรับ pairwise, (d) รายงาน effect size (epsilon² หรือ rank-biserial) ไม่ใช่แค่ p-value.
+  → **คำแนะนำ:** (a) วางแผนเผื่อ loss ~20% (ตั้งใจไว้ที่ 20 จึงดี), (b) วัด **หลาย endpoint ต่อขวด** (shoot count, length, leaf count, callus area, hyperhydricity score) เพื่อเพิ่มข้อมูลโดยไม่เพิ่มขวด, (c) post-hoc — *(⚠️ superseded: ดู `10_methods_draft.md` — primary = ART-C/LMM, secondary = Dunn + **Bonferroni** ไม่ใช่ Holm/BH)*, (d) รายงาน effect size (epsilon² หรือ rank-biserial) ไม่ใช่แค่ p-value.
+
+> **หมายเหตุ power analysis (§2.3):** วิเคราะห์บน assumption n=20/สูตร (ต่อ batch) ซึ่งเป็น lower bound. **ฉบับสมบูรณ์ที่ n≈40/สูตร (pool 2 batch) อยู่ที่ `10_methods_draft.md` §1.4** ซึ่งพิสูจน์ว่าต้องการ n≈40 สำหรับ medium effect (f=0.25)
 
 ### 2.4 ข้อเสนอแนะ — สรุปเป็นข้อ
 1. **แยกการวิเคราะห์ตาม stage:** A–D = multiplication arm (วัด shoot count/length/hyperhydricity); E (+อาจ D) = rooting arm (วัด % rooting, root number/length). อย่าเทียบ E กับ C ด้วย endpoint เดียวกัน.
@@ -97,7 +110,7 @@
 3. **ยก NAA ใน D เป็น 0.1–0.5 mg/L** (หรือเพิ่มอีกระดับ) เพื่อให้ ratio contrast C→D มี signal พอ.
 4. **(Optional) เพิ่มแขน TDZ หรือ kinetin** เป็น cytokinin-type contrast เพื่อ novelty; ถ้าไม่เพิ่ม ให้ระบุเป็น limitation ที่ตั้งใจ.
 5. **วัดหลาย endpoint/ขวด + บันทึก hyperhydricity/necrosis เป็น categorical score** — ตรงกับจุดขาย CV phenotyping และเพิ่มข้อมูลโดยไม่เพิ่มขวด.
-6. **สถิติ:** KW omnibus → Dunn + Holm/BH; รายงาน effect size; วางแผนเผื่อ loss; ถ้า variance ต่างกันมาก พิจารณา Brunner-Munzel/permutation.
+6. **สถิติ:** *(⚠️ superseded by `10_methods_draft.md`)* — primary = LMM/ART-ANOVA + ART-C บน per-bottle growth params; KW + Dunn + **Bonferroni** = secondary/preliminary เท่านั้น; รายงาน effect size; วางแผนเผื่อ loss; ถ้า variance ต่างกันมาก พิจารณา Brunner-Munzel/permutation.
 7. **บันทึกว่า shoot length สั้นใน C/D เป็นผล BAP กดการยืด ไม่ใช่ความด้อย** [3]; แยก elongation (GA3) เป็นขั้นถ้าจำเป็น.
 
 ---

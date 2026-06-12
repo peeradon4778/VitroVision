@@ -71,9 +71,10 @@
 
 ### ฝั่ง CS — โมเดล/การวัดเชื่อถือได้แค่ไหน
 
-**H1 (ความแม่นการจำแนก).** ระบบ CV จำแนก healthy/contaminated/dead ได้สอดคล้องกับ ground truth ของผู้เชี่ยวชาญในระดับ "substantial agreement" (Cohen's κ ≥ 0.70 บนภาพจริง).
+**H1 (ความแม่นการจำแนกสถานะ — 3-class).** **status classifier (EfficientNet-B0)** จำแนก healthy/contaminated/dead ได้สอดคล้องกับ ground truth ของผู้เชี่ยวชาญในระดับ "substantial agreement". เกณฑ์ "substantial agreement" ตาม Landis & Koch = **Cohen's κ ≥ 0.60** (Acceptable); **H1 ตั้งเป้าสูงกว่าที่ κ ≥ 0.70** บนภาพจริง (Target ≥ 0.80) [ดู 06 §validation thresholds].
 - H1₀: κ ของระบบ ≤ ระดับ chance/บังเอิญ (หรือ ≤ เกณฑ์ที่ยอมรับ เช่น 0.40).
-- *สถานะปัจจุบัน:* κ = 0.627 บนภาพ **สังเคราะห์** 181 ภาพ → ต้องทดสอบใหม่บนภาพจริง [README].
+- *สถานะปัจจุบัน:* κ = 0.6274 วัดบน **test set n=28** (จาก dataset ภาพ**สังเคราะห์**รวม **181 ภาพ = train 126 / val 27 / test 28**) → CI กว้าง (~±0.20 ที่ n=28) ต้องทดสอบใหม่บนภาพจริง + 5-fold CV [metrics.json, README].
+- ⚠️ **κ ใน H1 = ของ 3-class status classifier — คนละตัวกับ validation ของ vigor_score** (ดู H2 + 06/10): อย่าปนตัวเลข. vigor เป็น ordinal 1–5 validate ด้วย Spearman ρ + quadratic-weighted κ + ICC(2,1) ซึ่งเป็นคนละ task โดยสิ้นเชิง.
 
 **H2 (phenotype สัมพันธ์กับ ground truth).** ค่า phenotype จาก CV (โดยเฉพาะ `shoot_count_cv`, `green_coverage_pct`, `vigor_score`) สัมพันธ์เชิงบวกกับการนับ/ให้คะแนนด้วยมือของผู้เชี่ยวชาญในระดับที่มีนัยสำคัญ (เช่น Pearson/Spearman, หรือ R² สำหรับ green→chlorophyll/vigor).
 - H2₀: ไม่มีความสัมพันธ์ (r = 0) ระหว่าง CV feature กับ manual measurement.
@@ -159,12 +160,12 @@
 
 | # | ความเสี่ยง | ทำไมสำคัญ | สถานะ |
 |---|---|---|---|
-| RC1 | **ยังไม่มีภาพจริง** — metric ทั้งหมดมาจากภาพสังเคราะห์ 181 ภาพ | ถ้าภาพจริงไม่มา หรือมาน้อย เรื่องเล่าทั้งหมดเป็น "pipeline ที่ยังไม่พิสูจน์" | 🔴 critical — เป้า 500+ ภาพ ต.ค. 2569 [README] |
-| RC2 | **n จำกัด (20/สูตร, 100 ขวด)** + loss จาก contamination/ตาย จะลด effective n | KW power ลด, post-hoc อ่อน; variance TC สูงอยู่แล้ว | 🟠 วางแผนเผื่อ loss ~20% [ดู 02 §2.3] |
+| RC1 | **ยังไม่มีภาพจริง** — metric ทั้งหมดมาจาก dataset ภาพสังเคราะห์รวม 181 ภาพ (κ=0.6274 วัดบน test set n=28) | ถ้าภาพจริงไม่มา หรือมาน้อย เรื่องเล่าทั้งหมดเป็น "pipeline ที่ยังไม่พิสูจน์" | 🔴 critical — เป้า 500+ ภาพ ต.ค. 2569 [README] |
+| RC2 | **n จำกัด (~24–25 ขวด/สูตร/batch, pool ≥2 batch → n≈40/สูตร ตาม Design v1 locked 2026-06-11)** + loss จาก contamination/ตาย จะลด effective n | KW power ลด, post-hoc อ่อน; variance TC สูงอยู่แล้ว | 🟠 over-sow เผื่อ loss [ดู 02 §2.3 + 10 §1.4 power] |
 | RC3 | **ขวดปิด ถ่ายยาก** — แสงสะท้อนผิวขวด, condensation, มุมซ้อน, ระบุยอดแยกกันยาก | กระทบ `shoot_count_cv`, segmentation, ความแม่น | 🟠 ต้องคุมแสง/มุม/มี ArUco ช่วย |
-| RC4 | **dose-response BAP มีแค่ 2 จุด (1, 5)** — มองไม่เห็นรูปโค้ง/optimum | H4 (diminishing return) อ้างได้แค่ "ขึ้น/ลง" ไม่เห็นจุดพลิก | 🟠 พิจารณาเพิ่ม BAP กลาง 2–3 mg/L [ดู 02 §2.2 ข้อ 2] |
+| RC4 | **dose-response BAP มีแค่ 2 จุด (1, 5)** — มองไม่เห็นรูปโค้ง/optimum | H4 (diminishing return) อ้างได้แค่ "ขึ้น/ลง" ไม่เห็นจุดพลิก | 🟡 acknowledged limitation — design v1 คง 2 จุด ไม่เพิ่ม BAP กลาง (ดู ⚠️ validate ข้อ 5) |
 | RC5 | **E คนละ stage กับ A–D** — confound การวิเคราะห์ | ถ้าเทียบผิด ผลชีววิทยาตีความผิด | 🟠 แยก arm การวิเคราะห์ [ดู 02 §2.2 ข้อ 1] |
-| RC6 | **D (NAA 0.05) อาจไม่เห็นผล** | H6 เสี่ยงเป็น null โดยไม่ใช่ความผิดระบบ | 🟡 พิจารณายก NAA เป็น 0.1–0.5 [ดู 02 §2.2 ข้อ 3] |
+| RC6 | **D (NAA 0.05) อาจไม่เห็นผล** | H6 เสี่ยงเป็น null โดยไม่ใช่ความผิดระบบ | 🟡 acknowledged limitation — design v1 คง NAA 0.05 (ดู ⚠️ validate ข้อ 5) |
 | RC7 | **Generalization** — โมเดล train จาก setup เดียว/ผู้ทำคนเดียว | อาจไม่ทรานสเฟอร์ไปแล็บ/กล้อง/พันธุ์อื่น | 🟡 ระบุเป็น limitation; ทดสอบ cross-condition ถ้าทำได้ |
 | RC8 | **Ground truth / human baseline ยังไม่มี** | H1/H2 ทดสอบไม่ได้จนกว่าจะมี expert label | 🟠 ครูที่ปรึกษา label 28 ภาพ เป็น baseline [README] |
 | RC9 | **phenotype เป็น proxy ไม่ใช่การวัดตรง** (เช่น green% ≠ chlorophyll จริง) | ต้อง validate correlation ไม่ใช่ assume | 🟡 มีฐาน R² ในพืชอื่น แต่ต้องวัดในพริกเอง [ดู 01 §3] |
@@ -184,7 +185,7 @@
 2. **เป้า metric ภาพจริง (5.2)** — F1 0.78–0.85, κ≥0.70, R² 0.65–0.85 เป็น **ประมาณการของผม** อิงพืชอื่น/ผล synthetic ปัจจุบัน — ตรวจว่าตั้งเป้านี้ defensible กับ class balance และจำนวนภาพจริงที่จะได้.
 3. **ผลชีววิทยาที่คาด (5.3 / H3–H7)** — เป็นทิศทางจาก literature (cv./species อื่นเป็นส่วนใหญ่) **ยังไม่ใช่ผลการทดลองของคุณ** — อย่าเขียนเป็นข้อสรุปจนกว่าจะรันจริง. โดยเฉพาะ H6 (D vs C) มีโอกาสเป็น null.
 4. **การออกแบบสถิติ (RC2, RC5)** — ยืนยันว่าจะแยก multiplication arm vs rooting arm และวางแผน effective n เผื่อ loss; รายงาน effect size ไม่ใช่แค่ p-value [ดู 02 §2.4].
-5. **dose-response & NAA (RC4, RC6)** — ตัดสินใจว่าจะเพิ่มสูตร BAP กลาง / ยก NAA ไหม **ก่อนเริ่มทดลอง** (เปลี่ยนทีหลังไม่ได้).
+5. **dose-response & NAA (RC4, RC6)** — ✅ **ตัดสินแล้วใน Research Design v1 (locked 2026-06-11): คง 5 สูตร A–E ตายตัว** — ไม่เพิ่ม BAP กลาง 2–3, ไม่ยก NAA, ไม่เพิ่มแขน TDZ/kinetin (ข้อเสนอใน 02 §2.2 ถูกพิจารณาและตัดออก). RC4/RC6 จึงเป็น **acknowledged limitation ในรายงาน** ไม่ใช่ open decision.
 6. **ตัวเลขเศรษฐกิจ (RC10)** — ดึงมูลค่าตลาด/ผลผลิตจาก FAOSTAT/OAE ก่อนใส่ Intro; ตัวเลขย่อใน paper บางตัวต่ำกว่าจริง [ดู 03 §7].
 7. **นิยาม vigor_score (H7)** — ชี้แจงให้ชัดว่า "vigor" หมายถึงต้นสมบูรณ์ หรือจำนวนยอด — เพราะมันเปลี่ยนว่าสูตรไหน "ชนะ" และตีความผลต่างกัน.
 

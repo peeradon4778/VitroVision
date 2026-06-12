@@ -2,7 +2,7 @@
 
 **วันที่:** 2026-06-11  
 **ขอบเขต:** Statistical pipeline สำหรับ green_coverage_pct time-series จากขวดเพาะเลี้ยง Capsicum annuum in vitro  
-**Design:** 5 สูตร MS × ~20 ขวด/สูตร (pool ≥2 batch → n≈40/สูตร), ~20–25 timepoints/ขวด ตลอด 28 วัน  
+**Design:** 5 สูตร MS × ~24–25 ขวด/สูตร/batch (over-sow; pool ≥2 batch → n≈40/สูตร), ~20–25 timepoints/ขวด ตลอด 28 วัน  
 
 ---
 
@@ -13,7 +13,7 @@
 1. **Fit growth curve ต่อขวด** → ดึง 2–3 parameter (growth rate *k*, inflection point *t₀*, อาจมี plateau *K*) มาเป็น summary statistics ต่อ vessel
 2. **เทียบ parameter ระหว่าง 5 สูตร** โดย treat batch เป็น random factor
 3. หาก parameter ไม่ normal/unbalanced → **ART ANOVA** หรือ **LMM** (เลือกตาม criteria ด้านล่าง)
-4. Post-hoc **Dunn + Bonferroni** correction ต่อ pair ที่สนใจ
+4. Post-hoc **ตาม model ที่ใช้** — ถ้า ART-ANOVA ต้องใช้ **ART-C** (Elkin 2021) ไม่ใช่ contrast ปกติ; ถ้า LMM ใช้ estimated marginal means + Bonferroni; **Dunn + Bonferroni = เฉพาะกรณี KW omnibus (secondary/preliminary)** — ทั้งหมด correct ด้วย **Bonferroni** (ตาม `_decisions_pending.md` §B2 + `10_methods_draft.md` = source of truth)
 
 หัวใจสำคัญ: **ภาพแต่ละภาพ ≠ หน่วยสถิติ** — ต้องใช้ขวด (vessel) เป็น experimental unit เท่านั้น ไม่เช่นนั้นเป็น pseudoreplication [1]
 

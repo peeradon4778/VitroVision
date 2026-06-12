@@ -41,7 +41,7 @@
 - **Shoot induction ต่ำ & แปรปรวน:** C. annuum 1.44 shoot/cotyledon, 0.28 shoot/hypocotyl; C. chinense ~0.08/0.00 (เกือบไม่ตอบสนอง) [2].
 - **Rooting ยาก & acclimatization survival ผันผวน:** survival 40–86.7% ขึ้นกับ cultivar [3]; งานหลายชิ้นระบุว่า rooting/acclimatization เป็น bottleneck สุดท้ายที่ "ต้องปรับปรุง" [2].
 - **Browning / phenolic oxidation:** เป็นปัญหารุนแรงในพืชหลายชนิด; วิธีคุม = presoak antioxidant (PVP, ascorbic acid 15–250 mg/L), เติม activated charcoal, เลี้ยงในที่มืด, subculture บ่อย [10]. → ตรงกับ `brown_coverage_pct`
-- **Hyperhydricity:** physiological disorder ที่พบบ่อยสุดใน in vitro — เกิดจาก oxidative stress, N metabolism ผิดปกติ, hormone imbalance, การระบายอากาศใน vessel; มาพร้อม browning/blackening และ phenolic + MDA สูง [4][9]. แสดงออกเป็นใบ glassy/translucent → จับได้ด้วย `texture_entropy` + `leaf_color_index`
+- **Hyperhydricity:** physiological disorder ที่พบบ่อยสุดใน in vitro → จับได้ด้วย `texture_entropy` + `leaf_color_index` (ใบ glassy/translucent). **รายละเอียด biology + visual features + กลไก PGR เต็ม = source of truth ที่ `13_pgr_morphology.md` §4** [4][9]
 - **Contamination (microbial/endophytic):** surface sterilization ไม่พอกัน endophyte; แก้ด้วย antibiotics (kanamycin 500 ppm) หรือ PPM™ 0.2%; การปนเปื้อนทำสูญเสียวัสดุและทำ media เปลี่ยนสี/ขุ่น [5][16]. → ตรงกับ `media_color_cv`
 
 > **Apply → VitroVision (Intro/Discussion):** ใช้ [7] เป็น "เหตุผลหลัก" ว่าทำไม Capsicum TC ต้องการ automated monitoring; ใช้ [4][9][10] อธิบาย biological meaning ของ phenotype แต่ละตัวใน Discussion (เชื่อม CV metric ↔ physiological disorder)

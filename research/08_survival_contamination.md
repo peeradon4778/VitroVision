@@ -58,9 +58,11 @@ Time-to-event analysis ถูกนำมาใช้กับข้อมูล
 
 ---
 
-## 3. Thomas 2026 — ผลการ Verify
+## 3. Citation ที่ Verify ไม่ผ่าน — "Thomas 2026" **[ตัดทิ้ง — AI hallucination]**
 
-### 3.1 ผลการค้นหา
+> 🚫 **"Thomas 2026" ไม่มีอยู่จริง** — verify ไม่เจอทั้ง PubMed และ Consensus = AI hallucination. **ห้ามอ้างอิงในรายงาน/proposal ใดๆ.** section นี้เก็บไว้เป็นบันทึกการ verify + paper ทดแทนที่ verify แล้ว (§3.2) เท่านั้น
+
+### 3.1 ผลการค้นหา (ยืนยันว่าไม่มี paper นี้)
 
 ค้นหาใน **PubMed** (query: "Thomas acclimatization ex vitro survival micropropagated plantlet quality 2024 2025 2026") และ **Consensus** (query: "Thomas 2026 acclimatization survival in vitro plantlet quality") — **ไม่พบ paper ที่ตรงกัน**
 
@@ -236,4 +238,4 @@ URL: https://consensus.app/papers/details/0ccdfc0adbeb5d0bbc3ff412c6c42d14/
 
 ---
 
-*ไฟล์นี้สร้างโดย research sub-agent VitroVision สำหรับ YSC 2027 — ห้ามนำ Thomas 2026 ไปอ้างอิงโดยไม่ verify ตัวเต็มก่อน*
+*ไฟล์นี้สร้างโดย research sub-agent VitroVision สำหรับ YSC 2027 — **"Thomas 2026" = AI hallucination ไม่มีอยู่จริง ห้ามอ้างอิงเด็ดขาด** (ใช้ Ahmed 2026 / Kongbangkerd 2026 / Méndez-Hernández 2023 แทน — ดู §3.2)*
