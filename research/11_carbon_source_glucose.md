@@ -12,15 +12,15 @@
 
 Yaseen et al. (2013) [1] ซึ่งเป็น review paper ที่อ้างอิงมากที่สุด (222 citations) สรุปว่า carbon source หลากหลายชนิดทั้ง reducing และ non-reducing sugars ถูกใช้ใน plant tissue culture ขึ้นอยู่กับ genotype และระยะการเจริญเติบโต sucrose เป็น carbon source มาตรฐานเพราะเป็น phloem transport sugar แต่ไม่ใช่ตัวเลือกเดียว
 
-ที่สำคัญที่สุด: **Phillips & Collins (1985) [2]** ซึ่งเป็น paper ว่าด้วย Capsicum annuum โดยตรง ระบุชัดเจนว่า **"Glucose was superior to sucrose as the carbon source"** ในการทำ shoot และ root organogenesis จาก seedling explants ของพริก (bell pepper และ chile pepper) บน MS medium — นี่คือ direct evidence สำหรับสปีชีส์เดียวกับที่เราใช้
+ที่สำคัญที่สุด: **Phillips & Hubstenberger (1985) [2]** ซึ่งเป็น paper ว่าด้วย Capsicum annuum โดยตรง ระบุชัดเจนว่า **"Glucose was superior to sucrose as the carbon source"** ในการทำ shoot และ root organogenesis จาก seedling explants ของพริก (bell pepper และ chile pepper) บน MS medium — นี่คือ direct evidence สำหรับสปีชีส์เดียวกับที่เราใช้
 
 ---
 
 ## 2. Capsicum / Pepper — Evidence เฉพาะสปีชีส์
 
-### 2.1 Phillips & Collins (1985) — หลักฐานตรง
+### 2.1 Phillips & Hubstenberger (1985) — หลักฐานตรง
 
-**Phillips GC, Collins GB (1985). "Organogenesis in pepper tissue cultures."** Plant Cell, Tissue and Organ Culture. 76 citations [2]
+**Phillips GC, Hubstenberger JF (1985). "Organogenesis in pepper tissue cultures."** Plant Cell, Tissue and Organ Culture 4:261–269. DOI: 10.1007/BF00040200. 76 citations [2]
 
 - ศึกษา *Capsicum annuum* L. (bell pepper และ chile pepper)
 - Murashige and Skoog basal media + IAA + BA
@@ -91,7 +91,7 @@ Akyüz (2025) [10] ใน chestnut พบว่า glucose ส่งเสริ
 
 [1] [Review: role of carbon sources for in vitro plant growth and development](https://consensus.app/papers/details/5cd7a482d0ff5eeeb760f2c9fbdcfa41/?utm_source=claude_code) (M. Yaseen et al., 2013, Molecular Biology Reports, 222 citations)
 
-[2] [Organogenesis in pepper tissue cultures](https://consensus.app/papers/details/a0d089bc6939511487a2a14b912c2f88/?utm_source=claude_code) (G. C. Phillips & G. B. Collins, 1985, Plant Cell Tissue and Organ Culture, 76 citations) — **Capsicum annuum direct evidence**
+[2] [Organogenesis in pepper tissue cultures](https://consensus.app/papers/details/a0d089bc6939511487a2a14b912c2f88/?utm_source=claude_code) (G. C. Phillips & **J. F. Hubstenberger**, 1985, Plant Cell Tissue and Organ Culture 4:261–269, DOI 10.1007/BF00040200, 76 citations) — **Capsicum annuum direct evidence**. ⚠️ *Consensus metadata ลิสต์ co-author ผิดเป็น "G. B. Collins" — DOI-verified จริงคือ Hubstenberger JF (ตัวอย่างว่าทำไมต้อง cross-verify ไม่เชื่อ metadata แหล่งเดียว)*
 
 [3] [Embryogenesis and plant regeneration of hot pepper (Capsicum annuum L.) through isolated microspore culture](https://consensus.app/papers/details/e20cf98b20db50d1b38195d2b710c8d8/?utm_source=claude_code) (Moonza Kim et al., 2008, Plant Cell Reports, 85 citations)
 
@@ -115,12 +115,12 @@ Akyüz (2025) [10] ใน chestnut พบว่า glucose ส่งเสริ
 
 | ประเด็น | Capsicum-specific | Generalized (other species) |
 |---|---|---|
-| Glucose superior to sucrose สำหรับ organogenesis | **YES — Phillips & Collins 1985 [2]** | Sugar beet [7], Agapanthus [6], Bombax [8] |
+| Glucose superior to sucrose สำหรับ organogenesis | **YES — Phillips & Hubstenberger 1985 [2]** | Sugar beet [7], Agapanthus [6], Bombax [8] |
 | Carbon source ส่งผล shoot regeneration | Kim et al. 2008 [3] (sucrose vs. maltose) | Yaseen review [1], tomato [ดู Gubiš 2018] |
 | กลไก invertase / hexose uptake | ไม่มี Capsicum-specific | Wan 2017 [4], Ruan 2012 [5] |
 | Glucose กับ chlorophyll/pigment | ไม่มี Capsicum-specific | Arafa 2023 [9], Akyüz 2025 [10] |
 
-**สรุป:** มี Capsicum-specific paper โดยตรง (Phillips & Collins 1985) ที่ support การใช้ glucose — ถือว่าแข็งแกร่งมากสำหรับการ defend ต่อ judge CSBI/ISEF
+**สรุป:** มี Capsicum-specific paper โดยตรง (Phillips & Hubstenberger 1985) ที่ support การใช้ glucose — ถือว่าแข็งแกร่งมากสำหรับการ defend ต่อ judge CSBI/ISEF
 
 ---
 

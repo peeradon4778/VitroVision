@@ -145,5 +145,29 @@ Ahmed 2026 และ Kongbangkerd 2026 มี DOI format `10.1186/s12870-026-082
 
 ---
 
+## หมวด 7: Vigor Rubric Methodology (ไฟล์ 10 §4.1 — เพิ่ม 2026-06-12)
+
+> ค้นผ่าน **Consensus** (verify ว่ามีจริงในฐาน) + WebSearch สำหรับ Myakisheva. ใช้รองรับการสร้าง expert assessment 2-axis (developmental phase + vigor 1–5)
+
+| Citation ที่อ้าง | สถานะ | DOI / ชื่อจริงที่ verify | หมายเหตุ |
+|---|---|---|---|
+| **Myakisheva et al. 2024** — Morphogenesis hops regenerants in vitro scale, *Agrarian Scientific Journal* | ✅ Verified (Consensus + WebSearch) | Consensus URL + ResearchGate pub 382224226 — scale phase-based ตาม internode count (intensive 2–3 / slow 4–6 / dying-off) + 3 morphogenesis-rate groups | วารสารรัสเซีย ไม่มี DOI เปิด — full text ResearchGate 403; โครงสร้าง scale ยืนยันผ่าน WebSearch abstract+snippets. ใช้เป็น precedent "visual scale สำหรับ in vitro regenerant เป็นวิธียอมรับ" |
+| **Ding et al. 2025** — Soybean seed vigor evaluation 5-level, *Industrial Crops and Products* | ✅ Verified (Consensus) | Consensus URL — 9 citations; จัด vigor เป็น 5 levels ด้วย PCA+clustering (V value) | ใช้เป็น precedent การแบ่ง 5 ระดับ; ไม่ได้ search DOI โดยตรง — Consensus + citation count ยืนยัน |
+| **Rafiq et al. 2021** — Lilium micropropagation standardization, *Saudi Journal of Biological Sciences* | ✅ Verified (Consensus) | Consensus URL — 25 citations; PubMed-indexed journal | ใช้สนับสนุน "วงการ TC ใช้ morphometric นับตรงๆ" (shoot/leaf/root count) แทน ordinal scale |
+| **Pattnaik et al. 2000** — Mulberry encapsulated buds morphogenic, *PCTOC* | ✅ Verified (Consensus) | Consensus URL — 87 citations | เช่นเดียวกับ Rafiq — precedent ว่า TC วัด morphogenic response เชิงปริมาณ |
+| ~~Li 2023 (seedling grading AI)~~ | ❌ ตัดทิ้ง | — | **ตัดออก** — ชนชื่อกับ "Li et al. 2023 (Kappa, BMC Cancer)" ในหมวด 1 + venue อ่อน (1 citation); เก็บ precedent ที่แข็งกว่าแทน |
+
+**⚠️ หมายเหตุ:** Myakisheva 2024 ยังไม่มี DOI เปิด — ถ้าจะ cite ใน proposal จริง ต้องหา full text (ResearchGate/ติดต่อผู้เขียน) เพื่อยืนยัน scale table ตัวเต็มก่อน (ตอนนี้มีแค่ abstract + WebSearch snippets)
+
+---
+
+## ✅ Resolution Log (2026-06-12, claude-opus-4-8)
+
+- **เพิ่ม หมวด 7** — 4 citation methodology ของ rubric (verified via Consensus per citation rule ใหม่ใน CLAUDE.md)
+- **🔴 #1 Phillips & Collins → Hubstenberger 1985** — แก้แล้วใน `10` + `11` + `_decisions_pending.md` (ดู git)
+- **ยังค้าง:** 🔴 #2 (Thomas 2026 ใน 08 — แก้ rename section แล้วใน commit 2b4f8b1) · 🟡 #3–5 (เพิ่ม DOI Depetris/Signorelli, ปี Gal) · 🟢 #6–8 (verify Schober/Oksanen/Renfiyeni)
+
+---
+
 *ไฟล์นี้สร้างโดย citation-audit sub-agent (claude-sonnet-4-6) — 2026-06-12*  
 *ใช้เครื่องมือ: WebSearch (Springer, Nature, PubMed, Wiley, MDPI, ACM DL, PLOS, Semantic Scholar, ResearchGate)*

@@ -1,11 +1,16 @@
-# 10 — Methods (Draft v1)
+# 10 — Methods (v2)
 
-> **สถานะ:** Draft v1 | สร้าง 2026-06-11
+> **สถานะ:** **v2** | สร้าง 2026-06-11 · อัปเดต 2026-06-12 (fold decisions + 19 audit fixes)
 > **โปรเจกต์:** VitroVision — Computational phenotyping ของ *Capsicum annuum* in vitro tissue culture (YSC 2027 / CSBI)
 > **อ้างอิงฐาน:** Research Design v1 (locked 2026-06-11) + research files `06`–`09` (citation verified ผ่าน Consensus/PubMed)
-> **Decisions ล่าสุด (2026-06-11):**
-> - Reference standard = **consensus (median) ของครู ≥2 คน** (รายงาน inter-rater แยก) — ทางเลือก B
-> - **Criterion validity (survival-to-acclimatization) = วิธีหลักในการพิสูจน์ vigor_score** (data-driven, เลิก defend น้ำหนักตั้งมือ)
+> **Decisions ที่ fold เข้า v2:**
+> - Reference standard = **consensus (median) ของครู ≥2 คน** (รายงาน inter-rater แยก)
+> - **Criterion validity (survival-to-acclimatization) = วิธีหลักพิสูจน์ vigor_score** (data-driven)
+> - **Expert assessment = 2 axis** (developmental phase objective + vigor 1–5 holistic) + hyperhydric flag — §4.1
+> - **Stats = hierarchical gatekeeping** (primary green% α=0.05/Bonferroni 3 contrasts · secondary FDR · contamination descriptive) — §5.3
+> - **Env = ค่าจริง** 25±2°C / 16/8 h / LED 40–50 µmol — §1.7
+> - **เวลาถ่าย = ล็อกคงที่ช่วงเย็น** (รอยืนยันเวลาเป๊ะ) — §2.2
+> - ⏳ **เหลือรอ peeradon:** รุ่นกล้อง (§2.1) · เวลาถ่ายเป๊ะ (§2.2) · เวลาแช่ Clorox+ชนิดขวด (§1.1–1.2) · ค่า HSV calibrate กับ rig จริง (§3.2)
 
 ---
 
@@ -15,14 +20,14 @@
 - [x] §1.1 — whole-fruit Clorox 15%→10% ฟอก 2 รอบ → คีบเมล็ดจากผล (เกษตรกร อ.สตึก บุรีรัมย์), ไม่ใช้ GA₃, นับ day จาก emergence — **เหลือ:** เวลาแช่/รอบ + Tween/EtOH ไหม
 - [x] §1.2 อาหาร — ตอบแล้ว (MS full / Glucose 20 / Kelcogel 3 g/L / pH 5.6–5.8 / PGR ก่อน autoclave / 121°C 15–20 min / ~30 mL/ขวด) — **เหลือ:** ชนิด/ขนาดขวด
 - [x] §1.3 สถานะ — A/C/D ทำอาหารแล้วยังไม่หยอด, B/E พรุ่งนี้ → หยอด 1 เมล็ด/ขวดพร้อมกันทุกสูตร
-- [ ] §1.7 อุณหภูมิ / photoperiod / light intensity / แหล่งแสง ห้องเพาะ
-- [ ] §2.1 รุ่นกล้อง / ความละเอียด / ระยะถ่าย / exposure-WB (manual?)
-- [ ] §3.2 ค่า HSV threshold (green/brown) ที่ calibrate กับ rig จริง
-- [x] §1.2 citation glucose แทน sucrose — **ได้แล้ว** Phillips & Collins 1985 (Capsicum-specific, glucose superior) + Arafa 2023 (chlorophyll) → `11_carbon_source_glucose.md`
+- [x] §1.7 อุณหภูมิ/photoperiod/light = **ค่าจริงตรง default** 25±2°C / 16/8 h / LED 40–50 µmol (2026-06-12)
+- [ ] §2.1 **รุ่นกล้อง/มือถือ** (เหลือตัวนี้ตัวเดียวใน §2.1 — ค่าอื่นใส่แล้ว)
+- [ ] §3.2 ค่า HSV threshold (green/brown) ที่ calibrate กับ rig จริง — *รอถ่าย calibration set*
+- [x] §1.2 citation glucose แทน sucrose — **ได้แล้ว** Phillips & Hubstenberger 1985 (Capsicum-specific, glucose superior) + Arafa 2023 (chlorophyll) → `11_carbon_source_glucose.md`
 
-**B. การตัดสินใจที่ยังค้าง (peeradon ตัด):**
-- [ ] §2.2 ล็อกเวลาถ่ายในวัน (กัน diurnal effect) — กี่โมง
-- [ ] §5.3 significance level (α) + multiple-comparison correction (Bonferroni vs FDR)
+**B. การตัดสินใจ (peeradon ตัด):**
+- [~] §2.2 ล็อกเวลาถ่าย = **ล็อกคงที่ช่วงเย็น** (ตัดสินแล้ว) — เหลือยืนยันเวลาเป๊ะ (แนะนำ ~17:00)
+- [x] §5.3 α + correction = **hierarchical gatekeeping** (primary green% α=0.05/Bonferroni 3 contrasts · secondary FDR · contamination descriptive) (2026-06-12)
 
 **C. งานที่ต้องทำก่อนรายงานเลขจริง:**
 - [ ] §3.3 เทรนด้วยภาพจริง (ตอนนี้ mock) + รัน 5-fold CV + แก้ healthy recall (class weight) ก่อนรายงาน κ/F1
@@ -80,7 +85,7 @@ basal = **MS medium** (Murashige & Skoog 1962) ปรับเฉพาะ plant
 ⚠️ **ยังต้องกรอก:** ชนิด/ขนาดขวด
 
 > **⚑ หมายเหตุ deviation (defend ได้แล้ว — ดู `11_carbon_source_glucose.md`):**
-> (1) **Glucose แทน sucrose** — **มี Capsicum-specific evidence โดยตรง: Phillips & Collins (1985) ระบุ "Glucose was superior to sucrose as the carbon source" ใน *Capsicum annuum* บน MS medium**. กลไก: glucose เป็น monosaccharide ดูดซึมเข้า glycolysis ตรง ไม่ต้อง invertase hydrolysis (Wan 2017; Ruan 2012) — สำคัญใน explant ที่ตัดขาดจาก phloem. โบนัส: glucose ส่งเสริมการสะสม chlorophyll (Arafa 2023) = ดีต่อ green_coverage phenotype. + ทุกสูตร A–E ใช้ glucose เหมือนกัน → คงที่ข้าม treatment ไม่ใช่ confound. การเลือก carbon source ตาม genotype/explant = established practice (Yaseen 2013 review).
+> (1) **Glucose แทน sucrose** — **มี Capsicum-specific evidence โดยตรง: Phillips & Hubstenberger (1985) ระบุ "Glucose was superior to sucrose as the carbon source" ใน *Capsicum annuum* บน MS medium**. กลไก: glucose เป็น monosaccharide ดูดซึมเข้า glycolysis ตรง ไม่ต้อง invertase hydrolysis (Wan 2017; Ruan 2012) — สำคัญใน explant ที่ตัดขาดจาก phloem. โบนัส: glucose ส่งเสริมการสะสม chlorophyll (Arafa 2023) = ดีต่อ green_coverage phenotype. + ทุกสูตร A–E ใช้ glucose เหมือนกัน → คงที่ข้าม treatment ไม่ใช่ confound. การเลือก carbon source ตาม genotype/explant = established practice (Yaseen 2013 review).
 > (2) **Gellan gum (Kelcogel 3 g/L)** — จุดแข็ง: medium ใส → through-bottle imaging คุณภาพสูงกว่า agar ขุ่น = สนับสนุน CV approach โดยตรง
 
 ### 1.3 Experimental unit และ sowing
@@ -120,7 +125,7 @@ n ที่ต้องการเพื่อ power 0.80: ใหญ่ ≥16, 
 
 ### 1.7 Environmental conditions
 
-⚠️ **ต้องกรอกค่าจริง:** อุณหภูมิห้องเพาะ (มาตรฐาน 25±2°C), photoperiod (16/8 h), light intensity (µmol/m²/s หรือ lux), แหล่งแสง (LED/fluorescent) — ห้อง/operator เดียว สภาพคงที่
+ห้องเพาะเลี้ยงควบคุม: **อุณหภูมิ 25±2°C · photoperiod 16/8 h (light/dark) · แสง LED ~40–50 µmol/m²/s** — ห้อง/operator เดียวตลอดการทดลอง สภาพคงที่ (ตัดเป็นตัวแปรร่วม)
 
 ### 1.8 Specimen tracking (ArUco)
 
@@ -140,7 +145,7 @@ n ที่ต้องการเพื่อ power 0.80: ใหญ่ ≥16, 
 
 window **28 วัน** (start → พร้อมอนุบาล) ถ่าย **~20–25 timepoints/ขวด** (เกือบทุกวัน, ขาด 1–2 วันได้) — **fit growth curve กับเลข day จริง ไม่ใช่สมมติเว้นเท่ากัน** **Growth-curve align จากวัน "งอก (emergence)"** ของแต่ละขวด ไม่ใช่วันหว่าน
 
-⚠️ **ต้องตัดสิน:** ช่วงเวลาถ่ายในวัน (ควรล็อกเวลาเดิมทุกวัน เช่น 9:00 น. เพื่อตัด diurnal effect ของการเปิด/ปิดไฟตู้เพาะ)
+**ล็อกเวลาถ่ายเดิมทุกวัน** (ตัด diurnal effect จากรอบเปิด/ปิดไฟตู้เพาะ) — เวลาคงที่ในช่วงเย็นหลังเลิกเรียน *(แนะนำ ~17:00 น. — รอพีรดนย์ยืนยันเวลาเป๊ะตามตารางจริง)*
 
 ### 2.3 Status logging
 
@@ -227,21 +232,35 @@ label ระยะพัฒนาการต่อภาพ เพื่อ ali
 - **Convergent validity:** CV สอดคล้องกับ expert แค่ไหน
 - **Criterion validity:** ค่า CV ทำนาย survival ตอนอนุบาลได้ไหม (แกน non-circular ไม่ต้องพึ่ง subjective score หรือเครื่องมือราคาแพง ที่เราไม่มี: SPAD/spectrophotometer)
 
-### 4.1 Reference standard: expert ordinal vigor rubric
+### 4.1 Reference standard: expert assessment (2 axis + flag)
 
-กำหนด rubric **ordinal 5 ระดับ** anchor ด้วยลักษณะสังเกตได้ ก่อนเริ่มเก็บข้อมูล (ลด inter-rater variability ตาม Bock et al. 2010):
+เนื่องจาก **ยังไม่มี validated ordinal vigor scale สำหรับ *Capsicum* in vitro โดยเฉพาะ** (วงการ TC ส่วนใหญ่ใช้ morphometric นับตรงๆ ไม่ใช่ ordinal scale — Rafiq 2021, Pattnaik 2000) เราจึงสร้าง reference เองตามหลัก rating-scale methodology (anchored ordinal scale ลด rater error — **Bock et al. 2010**; พิสูจน์ inter-rater ก่อนใช้ — **de Raadt et al. 2021**) โดยมี precedent ว่าการสร้าง visual scale สำหรับ in vitro regenerant เป็นวิธีที่ยอมรับ (**Myakisheva et al. 2024** — phase-based scale ของ hops regenerant; **Ding et al. 2025** — 5-level vigor classification)
 
-| Grade | นิยาม (anchor) |
+ครูบันทึก **2 แกนแยกกัน + 1 flag** ต่อขวดต่อ timepoint:
+
+**Axis A — Developmental phase (objective, นับโครงสร้างได้)** — ตาม phase-based assessment ของ Myakisheva 2024 แต่ใช้บริบทพริก:
+| Phase | เกณฑ์ |
 |---|---|
-| 1 | ไม่งอก / เนื้อเยื่อตาย / สีน้ำตาลเด่น ไม่มีส่วนเขียว |
-| 2 | งอกแต่ชะงัก ใบเหลือง/ซีด พื้นที่เขียวน้อย |
-| 3 | เจริญปานกลาง ใบเขียวบางส่วน มียอด |
-| 4 | เจริญดี ใบเขียวเข้ม ยอดชัด |
-| 5 | เจริญดีมาก พุ่มเขียวเข้มเต็ม หลายยอด แข็งแรง |
+| Intensive growth | งอก + กำลังสร้างใบ/ยอดเร็ว (early sigmoid) |
+| Slow growth | การเจริญชะลอ เข้าใกล้ plateau |
+| Senescent / dying-off | เหลือง/น้ำตาล/ตาย |
 
-rubric เต็ม + calibration set (ภาพตัวอย่างต่อ grade) อยู่ใน appendix; ครูทุกคนได้ชุดเดียวกันก่อนเริ่ม (training aid)
+> Axis A ผูกกับ Gompertz growth-curve parameter โดยตรง (§5.1) — ของ Myakisheva ใช้ internode-sigmoid, ของเราใช้ green%-Gompertz เป็น proxy (วัดผ่านขวด non-destructive แทนการนับ internode ด้วยมือ)
 
-> **flag แยก "hyperhydric":** อาการ vitrification (ใบใส/ฉ่ำ/บวม/ซีด, §3.6) **ไม่ใช่แค่ vigor ต่ำ** — เป็น abnormal phenotype คนละแกน. บันทึกเป็น **binary flag แยกต่างหาก** ควบคู่ vigor grade (อย่ายุบรวมเป็น grade 1) เพื่อให้วิเคราะห์ hyperhydricity rate ต่อสูตรได้ + เลี่ยงสับสนกับต้นโตช้าธรรมดา
+**Axis B — Vigor quality (holistic ordinal 1–5)** — ครูตัดสิน "ภาพรวมความสมบูรณ์" จากหลาย cue พร้อมกัน (สี+ทรงพุ่ม+จำนวนยอด+ความสมบูรณ์) **ไม่ใช่สูตรคำนวณจาก feature เดียว** (กัน circularity กับ CV):
+| Grade | นิยาม holistic | cue ประกอบ (ไม่ใช่สูตร) |
+|---|---|---|
+| 1 | ตาย/ไม่งอก น้ำตาลเด่น ไม่มีส่วนเขียวมีชีวิต | — |
+| 2 | อ่อนแอ งอกแต่ชะงัก เหลือง/ซีด เขียวน้อย | ไม่มียอดชัด/ยอดเดียวอ่อน |
+| 3 | ปานกลาง เขียวบางส่วน เริ่มตั้งตัว | มี ≥1 ยอด ใบเริ่มกาง |
+| 4 | ดี แข็งแรงชัด เขียวเข้ม ทรงสมบูรณ์ | ยอดชัดเจน ใบกางดี |
+| 5 | ดีมาก สมบูรณ์เด่น พุ่มเขียวเข้มแน่น | หลายยอด/พุ่มแน่น แข็งแรงเต็มที่ |
+
+> **เหตุผลที่ Axis B ต้อง holistic ไม่ anchor ด้วย green%:** ถ้า anchor ด้วย "% พื้นที่เขียว" จะวนกับ `green_coverage_pct` ที่ CV วัด → validation ดูปลอม. Axis B เป็น gestalt ที่ต่างจาก feature เดี่ยว → ใช้พิสูจน์ **convergent validity** (CV vs rubric §4.4) ส่วนความ **non-circular** หลักพึ่ง **criterion validity = survival-to-acclimatization** (§4.6)
+
+**Flag — hyperhydric (binary แยก):** อาการ vitrification (ใบใส/ฉ่ำ/บวม/ซีด, §3.6) **ไม่ใช่แค่ vigor ต่ำ** — abnormal phenotype คนละแกน บันทึกแยก (อย่ายุบเป็น grade 1) เพื่อวิเคราะห์ hyperhydricity rate ต่อสูตร + เลี่ยงสับสนกับต้นโตช้าธรรมดา
+
+rubric เต็ม + calibration set (ภาพตัวอย่างต่อ grade/phase) อยู่ใน appendix; ครูทุกคนได้ชุดเดียวกันก่อนเริ่ม (training aid)
 
 ### 4.2 Validation set และ blinding
 
@@ -342,7 +361,12 @@ fit **Gompertz 3-parameter ต่อขวด** จาก green% time-series:
 - **non-normal → ART ANOVA:** `art(k ~ formula × batch)` + post-hoc **ART-C** (Elkin 2021 — *ไม่ใช่* Dunn/contrast ปกติ)
 - **Kruskal-Wallis + Dunn** = secondary/preliminary เท่านั้น (one-factor, test interaction ไม่ได้)
 
-⚠️ **ต้องตัดสิน:** significance level (default α=0.05) + วิธี multiple-comparison correction ข้าม secondary endpoints (Bonferroni vs FDR)
+**Multiple-comparison strategy = hierarchical (gatekeeping)** — α = 0.05:
+- **Primary endpoint เดียว = `green_coverage_pct`** → ทดสอบ 3 planned contrasts (ด้านล่าง) ด้วย **Bonferroni** = α/3 ≈ 0.017/คู่ (เบา เพราะแค่ 3 คู่ ไม่ใช่ all-pairwise 10 คู่)
+- **Secondary endpoints** (vigor, brown%, LCI, shoot_count) → รายงานด้วย **FDR (Benjamini-Hochberg)** ในฐานะ supportive evidence
+- **Contamination/survival** → descriptive (KM + log-rank exploratory, §5.5)
+- **ทุกที่รายงาน effect size + 95% CI ไม่ใช่แค่ p** (variance TC สูง → CI เล่าความจริงดีกว่า p; เหมาะกรรมการ CSBI)
+- **Figure หลัก:** growth curve 5 สูตร (mean ± CI band) + forest plot ของ 3 planned contrasts (effect size + CI)
 
 **Planned contrasts (pre-registered — เพราะ A–E ไม่ใช่ gradient เดียว แต่เป็น 2-hormone exploration):**
 แทนที่จะเคลม dose-response ข้าม A–E ด้วย omnibus เดียว (= caveat ไฟล์ 02) → กำหนดคู่เปรียบล่วงหน้าตามตรรกะชีววิทยา:
@@ -372,7 +396,7 @@ fit **Gompertz 3-parameter ต่อขวด** จาก green% time-series:
 ## 6. Hypotheses
 
 - **Validation (primary):** H₀ ρ=0 (CV vs consensus expert) → H₁ ρ>0, เป้า ρ≥0.70; + criterion: green%/vigor (data-driven) ทำนาย survival ตอนอนุบาล (AUC สูงกว่า chance)
-- **Biological:** H₀ 5 สูตร growth-params เท่ากัน → H₁ ต่าง ≥1 สูตร; ทิศคาด cytokinin สูง (C,D) > control (A)
+- **Biological:** H₀ 5 สูตร growth-params เท่ากัน → H₁ ต่าง ≥1 สูตร. **ทิศทางขึ้นกับ trait:** คาด cytokinin สูง (C,D) ให้ **จำนวนยอด** > control (A) แต่ **vigor quality อาจไม่สูงกว่า** เพราะ BAP 5 เสี่ยง hyperhydric/stunted (§3.6) → จุดขาย CV = แยก "ยอดเยอะ" ออกจาก "ต้นสมบูรณ์" ได้
 - **Reproducibility:** H₀ ไม่มี formula×batch interaction (อยาก fail to reject)
 - **Contamination:** exploratory
 

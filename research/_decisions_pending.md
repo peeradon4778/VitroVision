@@ -21,18 +21,17 @@
 - **Validation:** expert ≥2 คน blind → consensus median = reference · Spearman ρ + quadratic-weighted κ + ICC(2,1)
 - **Stats:** ขวด=หน่วยทดลอง · Gompertz growth curve/ขวด · KW/ART-ANOVA หรือ LMM เทียบสูตร · survival (KM+log-rank) สำหรับ contamination
 - **Primary endpoint:** green_coverage_pct · Secondary: vigor, brown%, LCI, shoot_count
-- **citation glucose:** Phillips & Collins 1985 (verified) · **"Thomas 2026" = ผี ตัดทิ้งแล้ว**
+- **citation glucose:** Phillips & Hubstenberger 1985 (verified, DOI 10.1007/BF00040200 — แก้จาก "Collins" ที่ Consensus metadata ผิด) · **"Thomas 2026" = ผี ตัดทิ้งแล้ว**
 
 ---
 
 ## ✏️ ส่วนที่ 2 — รอพีรดนย์เติม (ค่าแล็บ — Group A)
 
-### A1 · §1.7 สภาพห้องเพาะเลี้ยง
-- **ผมแนะนำ (มาตรฐานทั่วไป):** อุณหภูมิ 25±2°C · photoperiod 16/8 ชม. · แสง LED ~40–50 µmol/m²/s
-- กรอกค่าจริงห้องที่ใช้:
-  - อุณหภูมิ → ตอบ: ______
-  - photoperiod (เปิดไฟกี่ชม./วัน) → ตอบ: ______
-  - ชนิดหลอด (LED/fluorescent) + ความสว่าง (µmol หรือ lux) → ตอบ: ______
+### A1 · §1.7 สภาพห้องเพาะเลี้ยง — ✅ **ตอบแล้ว (2026-06-12): ค่าจริงตรง default**
+- อุณหภูมิ → **25±2°C**
+- photoperiod → **16/8 ชม. (light/dark)**
+- หลอด + ความสว่าง → **LED ~40–50 µmol/m²/s**
+- *(fold เข้า 10 §1.7 แล้ว)*
 
 ### A2 · §2.1 กล้อง/การถ่าย
 - **ผมแนะนำ:** มือถือถ่าย manual mode ล็อก exposure+WB, ความละเอียด ≥1920px, ระยะคงที่ ~25–30 cm, มี lightbox + แผ่นขาวอ้างอิงในเฟรม
@@ -52,13 +51,14 @@
 
 ## 🤔 ส่วนที่ 3 — รอพีรดนย์ตัดสินใจ (Group B)
 
-### B1 · §2.2 เวลาถ่ายในแต่ละวัน
-- **ผมแนะนำ:** ล็อกเวลาเดิมทุกวัน เช่น **9:00 น.** (กัน diurnal effect จากไฟตู้เปิด-ปิด)
-- → ตอบ: ______
+### B1 · §2.2 เวลาถ่ายในแต่ละวัน — 🔶 **ตัดสินบางส่วน (2026-06-12)**
+- **ตัดสิน:** ล็อกเวลาคงที่ทุกวัน ช่วงเย็นหลังเลิกเรียน (พีรดนย์เลือก "เวลาอื่น" ไม่ใช่ 9:00)
+- ⏳ **เหลือ:** เวลาเป๊ะ (แนะนำ ~17:00) → ตอบ: ______
 
-### B2 · §5.3 α + การ correct multiple comparison
-- **ผมแนะนำ:** α = **0.05** · primary+secondary endpoint ใช้ **Bonferroni** (conservative, กรรมการเจาะยาก) · เก็บ FDR ไว้เฉพาะ exploratory (contamination)
-- → ตอบ: ______
+### B2 · §5.3 α + การ correct multiple comparison — ✅ **ตอบแล้ว (2026-06-12): hierarchical gatekeeping**
+- α = **0.05** · **primary endpoint เดียว = green_coverage_pct** → 3 planned contrasts ใช้ **Bonferroni** (α/3 ≈ 0.017/คู่)
+- **secondary** (vigor/brown/LCI/shoot) → **FDR (BH)** เป็น supportive · **contamination** → descriptive
+- รายงาน **effect size + 95% CI** ทุกที่ · *(fold เข้า 10 §5.3 แล้ว)*
 
 ---
 
@@ -66,7 +66,7 @@
 
 - [ ] **Germination pre-test** — ทดสอบ % งอก/เวลางอกของ 'พริกจินดา' ก่อน เพื่อกะ over-sow buffer ให้แม่น → ตอบผล: ______
 - [ ] **Imaging rig spec** — สรุปสเปกชุดถ่าย (กล่อง/ระยะ/แสง/พื้นหลัง) ให้ reproducible → ลิงก์กับ A2
-- [ ] **Expert vigor rubric 1–5** — มี draft ใน methods §4.1 แล้ว (5 ระดับ anchor) → **พีรดนย์ + ครู review ว่าใช้ได้ไหม** → sign-off: ______
+- [🔶] **Expert assessment rubric** — อัปเกรดเป็น **2 axis** (developmental phase objective + vigor 1–5 holistic) + hyperhydric flag, มี citation ค้ำ (Myakisheva 2024/Ding 2025/Bock 2010/de Raadt 2021 — §4.1 v2) → **เหลือครู TC review เส้นแบ่ง grade 3/4 + ลองให้คะแนนจริงดู inter-rater** → sign-off: ______
 - [ ] **Hypotheses sign-off** — มี draft ใน methods §6 (validation/biological/reproducibility/contamination) → ยืนยันถ้อยคำ → sign-off: ______
 
 ---
