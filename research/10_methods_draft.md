@@ -17,8 +17,8 @@
 ## 📌 TODO — จุดที่ต้องกลับมาแก้/กรอกเอง (รวมทุก ⚠️ ในไฟล์)
 
 **A. ค่าแล็บที่ผมไม่รู้ (peeradon กรอก):**
-- [x] §1.1 — whole-fruit Clorox 15%→10% ฟอก 2 รอบ → คีบเมล็ดจากผล (เกษตรกร อ.สตึก บุรีรัมย์), ไม่ใช้ GA₃, นับ day จาก emergence — **เหลือ:** เวลาแช่/รอบ + Tween/EtOH ไหม
-- [x] §1.2 อาหาร — ตอบแล้ว (MS full / Glucose 20 / Kelcogel 3 g/L / pH 5.6–5.8 / PGR ก่อน autoclave / 121°C 15–20 min / ~30 mL/ขวด) — **เหลือ:** ชนิด/ขนาดขวด
+- [x] §1.1 — whole-fruit Clorox 15%→10% ฟอก 2 รอบ **รอบละ 15 นาที, Clorox อย่างเดียว (ไม่ Tween/EtOH)** → คีบเมล็ดจากผล (เกษตรกร อ.สตึก บุรีรัมย์), ไม่ใช้ GA₃, นับ day จาก emergence ✅ **ครบ 2026-06-12**
+- [x] §1.2 อาหาร — MS full / Glucose 20 / Kelcogel 3 g/L / pH 5.6–5.8 / PGR ก่อน autoclave / 121°C 15–20 min / ~30 mL/ขวด, **ขวดแยมแก้ว 240 mL** ✅ **ครบ 2026-06-12**
 - [x] §1.3 สถานะ — A/C/D ทำอาหารแล้วยังไม่หยอด, B/E พรุ่งนี้ → หยอด 1 เมล็ด/ขวดพร้อมกันทุกสูตร
 - [x] §1.7 อุณหภูมิ/photoperiod/light = **ค่าจริงตรง default** 25±2°C / 16/8 h / LED 40–50 µmol (2026-06-12)
 - [x] §2.1 **รุ่นกล้อง/มือถือ** = **Samsung Galaxy S24 FE** (main 50 MP ISOCELL GN3, f/1.8 OIS) — เหลือ: ระยะถ่าย + lightbox spec + ยืนยัน Pro mode/ความละเอียด
@@ -26,7 +26,7 @@
 - [x] §1.2 citation glucose แทน sucrose — **ได้แล้ว** Phillips & Hubstenberger 1985 (Capsicum-specific, glucose superior) + Arafa 2023 (chlorophyll) → `11_carbon_source_glucose.md`
 
 **B. การตัดสินใจ (peeradon ตัด):**
-- [~] §2.2 ล็อกเวลาถ่าย = **ล็อกคงที่ช่วงเย็น** (ตัดสินแล้ว) — เหลือยืนยันเวลาเป๊ะ (แนะนำ ~17:00)
+- [x] §2.2 ล็อกเวลาถ่าย = **17:00 น. ทุกวัน** ✅ (ยืนยัน 2026-06-12)
 - [x] §5.3 α + correction = **hierarchical gatekeeping** (primary green% α=0.05/Bonferroni 3 contrasts · secondary FDR · contamination descriptive) (2026-06-12)
 
 **C. งานที่ต้องทำก่อนรายงานเลขจริง:**
@@ -53,11 +53,11 @@
 
 **แหล่งวัสดุ:** ผลพริก cv.'พริกจินดา' จาก**เกษตรกรผู้ปลูกใน อ.สตึก จ.บุรีรัมย์** (provenance ระบุได้ + อยู่ในพื้นที่ field survey ของโครงการ)
 
-**Sterilization & seed excision (วิธีจริง 2026-06-11):** **whole-fruit surface sterilization** — ฟอกผิว**ผลพริกทั้งลูก**ด้วย Clorox (sodium hypochlorite) แบบ **2 สเตป: 15% → 10% (v/v), ฟอกล้าง 2 รอบ** → ผ่าผลในสภาพปลอดเชื้อ → คีบเมล็ดจากภายในวางบนอาหาร. เหตุผล: เนื้อผลเป็น barrier ทำให้ภายในปลอดเชื้อตามธรรมชาติ + เมล็ดไม่โดน bleach โดยตรง → ไม่ลด germination/viability (ต่างจากการจุ่มเมล็ดใน NaOCl โดยตรง). [Clorox household ~5–6% NaOCl → 15% v/v ≈ 0.9% NaOCl, 10% v/v ≈ 0.6% NaOCl]
+**Sterilization & seed excision (วิธีจริง 2026-06-11, เวลายืนยัน 2026-06-12):** **whole-fruit surface sterilization** — ฟอกผิว**ผลพริกทั้งลูก**ด้วย Clorox (sodium hypochlorite) แบบ **2 สเตป: 15% → 10% (v/v), ฟอกล้าง 2 รอบ รอบละ 15 นาที** (**Clorox อย่างเดียว — ไม่จุ่ม Tween-20 / EtOH ก่อน**) → ผ่าผลในสภาพปลอดเชื้อ → คีบเมล็ดจากภายในวางบนอาหาร. เหตุผล: เนื้อผลเป็น barrier ทำให้ภายในปลอดเชื้อตามธรรมชาติ + เมล็ดไม่โดน bleach โดยตรง → ไม่ลด germination/viability (ต่างจากการจุ่มเมล็ดใน NaOCl โดยตรง). [Clorox household ~5–6% NaOCl → 15% v/v ≈ 0.9% NaOCl, 10% v/v ≈ 0.6% NaOCl]
 
 **ไม่ใช้ GA₃ pre-treatment** — cv.'พริกจินดา' งอกง่ายอยู่แล้ว (ไม่ต้องเร่ง); การจัดการเมล็ดงอกไม่พร้อมกันใช้วิธี **align growth curve จากวันงอก (emergence)** แทน (§2.2) → design สะอาด ไม่มีฮอร์โมนภายนอกเพิ่ม
 
-⚠️ **เหลือเล็กน้อย:** เวลาแช่ต่อรอบ (กี่นาที), มี Tween-20 / EtOH dip ก่อนไหม
+✅ **ครบแล้ว (2026-06-12):** แช่รอบละ 15 นาที · ไม่มี Tween-20 / EtOH dip (Clorox อย่างเดียว)
 
 ### 1.2 Culture media — 5 สูตร
 
@@ -81,8 +81,7 @@ basal = **MS medium** (Murashige & Skoog 1962) ปรับเฉพาะ plant
 - PGR: ใส่**ก่อน autoclave** (autoclavable, ไม่ filter-sterilize)
 - Autoclave: **121°C, 15–20 นาที**
 - ปริมาตร: **~30 mL/ขวด** (อาหาร 1 L ทำได้ ~40 ขวด)
-
-⚠️ **ยังต้องกรอก:** ชนิด/ขนาดขวด
+- ภาชนะ: **ขวดแยมแก้วใส 240 mL** (ยืนยัน 2026-06-12) — แก้วใส → through-bottle imaging คมชัด (เข้าทาง CV) · อาหาร ~30 mL ก้น headspace เหลือเยอะ (~210 mL) สำหรับต้นโต
 
 > **⚑ หมายเหตุ deviation (defend ได้แล้ว — ดู `11_carbon_source_glucose.md`):**
 > (1) **Glucose แทน sucrose** — **มี Capsicum-specific evidence โดยตรง: Phillips & Hubstenberger (1985) ระบุ "Glucose was superior to sucrose as the carbon source" ใน *Capsicum annuum* บน MS medium**. กลไก: glucose เป็น monosaccharide ดูดซึมเข้า glycolysis ตรง ไม่ต้อง invertase hydrolysis (Wan 2017; Ruan 2012) — สำคัญใน explant ที่ตัดขาดจาก phloem. โบนัส: glucose ส่งเสริมการสะสม chlorophyll (Arafa 2023) = ดีต่อ green_coverage phenotype. + ทุกสูตร A–E ใช้ glucose เหมือนกัน → คงที่ข้าม treatment ไม่ใช่ confound. การเลือก carbon source ตาม genotype/explant = established practice (Yaseen 2013 review).
@@ -157,7 +156,7 @@ n ที่ต้องการเพื่อ power 0.80: ใหญ่ ≥16, 
 
 window **28 วัน** (start → พร้อมอนุบาล) ถ่าย **~20–25 timepoints/ขวด** (เกือบทุกวัน, ขาด 1–2 วันได้) — **fit growth curve กับเลข day จริง ไม่ใช่สมมติเว้นเท่ากัน** **Growth-curve align จากวัน "งอก (emergence)"** ของแต่ละขวด ไม่ใช่วันหว่าน
 
-**ล็อกเวลาถ่ายเดิมทุกวัน** (ตัด diurnal effect จากรอบเปิด/ปิดไฟตู้เพาะ) — เวลาคงที่ในช่วงเย็นหลังเลิกเรียน *(แนะนำ ~17:00 น. — รอพีรดนย์ยืนยันเวลาเป๊ะตามตารางจริง)*
+**ล็อกเวลาถ่ายเดิมทุกวัน = 17:00 น.** (ยืนยัน 2026-06-12) ตัด diurnal effect จากรอบเปิด/ปิดไฟตู้เพาะ — เวลาคงที่ช่วงเย็นหลังเลิกเรียน (ตรวจให้ไฟตู้เพาะอยู่ในช่วง ON ของ photoperiod 16/8 ตอน 17:00 เพื่อสภาพแสงคงที่ทุกภาพ)
 
 ### 2.3 Status logging
 
