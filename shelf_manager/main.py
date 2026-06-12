@@ -259,6 +259,7 @@ def add_record_json(bottle_id):
     root_density = request.form.get("root_density", "none")
     callus       = int(request.form.get("callus_present", 0) or 0)
     hyper        = int(request.form.get("hyperhydricity", 0) or 0)
+    dev_stage    = request.form.get("dev_stage", "")
     vigor        = int(request.form.get("vigor_score", 0) or 0)
     image_bytes  = None
     if "photo" in request.files and request.files["photo"].filename:
@@ -267,7 +268,8 @@ def add_record_json(bottle_id):
         bottle_id, day_point, status,
         shoot_count=shoot_count, hyperhydricity=bool(hyper),
         shoot_height_class=shoot_height,
-        root_density=root_density, callus_present=callus, vigor_score=vigor,
+        root_density=root_density, callus_present=callus,
+        dev_stage=dev_stage, vigor_score=vigor,
     )
     ai_status, ai_conf = 'unknown', 0.0
     pheno = {}

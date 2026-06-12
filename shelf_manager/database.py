@@ -107,6 +107,7 @@ def _migrate_db():
             ("shoot_height_class",  "TEXT    DEFAULT ''"),
             ("root_density",        "TEXT    DEFAULT 'none'"),
             ("callus_present",      "INTEGER DEFAULT 0"),
+            ("dev_stage",           "TEXT    DEFAULT ''"),
             ("vigor_score",         "REAL    DEFAULT 0"),
             ("green_coverage_pct",  "REAL    DEFAULT NULL"),
             ("leaf_color_index",    "REAL    DEFAULT NULL"),
@@ -278,7 +279,7 @@ def add_image(bottle_id, day_point, status, drive_file_id="", drive_url="",
               local_path="", shoot_count=-1, media_color="normal",
               hyperhydricity=False, has_roots=False, batch_id=None,
               shoot_height_class="", root_density="none",
-              callus_present=False, vigor_score=0):
+              callus_present=False, dev_stage="", vigor_score=0):
     if batch_id is None:
         active = get_active_batch()
         batch_id = active["id"] if active else None
@@ -288,12 +289,14 @@ def add_image(bottle_id, day_point, status, drive_file_id="", drive_url="",
             INSERT INTO images(bottle_id, batch_id, day_point, date_taken, status,
                                drive_file_id, drive_url, local_path,
                                shoot_count, media_color, hyperhydricity, has_roots,
-                               shoot_height_class, root_density, callus_present, vigor_score)
-            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                               shoot_height_class, root_density, callus_present,
+                               dev_stage, vigor_score)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
         """, (bottle_id, batch_id, day_point, date_taken, status,
               drive_file_id, drive_url, local_path,
               shoot_count, media_color, int(hyperhydricity), int(has_roots),
-              shoot_height_class, root_density, int(callus_present), vigor_score))
+              shoot_height_class, root_density, int(callus_present),
+              dev_stage, vigor_score))
         conn.commit()
         return cur.lastrowid
 
@@ -375,7 +378,7 @@ def get_bottle_timeline(bottle_id):
         rows = conn.execute("""
             SELECT day_point, date_taken, status,
                    shoot_count, vigor_score, shoot_height_class,
-                   root_density, callus_present,
+                   root_density, callus_present, dev_stage, hyperhydricity,
                    green_coverage_pct, leaf_color_index,
                    shoot_count_cv, media_color_cv,
                    texture_entropy, brown_coverage_pct,

@@ -76,6 +76,20 @@
         <input id="ov-height" type="hidden" value="">
       </div>
 
+      <!-- Developmental stage (§2.4) -->
+      <div>
+        <p class="text-xs text-gray-500 mb-1">ระยะพัฒนาการ
+          <span class="text-gray-700">ราก → ลำต้น → ใบเลี้ยง → ใบจริง</span></p>
+        <div class="grid grid-cols-5 gap-1.5">
+          <button type="button" onclick="setOvStage('')"          id="ov-st-none"      class="py-2.5 rounded-lg text-xs font-medium bg-gray-800 text-gray-500 transition">—</button>
+          <button type="button" onclick="setOvStage('radicle')"   id="ov-st-radicle"   class="py-2.5 rounded-lg text-xs font-medium bg-gray-800 text-gray-500 transition">ราก</button>
+          <button type="button" onclick="setOvStage('hypocotyl')" id="ov-st-hypocotyl" class="py-2.5 rounded-lg text-xs font-medium bg-gray-800 text-gray-500 transition">ลำต้น</button>
+          <button type="button" onclick="setOvStage('cotyledon')" id="ov-st-cotyledon" class="py-2.5 rounded-lg text-xs font-medium bg-gray-800 text-gray-500 transition">ใบเลี้ยง</button>
+          <button type="button" onclick="setOvStage('true_leaf')" id="ov-st-true_leaf" class="py-2.5 rounded-lg text-xs font-medium bg-gray-800 text-gray-500 transition">ใบจริง</button>
+        </div>
+        <input id="ov-stage" type="hidden" value="">
+      </div>
+
       <!-- Root + Callus (2 คอลัมน์) -->
       <div class="grid grid-cols-2 gap-4">
         <div>
@@ -295,6 +309,8 @@
       <p class="text-xs text-gray-600">complexity</p>
     </div>
   </div>
+  <!-- latest flags: ระยะพัฒนาการ + hyperhydric -->
+  <div id="tl-flags" class="flex flex-wrap items-center gap-2 mb-5 text-xs min-h-[1.5rem]"></div>
 
   <!-- status timeline -->
   <div class="bg-gray-800 rounded-xl p-3 mb-4">
@@ -467,6 +483,16 @@ async function loadTimeline() {
 
     const ent = lt.texture_entropy;
     document.getElementById('tl-entropy').textContent = ent != null ? ent.toFixed(2) : '—';
+
+    // ── flags: ระยะพัฒนาการ + hyperhydric ──
+    const STAGE_TH = { radicle:'🌱 ระยะราก', hypocotyl:'🌿 ลำต้นอ่อน',
+                       cotyledon:'🍃 ใบเลี้ยง', true_leaf:'🌳 ใบจริง' };
+    let flagHtml = '';
+    if (lt.dev_stage && STAGE_TH[lt.dev_stage])
+      flagHtml += `<span class="px-2.5 py-1 rounded-lg bg-gray-800 text-gray-300">${STAGE_TH[lt.dev_stage]}</span>`;
+    if (lt.hyperhydricity)
+      flagHtml += `<span class="px-2.5 py-1 rounded-lg bg-amber-600/20 text-amber-400 border border-amber-600/40">⚠️ Hyperhydric</span>`;
+    document.getElementById('tl-flags').innerHTML = flagHtml;
   }
 
   // ── shoot count (manual หรือ CV) ──
@@ -604,6 +630,16 @@ function setOvRoot(r) {
   });
 }
 
+function setOvStage(s) {
+  document.getElementById('ov-stage').value = s;
+  ['none','radicle','hypocotyl','cotyledon','true_leaf'].forEach(k => {
+    const active = (s === '' && k === 'none') || s === k;
+    document.getElementById('ov-st-' + k).className = active
+      ? 'py-2.5 rounded-lg text-xs font-medium bg-green-700 text-white transition'
+      : 'py-2.5 rounded-lg text-xs font-medium bg-gray-800 text-gray-500 transition';
+  });
+}
+
 function toggleOvCallus() {
   const inp = document.getElementById('ov-callus');
   const btn = document.getElementById('ov-callus-btn');
@@ -627,7 +663,7 @@ function toggleOvHyper() {
 }
 
 // init overlay defaults
-setOvHeight(''); setOvRoot('none');
+setOvHeight(''); setOvRoot('none'); setOvStage('');
 
 // ─── Status ──────────────────────────────────────────────────────
 const STATUS_BASE = 'py-3 rounded-xl text-sm font-bold border-2 transition w-full';
@@ -775,6 +811,7 @@ async function saveRecord() {
   form.append('root_density',       document.getElementById('ov-root').value);
   form.append('callus_present',     document.getElementById('ov-callus').value);
   form.append('hyperhydricity',     document.getElementById('ov-hyper').value);
+  form.append('dev_stage',          document.getElementById('ov-stage').value);
   form.append('vigor_score',        document.getElementById('ov-vigor').value);
   form.append('photo', _pendingBlob, 'photo.jpg');
 
