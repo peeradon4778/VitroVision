@@ -21,7 +21,7 @@
 - [x] §1.2 อาหาร — ตอบแล้ว (MS full / Glucose 20 / Kelcogel 3 g/L / pH 5.6–5.8 / PGR ก่อน autoclave / 121°C 15–20 min / ~30 mL/ขวด) — **เหลือ:** ชนิด/ขนาดขวด
 - [x] §1.3 สถานะ — A/C/D ทำอาหารแล้วยังไม่หยอด, B/E พรุ่งนี้ → หยอด 1 เมล็ด/ขวดพร้อมกันทุกสูตร
 - [x] §1.7 อุณหภูมิ/photoperiod/light = **ค่าจริงตรง default** 25±2°C / 16/8 h / LED 40–50 µmol (2026-06-12)
-- [ ] §2.1 **รุ่นกล้อง/มือถือ** (เหลือตัวนี้ตัวเดียวใน §2.1 — ค่าอื่นใส่แล้ว)
+- [x] §2.1 **รุ่นกล้อง/มือถือ** = **Samsung Galaxy S24 FE** (main 50 MP ISOCELL GN3, f/1.8 OIS) — เหลือ: ระยะถ่าย + lightbox spec + ยืนยัน Pro mode/ความละเอียด
 - [ ] §3.2 ค่า HSV threshold (green/brown) ที่ calibrate กับ rig จริง — *รอถ่าย calibration set*
 - [x] §1.2 citation glucose แทน sucrose — **ได้แล้ว** Phillips & Hubstenberger 1985 (Capsicum-specific, glucose superior) + Arafa 2023 (chlorophyll) → `11_carbon_source_glucose.md`
 
@@ -137,9 +137,21 @@ n ที่ต้องการเพื่อ power 0.80: ใหญ่ ≥16, 
 
 ### 2.1 Imaging rig (มาตรฐานคงที่)
 
-ถ่ายภาพ **ผ่านขวด (non-destructive, ไม่เปิดฝา)** ในชุดถ่ายที่คุมตัวแปรคงที่ทุกครั้ง: ระยะกล้อง–ขวด, มุม, แสง, background — **1 มุม/ขวด** ใช้ **lightbox** (แสงสม่ำเสมอ) + **แผ่นอ้างอิงสีขาว (white reference card)** ในเฟรมทุกภาพ เพื่อ white-balance/normalize สีตอน post-process (สำคัญมากเพราะ feature หลักเป็นสี — green%/LCI)
+ถ่ายภาพ **ผ่านขวด (non-destructive, ไม่เปิดฝา)** ในชุดถ่ายที่คุมตัวแปรคงที่ทุกครั้ง: ระยะกล้อง–ขวด, มุม, แสง, background — **1 มุม/ขวด** คุมแสงให้คงที่ทุกภาพ (สภาพแสงควบคุมเดียวกัน — **ไม่ใช้ lightbox**, ดู §2.1.1) + **แผ่นอ้างอิงสีขาว (white reference card)** ในเฟรมทุกภาพ เพื่อ white-balance/normalize สีตอน post-process (สำคัญมากเพราะ feature หลักเป็นสี — green%/LCI)
 
-⚠️ **ต้องกรอกค่าจริง:** รุ่นกล้อง/มือถือ, ความละเอียด (เช่น 1920×1080+), ระยะถ่าย (cm), แหล่งแสง lightbox (สี/ความสว่าง), exposure/ISO/white-balance ตั้ง manual หรือ auto (แนะนำ manual ล็อกค่า)
+📷 **กล้อง/การถ่าย (ยืนยัน 2026-06-12):**
+- **เครื่อง:** **Samsung Galaxy S24 FE** — กล้องหลัง main **50 MP** (Samsung ISOCELL GN3, sensor 1/1.57", f/1.8, OIS, dual-pixel PDAF)
+- **ความละเอียด:** ถ่าย **12 MP** (binned default — ไฟล์เล็ก จัดการง่าย) **ล็อกค่านี้ตลอดการทดลอง ห้ามสลับ**
+- **ระยะถ่าย:** **15–20 cm** (เทสต์จริง 2026-06-12 โฟกัสคมทั้งช่วง) → **ล็อกค่าเดียวในช่วงนี้ (แนะนำ ~18 cm) คงที่ทุกภาพ** เพื่อ scale คงที่ (PLA/ความสูง pixel ขึ้นกับระยะ); ใช้ marker/แผ่นอ้างอิงในเฟรมช่วย normalize residual
+- **setting:** ถ่าย **Pro mode** ล็อก **ISO + WB + focus + exposure** คงที่ทุกภาพ (f/1.8 เป็น fixed aperture อยู่แล้ว)
+- **lightbox:** ❌ **ตัดสินใจไม่ใช้ (2026-06-12)** → ใช้การคุมแสงแบบอื่นทดแทน (ดู §2.1.1)
+
+> **§2.1.1 ไม่ใช้ lightbox — คุมแสงยังไง (ข้อนี้ต้อง defend กับกรรมการได้):** feature หลักเป็น **สี** (green%, LCI) → lighting consistency คือ make-or-break. เมื่อไม่มี lightbox ต้องชดเชยด้วย **3 มาตรการบังคับ:**
+> 1. **ถ่ายในสภาพแสงควบคุมเดียวกันทุกครั้ง** — จุดถ่ายเดิม, แหล่งแสงเดิม (เช่นถ่ายใต้/ใกล้ไฟ LED ของตู้เพาะที่คงที่อยู่แล้ว 40–50 µmol, **ปิดไฟห้อง/เลี่ยงแสงหน้าต่างที่เปลี่ยนตามเวลา**), เวลาเดิม (§2.2 ล็อกเย็น)
+> 2. **Pro mode ล็อก WB + exposure** — กัน auto-WB ของมือถือปรับสีเองข้ามภาพ (ตัวการทำสีเพี้ยนอันดับ 1)
+> 3. **แผ่นขาวอ้างอิง (white card) ในเฟรมทุกภาพ** — ใช้ normalize/ white-balance สีตอน post-process → **ชดเชยความต่างของแสงเชิงตัวเลขได้** แม้แสงไม่เพอร์เฟกต์เท่า lightbox
+>
+> **จัดการ glare ขวดแก้ว:** เอียงมุมไฟ/กล้องเลี่ยงสะท้อนตรง, พื้นหลังด้านไม่มัน (เช่นกระดาษขาวด้าน/ดำด้าน). **Limitation ที่ต้องเขียนตรงๆ ในรายงาน:** ไม่มี diffuse enclosure → residual glare/shadow เป็นแหล่ง noise ที่เหลือ; พึ่ง white-card normalization + Pro-mode lock เป็น primary control
 
 ### 2.2 Temporal sampling
 
