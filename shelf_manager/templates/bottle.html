@@ -95,6 +95,15 @@
         </div>
       </div>
 
+      <!-- Hyperhydric (vitrification) flag -->
+      <div>
+        <p class="text-xs text-gray-500 mb-1">Hyperhydric
+          <span class="text-gray-700">ใบใส/ฉ่ำน้ำ · บวมอวบ · ซีด — ความผิดปกติ (vitrification)</span></p>
+        <button type="button" onclick="toggleOvHyper()" id="ov-hyper-btn"
+          class="w-full py-2.5 rounded-lg text-xs font-medium bg-gray-800 text-gray-500 transition">ปกติ</button>
+        <input id="ov-hyper" type="hidden" value="0">
+      </div>
+
     </div>
 
     <!-- AI Prediction badge (แสดงหลังจากถ่ายภาพ) -->
@@ -606,6 +615,17 @@ function toggleOvCallus() {
   btn.textContent = on ? 'มี' : 'ไม่มี';
 }
 
+function toggleOvHyper() {
+  const inp = document.getElementById('ov-hyper');
+  const btn = document.getElementById('ov-hyper-btn');
+  const on = inp.value === '0';
+  inp.value = on ? '1' : '0';
+  btn.className = on
+    ? 'w-full py-2.5 rounded-lg text-xs font-medium bg-amber-600 text-white transition'
+    : 'w-full py-2.5 rounded-lg text-xs font-medium bg-gray-800 text-gray-500 transition';
+  btn.textContent = on ? '⚠️ Hyperhydric' : 'ปกติ';
+}
+
 // init overlay defaults
 setOvHeight(''); setOvRoot('none');
 
@@ -754,6 +774,7 @@ async function saveRecord() {
   form.append('shoot_height_class', document.getElementById('ov-height').value);
   form.append('root_density',       document.getElementById('ov-root').value);
   form.append('callus_present',     document.getElementById('ov-callus').value);
+  form.append('hyperhydricity',     document.getElementById('ov-hyper').value);
   form.append('vigor_score',        document.getElementById('ov-vigor').value);
   form.append('photo', _pendingBlob, 'photo.jpg');
 

@@ -258,13 +258,15 @@ def add_record_json(bottle_id):
     shoot_height = request.form.get("shoot_height_class", "")
     root_density = request.form.get("root_density", "none")
     callus       = int(request.form.get("callus_present", 0) or 0)
+    hyper        = int(request.form.get("hyperhydricity", 0) or 0)
     vigor        = int(request.form.get("vigor_score", 0) or 0)
     image_bytes  = None
     if "photo" in request.files and request.files["photo"].filename:
         image_bytes = request.files["photo"].read()
     image_id = db.add_image(
         bottle_id, day_point, status,
-        shoot_count=shoot_count, shoot_height_class=shoot_height,
+        shoot_count=shoot_count, hyperhydricity=bool(hyper),
+        shoot_height_class=shoot_height,
         root_density=root_density, callus_present=callus, vigor_score=vigor,
     )
     ai_status, ai_conf = 'unknown', 0.0
@@ -273,7 +275,7 @@ def add_record_json(bottle_id):
         drive.queue_upload(image_id, bottle_id, day_point, status, image_bytes)
         if INFERENCE_OK and _inference.ready():
             ai_status, ai_conf = _inference.predict_bytes(image_bytes)
-            db.update_image_cv(image_id, shoot_count, 'normal', False, False,
+            db.update_image_cv(image_id, shoot_count, 'normal', bool(hyper), False,
                                ai_status, ai_conf)
         if PHENOTYPER_OK:
             pheno = _phenotyper.measure(image_bytes)
