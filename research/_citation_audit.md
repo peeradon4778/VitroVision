@@ -12,10 +12,10 @@
 
 | สถานะ | จำนวน |
 |---|---|
-| ✅ Verified (มีจริง ข้อมูลตรง) | 30 |
+| ✅ Verified (มีจริง ข้อมูลตรง) | 33 |
 | ⚠️ ต้องแก้รายละเอียด (มีจริง แต่ชื่อ/ปี/journal ผิด) | 2 |
 | ❌ ไม่พบ / อาจผี | 1 |
-| 🔍 Verify ไม่ได้ครบ — ต้องตรวจ manual | 3 |
+| 🔍 Verify ไม่ได้ครบ — ต้องตรวจ manual | 0 (เคลียร์หมดแล้ว 2026-06-12) |
 
 **รายชื่อ ❌ ที่ต้องจัดการด่วน:**
 - **Thomas 2026** — ไม่พบใน PubMed/Consensus (ยืนยันแล้วว่าเป็น AI hallucination — ถูกตัดออกจากไฟล์ 10 แล้ว แต่ยังอยู่ใน 08 เป็น historical note)
@@ -35,7 +35,7 @@
 | **Koo & Li 2016** — ICC Guideline, *Journal of Chiropractic Medicine* | ✅ Verified | DOI: 10.1016/j.jcm.2016.02.012 — Koo TK, Li MY — vol.15:155–163 | พบใน ScienceDirect, SciSpace (20,000+ citations) — ตรงทุกรายละเอียด |
 | **Li et al. 2023** — Kappa Considerations, *BMC Cancer* | ✅ Verified | DOI: 10.1186/s12885-023-11325-z — Li M, Gao Q, Yu T — BMC Cancer 2023 | พบใน BMC, PubMed, PMC — ตรงทุกรายละเอียด |
 | **Svensson 2012** — Ranking Approaches Association vs Agreement, *Statistics in Medicine* | ✅ Verified | DOI: 10.1002/sim.5382 — Svensson E — Stat Med 31:3104–3117 | พบใน Wiley Online Library — ตรงทุกรายละเอียด |
-| **Schober et al. 2018** — Correlation Coefficients, *Anesthesia & Analgesia* | 🔍 Verify ไม่ได้ครบ | ไม่ได้ search โดยตรง — ใน 06 มี Consensus URL ให้แล้ว | ระดับ low risk: Schober 2018 A&A เป็น paper ที่ cite กันมาก ในสาขา; แนะนำ verify DOI ก่อน submit |
+| **Schober et al. 2018** — Correlation Coefficients, *Anesthesia & Analgesia* | ✅ Verified (Consensus 2026-06-12) | DOI: 10.1213/ANE.0000000000002864 — Schober P, Boer C, Schwarte LA — Anesth Analg 126(5):1763–1768; 7,865 citations | ยืนยันผ่าน Consensus — ตรงทุกรายละเอียด |
 
 ---
 
@@ -62,7 +62,7 @@
 | **Elkin et al. 2021** — ART-C, *UIST Proceedings* | ✅ Verified | DOI: 10.1145/3472749.3474784 — Elkin LA, Kay M, Higgins JJ, Wobbrock JO — UIST '21 | พบใน ACM DL, arXiv 2102.11824, Northwestern Scholars — ตรงทุกรายละเอียด |
 | **Frey et al. 2024** — Analyze as Randomized, *Agronomy Journal* | ✅ Verified | DOI: 10.1002/agj2.21570 — Frey J et al. — Agron J 116:1371–1381 | พบใน Wiley/ACSESS — ตรงทุกรายละเอียด |
 | **Kruskal & Wallis 1952** — *JASA* | ✅ Verified | Kruskal WH, Wallis WA — JASA 47(260):583–621 | Classic paper — ไม่มี online DOI ในยุคนั้น แต่ verified ผ่าน JSTOR/Consensus; 12,000+ citations |
-| **Oksanen 2001** — Pseudoreplication counterpoint, *Oikos* | 🔍 Verify ไม่ได้ครบ | ไม่ได้ search โดยตรง — ใน 07 มี Consensus URL | Low risk — Oksanen 2001 Oikos เป็น paper ที่รู้จักในวงนิเวศวิทยา แนะนำ verify ก่อน cite ใน proposal |
+| **Oksanen 2001** — Pseudoreplication counterpoint, *Oikos* | ✅ Verified (Consensus 2026-06-12) | DOI: 10.1034/j.1600-0706.2001.11311.x — Oksanen L (2001) "Logic of experiments in ecology: is pseudoreplication a pseudoissue?" Oikos 94:27–38 | ยืนยันผ่าน reference list ในผล Consensus — ตรงทุกรายละเอียด |
 
 ---
 
@@ -103,7 +103,7 @@
 | **Park et al. 2004** — Sealed vessel hyperhydricity, *Scientia Horticulturae* | ✅ Verified | ใน 12 มี Consensus URL — 76 citations | Park SY et al. 2004 — verified ผ่าน Consensus |
 | **Stoffella et al. 1988** — Bell Pepper root morphology, *HortScience* | ✅ Verified | ใน 12 มี Consensus URL — 14 citations | Stoffella PJ et al. 1988 HortScience — verified ผ่าน Consensus |
 | **Ebida & Hu 1993** — Capsicum seedling explants, *Plant Cell Reports* | ✅ Verified | ใน 13 มี Consensus URL — 68 citations | Ebida AIA, Hu CY (1993) PCR — verified ผ่าน Consensus |
-| **Renfiyeni et al. 2026** — *Capsicum frutescens* Sumatra, *AGRIVITA* | 🔍 Verify ไม่ได้ครบ | ใน 13 มี Consensus URL เท่านั้น | ปี 2026 + journal AGRIVITA (Indonesian journal, peer-reviewed) — ไม่ได้ search โดยตรง แนะนำ verify ก่อน cite โดยตรงใน proposal เพราะปีใหม่มาก |
+| **Renfiyeni et al. 2026** — *Capsicum frutescens* West Sumatra, *AGRIVITA* | ✅ Verified (Consensus 2026-06-12) | "In Vitro Somatic Embryogenesis and Regeneration of Cayenne Pepper (*Capsicum frutescens*) from West Sumatra" — AGRIVITA J. Agric. Sci. 2026 | ⚠️ **เนื้อหาจริง = somatic embryogenesis/callus regeneration** (MS+BAP+IAA/NAA, explant=ใบแรก/epicotyl 21-day seedling) **ไม่ใช่ germination** — cite ให้ตรง claim ที่ใช้จริง อย่าอ้างเป็นหลักฐาน germination timing |
 
 ---
 
@@ -131,11 +131,11 @@
 5. **แก้ปี/proceedings ของ Gal & Ghahramani** ใน `09_methods_misc.md`
    - ปี arXiv preprint = 2015, แต่ **published = ICML 2016** — cite เป็น ICML 2016
 
-### 🟢 Verify ก่อน cite โดยตรงใน proposal (low risk แต่ verify ก่อน)
+### 🟢 ~~Verify ก่อน cite โดยตรงใน proposal~~ — ✅ เคลียร์หมดแล้ว (2026-06-12)
 
-6. **Schober et al. 2018** (Correlation Coefficients, *Anesthesia & Analgesia*) — Consensus URL มีแล้วในไฟล์ แต่ยังไม่ได้ search DOI โดยตรง
-7. **Oksanen 2001** (Pseudoreplication counterpoint, *Oikos*) — Consensus URL มีแล้วในไฟล์
-8. **Renfiyeni et al. 2026** (*AGRIVITA* journal) — ใช้ Consensus URL เท่านั้น ยังไม่ได้ search journal source โดยตรง
+6. ✅ **Schober et al. 2018** — verified ผ่าน Consensus → DOI `10.1213/ANE.0000000000002864`, Anesth Analg 126(5):1763–1768
+7. ✅ **Oksanen 2001** — verified ผ่าน reference list ในผล Consensus → DOI `10.1034/j.1600-0706.2001.11311.x`, Oikos 94:27–38
+8. ✅ **Renfiyeni et al. 2026** — verified มีจริงใน AGRIVITA → ⚠️ แต่เนื้อหา = somatic embryogenesis ไม่ใช่ germination, cite ให้ตรง claim
 
 ---
 
@@ -165,7 +165,14 @@ Ahmed 2026 และ Kongbangkerd 2026 มี DOI format `10.1186/s12870-026-082
 
 - **เพิ่ม หมวด 7** — 4 citation methodology ของ rubric (verified via Consensus per citation rule ใหม่ใน CLAUDE.md)
 - **🔴 #1 Phillips & Collins → Hubstenberger 1985** — แก้แล้วใน `10` + `11` + `_decisions_pending.md` (ดู git)
-- **ยังค้าง:** 🔴 #2 (Thomas 2026 ใน 08 — แก้ rename section แล้วใน commit 2b4f8b1) · 🟡 #3–5 (เพิ่ม DOI Depetris/Signorelli, ปี Gal) · 🟢 #6–8 (verify Schober/Oksanen/Renfiyeni)
+- **ยังค้าง:** 🔴 #2 (Thomas 2026 ใน 08 — แก้ rename section แล้วใน commit 2b4f8b1)
+
+## ✅ Resolution Log (2026-06-12 รอบ 2, claude-opus-4-8)
+
+- **🟡 #3–4 เพิ่ม DOI Depetris/Signorelli** — fold เข้า `10_methods_draft.md` §3.4 แล้ว (Depetris `10.3390/plants14101499`, Signorelli `10.1111/pce.70102`)
+- **🟡 #5 ปี Gal & Ghahramani** — แก้ใน `09_methods_misc.md` ref [4] → cite as ICML 2016 (arXiv preprint 2015)
+- **🟢 #6–8 verify low-risk 3 ตัว** — ค้นผ่าน Consensus ครบ ทั้งหมดมีจริง (Schober/Oksanen/Renfiyeni) → flip เป็น ✅ ในตารางหมวด 1/3/6; Renfiyeni ติด flag content = somatic embryogenesis
+- **สถานะ gate:** เหลือ ❌ Thomas 2026 (retracted, อยู่ใน 08 เป็น historical note เท่านั้น) + ⚠️ ไม่มีค้าง · 🔍 = 0
 
 ---
 

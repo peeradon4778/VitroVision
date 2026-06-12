@@ -69,7 +69,7 @@ VitroVision เปรียบเทียบ 5 สูตร MS (treatment group
 
 [3] [Cost-Effective Active Learning for Deep Image Classification](https://consensus.app/papers/details/ae04b197642b5ab3bb1c10bde2e6df46/?utm_source=claude_code) (Keze Wang et al., 2017, IEEE Transactions on Circuits and Systems for Video Technology, 741 citations)
 
-[4] [Dropout as a Bayesian Approximation: Representing Model Uncertainty in Deep Learning](https://consensus.app/papers/details/93e51bd77c8c54e291d7ef8dc0bb8815/?utm_source=claude_code) (Y. Gal & Z. Ghahramani, 2015, 11,672 citations) — **verified foundational paper สำหรับ MC Dropout**
+[4] [Dropout as a Bayesian Approximation: Representing Model Uncertainty in Deep Learning](https://consensus.app/papers/details/93e51bd77c8c54e291d7ef8dc0bb8815/?utm_source=claude_code) (Y. Gal & Z. Ghahramani — arXiv preprint 1506.02142, 2015; **published ICML 2016**, PMLR v48:1050–1059 — cite as **Gal & Ghahramani 2016** ใน reference list), 11,672 citations — **verified foundational paper สำหรับ MC Dropout**
 
 [5] [Design, Detection, and Tracking of Customized Fiducial Markers](https://consensus.app/papers/details/6bac5cd4f229508e865cb737c83b0a44/?utm_source=claude_code) (David Jurado-Rodríguez et al., 2021, IEEE Access, 34 citations)
 

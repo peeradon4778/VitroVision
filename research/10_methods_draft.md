@@ -198,7 +198,7 @@ label ระยะพัฒนาการต่อภาพ เพื่อ ali
 
 ### 3.4 Endpoints
 
-**Primary = `green_coverage_pct`** (Depetris 2025, Signorelli 2025); **Secondary (Bonferroni)**: vigor_score, brown_coverage_pct, leaf_color_index, shoot_count
+**Primary = `green_coverage_pct`** (Depetris et al. 2025, DOI 10.3390/plants14101499; Signorelli et al. 2025, DOI 10.1111/pce.70102); **Secondary (Bonferroni)**: vigor_score, brown_coverage_pct, leaf_color_index, shoot_count
 
 > **vigor_score:** น้ำหนักตั้งมือ **ไม่ใช้เป็นข้อสรุปสุดท้าย** — ถูก re-derive แบบ data-driven จาก survival ใน §4.6 (เก็บสูตรเดิมเป็น interpretable baseline คู่กัน)
 
@@ -395,10 +395,34 @@ fit **Gompertz 3-parameter ต่อขวด** จาก green% time-series:
 
 ## 6. Hypotheses
 
-- **Validation (primary):** H₀ ρ=0 (CV vs consensus expert) → H₁ ρ>0, เป้า ρ≥0.70; + criterion: green%/vigor (data-driven) ทำนาย survival ตอนอนุบาล (AUC สูงกว่า chance)
-- **Biological:** H₀ 5 สูตร growth-params เท่ากัน → H₁ ต่าง ≥1 สูตร. **ทิศทางขึ้นกับ trait:** คาด cytokinin สูง (C,D) ให้ **จำนวนยอด** > control (A) แต่ **vigor quality อาจไม่สูงกว่า** เพราะ BAP 5 เสี่ยง hyperhydric/stunted (§3.6) → จุดขาย CV = แยก "ยอดเยอะ" ออกจาก "ต้นสมบูรณ์" ได้
-- **Reproducibility:** H₀ ไม่มี formula×batch interaction (อยาก fail to reject)
-- **Contamination:** exploratory
+> **สถานะ:** **draft for peeradon sign-off** (formalized 2026-06-12) — ถ้อยคำ/ทิศทางตรงกับ threshold
+> ที่ล็อกใน §4–§5 แล้ว (ไม่ได้เพิ่ม threshold ใหม่). ✍️ **sign-off:** ____________ (วันที่ ______)
+>
+> ทุก hypothesis **pre-register a priori** ก่อนเก็บข้อมูล · รายงาน **effect size + 95% CI** เสมอ ไม่ใช่แค่ p
+
+**H1 — Validation (primary, METHOD claim).** VitroVision วัด phenotype สอดคล้องกับผู้เชี่ยวชาญ
+และทำนาย outcome ทางชีววิทยาได้
+- **H1a (convergent):** H₀: ρ(CV `green_coverage_pct`, consensus-median expert) = 0 →
+  **H₁: ρ > 0**, a priori threshold **ρ ≥ 0.70** (Spearman, primary metric §4.4) คู่กับ
+  quadratic-weighted κ ≥ 0.60 + ICC(2,1) ≥ 0.75 (one-sided เพราะคาดทิศบวก)
+- **H1b (criterion):** H₀: phenotype features ไม่ทำนาย ex-vitro survival (logistic AUC = 0.5) →
+  **H₁: AUC > 0.5** (logistic `survival ~ green + brown + LCI + shoot + entropy`, §4.6);
+  รายงาน odds ratio + 95% CI
+
+**H2 — Biological (5 สูตร MS).** H₀: Gompertz growth-rate *k* (จาก green%-time series) เท่ากันทั้ง
+A–E → **H₁: ต่างกัน ≥1 สูตร**. ทดสอบด้วย **3 planned contrasts** (A/B/C, C/D, A/E) Bonferroni
+α/3 ≈ 0.017 (§5.3) — *ไม่ใช่* omnibus dose-response เดียว
+- **ทิศทางคาดต่อ trait (จุดขาย CV):** cytokinin สูง (C, D) → **shoot_count ↑** เทียบ control (A)
+  **แต่ vigor quality (data-driven) อาจไม่ ↑** เพราะ BAP 5 เสี่ยง hyperhydric/stunted (§3.6) →
+  CV แยก "ยอดเยอะ" ออกจาก "ต้นสมบูรณ์" ได้ = ค่าเพิ่มเหนือการนับยอดด้วยตา
+
+**H3 — Reproducibility.** H₀: **ไม่มี** formula×batch interaction (อยาก **fail to reject** = effect
+ซ้ำได้ข้าม batch, §5.4) → H₁: มี interaction (= รายงานเป็น limitation). ห้าม drop batch แม้
+non-significant (Frey et al. 2024)
+
+**H4 — Contamination.** **Exploratory** — ไม่ตั้ง confirmatory hypothesis (power ขึ้นกับจำนวน
+contamination events จริง ซึ่งคาดน้อย); KM + log-rank เทียบ time-to-contamination ข้าม 5 สูตร
+แบบ descriptive (§5.5)
 
 ## 7. Software
 
