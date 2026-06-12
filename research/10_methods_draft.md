@@ -395,8 +395,8 @@ fit **Gompertz 3-parameter ต่อขวด** จาก green% time-series:
 
 ## 6. Hypotheses
 
-> **สถานะ:** **draft for peeradon sign-off** (formalized 2026-06-12) — ถ้อยคำ/ทิศทางตรงกับ threshold
-> ที่ล็อกใน §4–§5 แล้ว (ไม่ได้เพิ่ม threshold ใหม่). ✍️ **sign-off:** ____________ (วันที่ ______)
+> **สถานะ:** ✅ **SIGNED OFF — พีรดนย์ ด้วงทอง · 2026-06-12** (formalized + ยืนยันถ้อยคำ H1–H4)
+> ถ้อยคำ/ทิศทางตรงกับ threshold ที่ล็อกใน §4–§5 (ไม่ได้เพิ่ม threshold ใหม่)
 >
 > ทุก hypothesis **pre-register a priori** ก่อนเก็บข้อมูล · รายงาน **effect size + 95% CI** เสมอ ไม่ใช่แค่ p
 

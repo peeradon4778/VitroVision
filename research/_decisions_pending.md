@@ -67,7 +67,7 @@
 - [ ] **Germination pre-test** — ทดสอบ % งอก/เวลางอกของ 'พริกจินดา' ก่อน เพื่อกะ over-sow buffer ให้แม่น → ตอบผล: ______
 - [ ] **Imaging rig spec** — สรุปสเปกชุดถ่าย (กล่อง/ระยะ/แสง/พื้นหลัง) ให้ reproducible → ลิงก์กับ A2
 - [🔶] **Expert assessment rubric** — อัปเกรดเป็น **2 axis** (developmental phase objective + vigor 1–5 holistic) + hyperhydric flag, มี citation ค้ำ (Myakisheva 2024/Ding 2025/Bock 2010/de Raadt 2021 — §4.1 v2) → **เหลือครู TC review เส้นแบ่ง grade 3/4 + ลองให้คะแนนจริงดู inter-rater** → sign-off: ______
-- [~] **Hypotheses sign-off** — **formalized แล้ว 2026-06-12** เป็น H1a/H1b/H2/H3/H4 ใน methods §6 (มี H₀/H₁ + threshold ตรง §4–§5) → **เหลือ peeradon ยืนยันถ้อยคำ** → sign-off: ______
+- [x] **Hypotheses sign-off** — ✅ **SIGNED OFF พีรดนย์ 2026-06-12** — H1a/H1b/H2/H3/H4 ใน methods §6 (H₀/H₁ + threshold ตรง §4–§5) ยืนยันถ้อยคำแล้ว
 
 ---
 
