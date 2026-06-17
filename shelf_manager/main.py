@@ -1,6 +1,6 @@
 import json, time, threading
 from pathlib import Path
-from flask import Flask, render_template, request, redirect, url_for, jsonify, Response
+from flask import Flask, render_template, request, redirect, url_for, jsonify, Response, send_file
 import database as db
 import drive_uploader as drive
 import socket
@@ -144,10 +144,12 @@ def ml_status():
 @app.route("/")
 def index():
     stats = db.get_stats()
+    today_capture = db.get_today_capture_count()
     local_ip = get_local_ip()
     grids = {shelf: db.get_shelf_grid(shelf) for shelf in db.SHELVES}
     batches = db.get_all_batches()
     return render_template("index.html", shelves=db.SHELVES, stats=stats,
+                           today_capture=today_capture,
                            local_ip=local_ip, port=5001,
                            grids=grids, rows=db.ROWS, cols=db.COLS,
                            batches=batches)
@@ -159,11 +161,37 @@ def new_batch():
     round_type = request.form.get("round_type", "training")
     start_date = request.form.get("start_date", "")
     notes      = request.form.get("notes", "")
+    sow_date   = request.form.get("sow_date", "").strip()
     if not name or not start_date:
         return redirect(url_for("index"))
-    batch_id = db.create_batch(name, round_type, start_date, notes)
+    batch_id = db.create_batch(name, round_type, start_date, notes, sow_date=sow_date)
     db.start_new_round(batch_id)
     return redirect(url_for("index"))
+
+
+@app.route("/api/bottle/<bottle_id>/emergence", methods=["POST"])
+def api_set_emergence(bottle_id):
+    """บันทึก/ล้างวันงอกของขวด — POST {emergence_date: 'YYYY-MM-DD' | ''}"""
+    data = request.get_json(silent=True) or {}
+    em = data.get("emergence_date", "").strip()
+    bottle, _ = db.get_bottle(bottle_id)
+    if not bottle:
+        return jsonify({"error": "ไม่พบขวด"}), 404
+    db.update_bottle_emergence(bottle_id, em)
+    day = db.get_day_from_emergence(bottle_id)
+    return jsonify({"ok": True, "bottle_id": bottle_id,
+                    "emergence_date": em, "day_from_emergence": day})
+
+
+@app.route("/api/germination_stats")
+def api_germination_stats():
+    return jsonify(db.get_germination_stats())
+
+
+@app.route("/api/suggest_day_point")
+def api_suggest_day_point():
+    day = db.suggest_day_point()
+    return jsonify({"day_point": day})
 
 
 @app.route("/shelf/<shelf_id>")
@@ -305,10 +333,18 @@ def add_record_json(bottle_id):
 
 @app.route("/image/<int:image_id>")
 def get_image(image_id):
-    url = db.get_image_url(image_id)
-    if not url:
+    src = db.get_image_sources(image_id)
+    if not src:
         return "", 404
-    return jsonify({"url": url})
+    # มี drive_url → redirect ไป Drive (พฤติกรรมเดิม: ดูภาพบน Drive)
+    if src.get("drive_url"):
+        return redirect(src["drive_url"])
+    # ไม่มี Drive แต่มีไฟล์ local จริงบนเครื่อง → ส่งไฟล์จริงกลับ (fallback)
+    lp = src.get("local_path") or ""
+    if lp and Path(lp).exists():
+        return send_file(lp)
+    # ไม่มีทั้งคู่
+    return "", 404
 
 
 # --- VitroVision API ---
@@ -583,6 +619,11 @@ def api_scan_aruco():
     if 'photo' not in request.files or not request.files['photo'].filename:
         return jsonify({'detections': []})
     image_bytes = request.files['photo'].read()
+    # ── กัน startup race: ML modules โหลดใน background thread ──
+    # ช่วงไม่กี่วินาทีแรกหลัง app start, _aruco ยังเป็น None (ยังโหลดไม่เสร็จ)
+    # คืน response แบบเดียวกับกรณีไม่มี detection เพื่อให้ frontend ทำงานต่อได้ (ไม่ crash)
+    if _aruco is None:
+        return jsonify({'detections': [], 'model_ready': False})
     raw         = _aruco.detect(image_bytes)
     model_ready = INFERENCE_OK and _inference.ready() if INFERENCE_OK else False
     detections  = []

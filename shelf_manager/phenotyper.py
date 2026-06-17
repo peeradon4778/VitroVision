@@ -6,6 +6,15 @@ import cv2
 import numpy as np
 from pathlib import Path
 
+# ── White-card auto white balance config ──────────────────────────────────────
+# วางไพ่ขาว/กระดาษขาว neutral ไว้ใน corner ที่ระบุ เพื่อแก้ WB drift ข้ามวัน
+# ตั้งค่า WB_CARD_CORNER หลังจากทดสอบ rig จริงแล้ว:
+#   'top_left', 'top_right', 'bottom_left', 'bottom_right'
+#   None = ปิด (default — ไม่มีการแก้ไข)
+WB_CARD_CORNER   = None   # เปลี่ยนหลังตั้ง rig และถ่าย calibration set
+WB_CARD_FRACTION = 0.08   # สัดส่วนของภาพที่ crop เพื่อสุ่มสีขาว (8%)
+WB_GAIN_CLAMP    = (0.7, 2.5)  # จำกัด gain correction ไม่ให้ over-correct
+
 SEG_MODEL_PATH = Path(__file__).parent.parent / 'models' / 'phenotype' / 'seg.pt'
 
 _seg_model = None
@@ -28,6 +37,41 @@ def _load_seg():
     except Exception as e:
         print(f'[phenotyper] โหลด seg ไม่ได้: {e}')
         _seg_model = None
+
+
+def _white_balance_correct(bgr: np.ndarray) -> np.ndarray:
+    """Auto white balance โดยใช้ white card ใน corner ที่กำหนด
+    คืนภาพ corrected (ถ้า WB_CARD_CORNER=None คืนต้นฉบับ)
+    """
+    if WB_CARD_CORNER is None:
+        return bgr
+    h, w = bgr.shape[:2]
+    fh = int(h * WB_CARD_FRACTION)
+    fw = int(w * WB_CARD_FRACTION)
+    fh, fw = max(fh, 10), max(fw, 10)
+    corners = {
+        'top_left':     bgr[:fh, :fw],
+        'top_right':    bgr[:fh, w-fw:],
+        'bottom_left':  bgr[h-fh:, :fw],
+        'bottom_right': bgr[h-fh:, w-fw:],
+    }
+    card = corners.get(WB_CARD_CORNER)
+    if card is None or card.size == 0:
+        return bgr
+    mean_b = float(card[:, :, 0].mean()) + 1e-6
+    mean_g = float(card[:, :, 1].mean()) + 1e-6
+    mean_r = float(card[:, :, 2].mean()) + 1e-6
+    lo, hi = WB_GAIN_CLAMP
+    # scale แต่ละ channel ให้ card = neutral (เฉลี่ย 3 channel)
+    target = (mean_b + mean_g + mean_r) / 3.0
+    gb = max(lo, min(hi, target / mean_b))
+    gg = max(lo, min(hi, target / mean_g))
+    gr = max(lo, min(hi, target / mean_r))
+    out = bgr.astype(np.float32).copy()
+    out[:, :, 0] = np.clip(out[:, :, 0] * gb, 0, 255)
+    out[:, :, 1] = np.clip(out[:, :, 1] * gg, 0, 255)
+    out[:, :, 2] = np.clip(out[:, :, 2] * gr, 0, 255)
+    return out.astype(np.uint8)
 
 
 def _glcm_features(gray: np.ndarray, levels: int = 16) -> tuple[float, float]:
@@ -260,6 +304,7 @@ def measure(image_bytes: bytes) -> dict:
     if bgr is None:
         return {}
 
+    bgr = _white_balance_correct(bgr)
     _load_seg()
     result = _yolov8_seg(bgr) if _seg_model is not None else None
     return result if result is not None else _classic_cv(bgr)

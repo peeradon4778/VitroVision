@@ -91,8 +91,15 @@ def run_training(db_path, base_dir, model_out, cfg, on_log):
             self.aug    = aug
         def __len__(self): return len(self.paths)
         def __getitem__(self, idx):
-            img = cv2.cvtColor(cv2.imread(self.paths[idx]), cv2.COLOR_BGR2RGB)
-            return self.aug(image=img)['image'], self.labels[idx]
+            # paths ผ่าน pre-validate decode มาแล้ว แต่กันสองชั้น เผื่อไฟล์เสียระหว่าง train
+            # ถ้า decode ไม่ได้ ให้ข้ามไปหยิบ sample ถัดไป — ไม่ฉีดภาพดำเข้า training
+            for _ in range(len(self.paths)):
+                raw = cv2.imread(self.paths[idx])
+                if raw is not None:
+                    img = cv2.cvtColor(raw, cv2.COLOR_BGR2RGB)
+                    return self.aug(image=img)['image'], self.labels[idx]
+                idx = (idx + 1) % len(self.paths)
+            raise RuntimeError('อ่านภาพไม่ได้เลยสักไฟล์ใน dataset')
 
     ep_head = cfg.get('epochs_head', 15)
     ep_full = cfg.get('epochs_full', 25)
@@ -107,12 +114,22 @@ def run_training(db_path, base_dir, model_out, cfg, on_log):
     conn.close()
 
     paths, labels = [], []
+    n_skipped = 0
     for path, status in rows:
         if not path:
             continue
         p = Path(path) if Path(path).is_absolute() else Path(base_dir) / path
+        # exists() ไม่พอ — ต้องลอง decode จริง เพราะไฟล์อาจเสีย/เขียนไม่จบ/ไม่ใช่ภาพ
+        # ทำให้ cv2.imread คืน None แล้ว cvtColor ใน __getitem__ จะ crash กลาง DataLoader
         if p.exists() and p.is_file():
+            if cv2.imread(str(p)) is None:
+                n_skipped += 1
+                continue
             paths.append(str(p)); labels.append(status)
+
+    if n_skipped:
+        on_log({'type': 'log',
+                'msg': f'ข้ามภาพที่ decode ไม่ได้ {n_skipped} ภาพ (เสีย/ไม่ใช่ภาพ/เขียนไม่จบ)'})
 
     if len(paths) < 6:
         on_log({'type': 'error', 'msg': f'ภาพน้อยเกินไป ({len(paths)}) — ต้องการอย่างน้อย 6'}); return
@@ -370,7 +387,7 @@ def get_preview(db_path, base_dir, n=8):
         A.RandomRotate90(p=0.5),
         A.ColorJitter(0.35, 0.35, 0.3, 0.08, p=0.8),
         A.GaussianBlur(blur_limit=(3, 7), p=0.3),
-        A.GaussNoise(var_limit=(10.0, 50.0), p=0.3),
+        A.GaussNoise(p=0.3),
     ])
 
     def _b64(arr):
@@ -381,9 +398,11 @@ def get_preview(db_path, base_dir, n=8):
 
     results = []
     for path, status in random.sample(valid, min(n, len(valid))):
-        img = cv2.cvtColor(cv2.imread(path), cv2.COLOR_BGR2RGB)
-        if img is None:
+        # อ่านก่อน เช็ค None ก่อน แล้วค่อย cvtColor — กัน cv2.imread คืน None แล้ว crash
+        raw = cv2.imread(path)
+        if raw is None:
             continue
+        img     = cv2.cvtColor(raw, cv2.COLOR_BGR2RGB)
         orig    = cv2.resize(img, (IMG_SIZE, IMG_SIZE))
         aug_img = aug(image=img)['image']
         results.append({

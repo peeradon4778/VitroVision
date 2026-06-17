@@ -65,8 +65,13 @@ body { background:#000; overflow:hidden; font-family:'Segoe UI',sans-serif; touc
   outline:none;
 }
 #day-input:focus { border-color:#4ade80; }
+#day-auto {
+  margin-top:10px; width:100%; padding:10px; border-radius:12px;
+  font-weight:600; font-size:13px; color:#4ade80; cursor:pointer; border:1px solid #4ade80;
+  background:transparent;
+}
 #day-ok {
-  margin-top:14px; width:100%; padding:12px; border-radius:12px;
+  margin-top:8px; width:100%; padding:12px; border-radius:12px;
   font-weight:700; font-size:15px; color:#fff; cursor:pointer; border:none;
   background:linear-gradient(135deg,#16a34a,#22c55e);
 }
@@ -133,6 +138,7 @@ body { background:#000; overflow:hidden; font-family:'Segoe UI',sans-serif; touc
     <h3>วันที่เพาะ (Day Point)</h3>
     <input id="day-input" type="number" min="0" max="365" placeholder="0"
            inputmode="numeric" onkeydown="if(event.key==='Enter')confirmDay()">
+    <button id="day-auto" onclick="autoFillDay()">🌱 คำนวณจากวันหยอดอัตโนมัติ</button>
     <button id="day-ok" onclick="confirmDay()">ยืนยัน</button>
   </div>
 </div>
@@ -186,6 +192,19 @@ function confirmDay() {
   dayLabel.textContent = `Day ${v}`;
   dayBtn.classList.add('set');
   document.getElementById('day-modal').classList.remove('show');
+}
+
+function autoFillDay() {
+  fetch('/api/suggest_day_point')
+    .then(r => r.json())
+    .then(d => {
+      if (d.day_point !== null && d.day_point !== undefined) {
+        document.getElementById('day-input').value = d.day_point;
+        document.getElementById('day-auto').textContent = `🌱 Day ${d.day_point} (จากวันหยอด)`;
+      } else {
+        document.getElementById('day-auto').textContent = 'ยังไม่มีวันหยอด — ตั้งค่าใน batch';
+      }
+    }).catch(() => {});
 }
 document.getElementById('day-modal').addEventListener('click', e => {
   if (e.target === e.currentTarget) e.currentTarget.classList.remove('show');

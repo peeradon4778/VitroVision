@@ -5,48 +5,53 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}VitroShelf{% endblock %}</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <script>
     tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            healthy: '#22c55e',
-            contaminated: '#f97316',
-            dead: '#ef4444',
-            unknown: '#94a3b8',
-          }
-        }
-      }
+      theme: { extend: {
+        colors: {
+          paper:'#FAF9F5', surface:'#FFFFFF', ink:'#2A2722', muted:'#908A7E',
+          line:'#EAE7DF', clay:{DEFAULT:'#D97757', hover:'#C45D3E'},
+          st:{ healthy:'#6E8B5A', contam:'#C98A3C', dead:'#B84A3E',
+               unknown:'#B8B3A8', empty:'#EFECE4' },
+          // legacy aliases (หน้าอื่นยังอ้างชื่อเดิม — map ให้เข้าโทนอุ่น)
+          healthy:'#6E8B5A', contaminated:'#C98A3C', dead:'#B84A3E', unknown:'#B8B3A8',
+        },
+        fontFamily: { serif:['Fraunces','Georgia','serif'], sans:['Inter','system-ui','sans-serif'] },
+        boxShadow: { soft:'0 1px 2px rgba(42,39,34,.04), 0 1px 3px rgba(42,39,34,.03)' },
+      } },
     }
   </script>
 </head>
-<body class="bg-gray-950 text-gray-100 min-h-screen font-sans pb-20 md:pb-0">
+<body class="bg-paper text-ink min-h-screen font-sans pb-20 md:pb-0" style="-webkit-font-smoothing:antialiased">
 
   <!-- Top nav (desktop) -->
-  <nav id="topnav" class="bg-gray-900 border-b border-gray-800 px-4 py-3 flex items-center gap-6">
-    <a href="/" class="text-green-400 font-bold text-lg tracking-wide">🌱 VitroShelf</a>
-    <a href="/shelf/S01" class="text-gray-300 hover:text-white text-sm hidden md:block">ชั้น S01</a>
-    <a href="/shelf/S02" class="text-gray-300 hover:text-white text-sm hidden md:block">ชั้น S02</a>
-    <a href="/train" class="text-purple-400 hover:text-white text-sm hidden md:block">🧠 Train Model</a>
-    <a href="/scan" class="text-cyan-400 hover:text-white text-sm hidden md:block">📷 Scanner</a>
-    <a href="/analytics" class="text-emerald-400 hover:text-white text-sm hidden md:block">📈 Analytics</a>
-    <a href="/glass" class="text-slate-400 hover:text-white text-sm hidden md:block">🔬 Glass Room</a>
+  <nav id="topnav" class="bg-surface/80 backdrop-blur border-b border-line px-5 py-3 flex items-center gap-5 sticky top-0 z-30">
+    <a href="/" class="font-serif text-ink font-semibold text-lg tracking-tight">🌱 VitroShelf</a>
+    <a href="/shelf/S01" class="text-muted hover:text-ink transition text-sm hidden md:block">ชั้น S01</a>
+    <a href="/shelf/S02" class="text-muted hover:text-ink transition text-sm hidden md:block">ชั้น S02</a>
+    <a href="/train" class="text-muted hover:text-ink transition text-sm hidden md:block">🧠 Train Model</a>
+    <a href="/scan" class="text-muted hover:text-ink transition text-sm hidden md:block">📷 Scanner</a>
+    <a href="/analytics" class="text-muted hover:text-ink transition text-sm hidden md:block">📈 Analytics</a>
+    <a href="/glass" class="text-muted hover:text-ink transition text-sm hidden md:block">🔬 Glass Room</a>
   </nav>
 
   <!-- ML loading banner -->
-  <div id="ml-banner" style="display:none;background:#1c1917;border-bottom:1px solid #292524;padding:6px 16px;font-size:12px;color:#a8a29e;display:flex;align-items:center;gap:8px">
-    <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f59e0b;animation:pulse 1s infinite"></span>
+  <div id="ml-banner" style="display:none;background:#FBF6F0;border-bottom:1px solid #EAE7DF;padding:6px 16px;font-size:12px;color:#908A7E;display:flex;align-items:center;gap:8px">
+    <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#D97757;animation:pulse 1s infinite"></span>
     <span id="ml-banner-text">กำลังโหลด ML modules (torch, timm)... Train และ Scanner ยังไม่พร้อม</span>
   </div>
   <style>
     @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-    #topnav a.nav-active { color:#fff !important; position:relative; }
+    #topnav a.nav-active { color:#2A2722 !important; font-weight:500; position:relative; }
     #topnav a.nav-active::after {
       content:''; position:absolute; bottom:-13px; left:0; right:0;
-      height:2px; background:#4ade80; border-radius:1px;
+      height:2px; background:#D97757; border-radius:1px;
     }
-    #bottomnav a.nav-active { color:#4ade80 !important; }
-    #bottomnav a.nav-active span.text-xl { filter:brightness(1.4) saturate(1.5); }
+    #bottomnav a.nav-active { color:#D97757 !important; }
+    #bottomnav a.nav-active span.text-xl { filter:saturate(1.3); }
   </style>
   <script>
   (function(){
@@ -70,28 +75,28 @@
   </main>
 
   <!-- Bottom nav (mobile) -->
-  <nav id="bottomnav" class="md:hidden fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800 flex justify-around py-2 z-40">
-    <a href="/" class="flex flex-col items-center gap-0.5 text-gray-400 hover:text-green-400 px-4 py-1">
+  <nav id="bottomnav" class="md:hidden fixed bottom-0 left-0 right-0 bg-surface border-t border-line flex justify-around py-2 z-40">
+    <a href="/" class="flex flex-col items-center gap-0.5 text-muted hover:text-clay px-4 py-1">
       <span class="text-xl">📊</span>
       <span class="text-xs">Dashboard</span>
     </a>
-    <a href="/shelf/S01" class="flex flex-col items-center gap-0.5 text-gray-400 hover:text-green-400 px-4 py-1">
+    <a href="/shelf/S01" class="flex flex-col items-center gap-0.5 text-muted hover:text-clay px-4 py-1">
       <span class="text-xl">🗄️</span>
       <span class="text-xs">S01</span>
     </a>
-    <a href="/shelf/S02" class="flex flex-col items-center gap-0.5 text-gray-400 hover:text-green-400 px-4 py-1">
+    <a href="/shelf/S02" class="flex flex-col items-center gap-0.5 text-muted hover:text-clay px-4 py-1">
       <span class="text-xl">🗄️</span>
       <span class="text-xs">S02</span>
     </a>
-    <a href="/train" class="flex flex-col items-center gap-0.5 text-gray-400 hover:text-purple-400 px-4 py-1">
+    <a href="/train" class="flex flex-col items-center gap-0.5 text-muted hover:text-clay px-4 py-1">
       <span class="text-xl">🧠</span>
       <span class="text-xs">Train</span>
     </a>
-    <a href="/scan" class="flex flex-col items-center gap-0.5 text-gray-400 hover:text-cyan-400 px-4 py-1">
+    <a href="/scan" class="flex flex-col items-center gap-0.5 text-muted hover:text-clay px-4 py-1">
       <span class="text-xl">📷</span>
       <span class="text-xs">Scan</span>
     </a>
-    <a href="/analytics" class="flex flex-col items-center gap-0.5 text-gray-400 hover:text-emerald-400 px-4 py-1">
+    <a href="/analytics" class="flex flex-col items-center gap-0.5 text-muted hover:text-clay px-4 py-1">
       <span class="text-xl">📈</span>
       <span class="text-xs">Analytics</span>
     </a>

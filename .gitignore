@@ -53,4 +53,5 @@ shelf_manager/cert.pem
 shelf_manager/key.pem
 shelf_manager/error.txt
 shelf_manager/preview_*.jpg
+shelf_manager/al_config.json
 wandb/

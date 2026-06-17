@@ -1,6 +1,6 @@
 import sqlite3
 from contextlib import contextmanager
-from datetime import datetime
+from datetime import datetime, date
 
 DB_PATH = "vitroshelf.db"
 
@@ -131,10 +131,16 @@ def _migrate_db():
             ("media_formula",   "TEXT    DEFAULT ''"),
             ("pgr_detail",      "TEXT    DEFAULT ''"),
             ("passage_number",  "INTEGER DEFAULT 1"),
+            ("emergence_date",  "TEXT    DEFAULT ''"),  # GAP-3: วันงอก (per-bottle)
         ]
         for col_name, col_def in new_bottles_growth:
             if col_name not in existing_btl:
                 conn.execute(f"ALTER TABLE bottles ADD COLUMN {col_name} {col_def}")
+
+        # GAP-3: sow_date ที่ระดับ batch
+        existing_bat = {row[1] for row in conn.execute("PRAGMA table_info(batches)")}
+        if "sow_date" not in existing_bat:
+            conn.execute("ALTER TABLE batches ADD COLUMN sow_date TEXT DEFAULT ''")
 
         conn.execute("""
             CREATE INDEX IF NOT EXISTS idx_images_batch ON images(batch_id)
@@ -144,12 +150,12 @@ def _migrate_db():
 
 # --- Batch functions ---
 
-def create_batch(name, round_type, start_date, notes=""):
+def create_batch(name, round_type, start_date, notes="", sow_date=""):
     created_at = datetime.now().strftime("%Y-%m-%d %H:%M")
     with get_conn() as conn:
         cur = conn.execute(
-            "INSERT INTO batches(name, round_type, start_date, notes, created_at) VALUES (?,?,?,?,?)",
-            (name, round_type, start_date, notes, created_at)
+            "INSERT INTO batches(name, round_type, start_date, notes, created_at, sow_date) VALUES (?,?,?,?,?,?)",
+            (name, round_type, start_date, notes, created_at, sow_date)
         )
         conn.commit()
         return cur.lastrowid
@@ -174,7 +180,8 @@ def start_new_round(batch_id):
     """ผูกขวดทั้ง 100 ใบกับ batch ใหม่ และล้าง metadata รอบเก่า"""
     with get_conn() as conn:
         conn.execute("""
-            UPDATE bottles SET batch_id=?, species='', treatment='', date_planted='', notes=''
+            UPDATE bottles SET batch_id=?, species='', treatment='', date_planted='',
+                               notes='', emergence_date=''
         """, (batch_id,))
         conn.commit()
 
@@ -413,6 +420,18 @@ def get_image_url(image_id):
     return row["drive_url"] if row else None
 
 
+def get_image_sources(image_id):
+    # คืนทั้ง drive_url และ local_path ของภาพ เพื่อให้ route ทำ fallback ได้
+    # (drive_url ว่าง = ยังไม่ได้อัป Drive → ใช้ไฟล์ local แทน)
+    with get_conn() as conn:
+        row = conn.execute(
+            "SELECT drive_url, local_path FROM images WHERE id=?", (image_id,)
+        ).fetchone()
+    if not row:
+        return None
+    return {"drive_url": row["drive_url"], "local_path": row["local_path"]}
+
+
 def get_next_bottle_id(bottle_id):
     parts = bottle_id.split('-')
     shelf, row, col = parts[0], parts[1], int(parts[2])
@@ -453,6 +472,87 @@ def get_stats():
         "status_counts": {r["status"]: r["cnt"] for r in status_counts},
         "active_batch": active,
     }
+
+
+def get_today_capture_count():
+    """จำนวนขวด (distinct) ที่มีภาพถ่าย 'วันนี้' ใน batch ปัจจุบัน + total bottles"""
+    active = get_active_batch()
+    bid = active["id"] if active else None
+    with get_conn() as conn:
+        total = conn.execute("SELECT COUNT(*) FROM bottles").fetchone()[0]
+        today = conn.execute("""
+            SELECT COUNT(DISTINCT bottle_id) FROM images
+            WHERE date(date_taken) = date('now','localtime')
+              AND (? IS NULL OR batch_id = ?)
+        """, (bid, bid)).fetchone()[0]
+    return {"today": today, "total": total}
+
+
+# ── GAP-3: sow_date / emergence_date ──────────────────────────────────────────
+
+def update_batch_sow_date(batch_id, sow_date):
+    with get_conn() as conn:
+        conn.execute("UPDATE batches SET sow_date=? WHERE id=?", (sow_date, batch_id))
+        conn.commit()
+
+
+def update_bottle_emergence(bottle_id, emergence_date):
+    """บันทึกวันงอกของขวด — emergence_date='YYYY-MM-DD' หรือ '' เพื่อล้าง"""
+    with get_conn() as conn:
+        conn.execute("UPDATE bottles SET emergence_date=? WHERE bottle_id=?",
+                     (emergence_date, bottle_id))
+        conn.commit()
+
+
+def get_day_from_emergence(bottle_id):
+    """คืนจำนวนวันนับจากวันงอก หรือ None ถ้ายังไม่ได้บันทึก emergence_date"""
+    with get_conn() as conn:
+        row = conn.execute(
+            "SELECT emergence_date FROM bottles WHERE bottle_id=?", (bottle_id,)
+        ).fetchone()
+    if not row or not row["emergence_date"]:
+        return None
+    try:
+        em = date.fromisoformat(row["emergence_date"])
+        return (date.today() - em).days
+    except ValueError:
+        return None
+
+
+def get_germination_stats(batch_id=None):
+    """สถิติการงอก: จำนวนขวดที่มี emergence_date / ทั้งหมด"""
+    bid = batch_id
+    if bid is None:
+        active = get_active_batch()
+        bid = active["id"] if active else None
+    with get_conn() as conn:
+        total = conn.execute(
+            "SELECT COUNT(*) FROM bottles WHERE (? IS NULL OR batch_id=?)", (bid, bid)
+        ).fetchone()[0]
+        emerged = conn.execute(
+            "SELECT COUNT(*) FROM bottles WHERE emergence_date != '' AND emergence_date IS NOT NULL"
+            " AND (? IS NULL OR batch_id=?)", (bid, bid)
+        ).fetchone()[0]
+    pct = round(emerged / total * 100, 1) if total else 0
+    return {"emerged": emerged, "total": total, "germination_pct": pct}
+
+
+def suggest_day_point(batch_id=None):
+    """แนะนำ day_point วันนี้ = วันนี้ - sow_date ของ batch (fallback ถ้าไม่มี emergence)"""
+    if batch_id is not None:
+        with get_conn() as conn:
+            row = conn.execute("SELECT sow_date FROM batches WHERE id=?", (batch_id,)).fetchone()
+            sow = row["sow_date"] if row else ""
+    else:
+        active = get_active_batch()
+        sow = (active or {}).get("sow_date", "")
+    if not sow:
+        return None
+    try:
+        sow_d = date.fromisoformat(sow)
+        return (date.today() - sow_d).days
+    except ValueError:
+        return None
 
 
 def get_unlabeled_bottles():

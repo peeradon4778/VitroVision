@@ -394,6 +394,13 @@
             {% if img.drive_url %}
             <a href="{{ img.drive_url }}" target="_blank"
               class="text-blue-400 hover:text-blue-300 text-xs underline">ดูภาพ</a>
+            {% elif img.local_path %}
+            {# Drive ยังไม่พร้อม → ใช้ไฟล์ local ผ่าน /image/<id> #}
+            <a href="/image/{{ img.id }}" target="_blank"
+              class="inline-block">
+              <img src="/image/{{ img.id }}" alt="ภาพ local"
+                class="w-12 h-12 rounded object-cover bg-gray-700 hover:ring-2 hover:ring-green-500 transition">
+            </a>
             {% else %}
             <span class="text-gray-600 text-xs">ไม่มีภาพ</span>
             {% endif %}

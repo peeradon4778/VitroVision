@@ -2,209 +2,259 @@
 {% block title %}Dashboard — VitroShelf{% endblock %}
 
 {% block content %}
-<h1 class="text-2xl font-bold mb-6 text-green-400">Dashboard</h1>
-
-<!-- Mobile access banner -->
-<div class="bg-gray-900 border border-blue-800 rounded-xl px-4 py-3 mb-6 flex items-center justify-between gap-3 flex-wrap">
-  <div>
-    <p class="text-xs text-gray-400 mb-0.5">เปิดจากมือถือ (WiFi เดียวกัน)</p>
-    <a href="http://{{ local_ip }}:{{ port }}"
-       class="text-blue-400 font-mono text-sm font-bold hover:text-blue-300">
-      http://{{ local_ip }}:{{ port }}
-    </a>
-  </div>
-  <button onclick="navigator.clipboard.writeText('http://{{ local_ip }}:{{ port }}').then(()=>{this.textContent='✅ คัดลอกแล้ว';setTimeout(()=>{this.textContent='คัดลอก'},2000)})"
-    class="text-xs bg-blue-900 hover:bg-blue-800 text-blue-300 px-3 py-1.5 rounded-lg transition">
-    คัดลอก
-  </button>
-</div>
-
-<!-- Batch / รอบการปลูก -->
 {% set ab = stats.active_batch %}
-<div class="bg-gray-900 border {% if ab and ab.round_type == 'inference' %}border-purple-700{% elif ab %}border-green-700{% else %}border-gray-700{% endif %} rounded-xl px-4 py-4 mb-6">
-  <div class="flex items-center justify-between flex-wrap gap-3">
-    <div>
-      <p class="text-xs text-gray-400 mb-0.5">รอบการปลูกปัจจุบัน</p>
-      {% if ab %}
-        <p class="text-base font-bold text-white">{{ ab.name }}</p>
-        <div class="flex items-center gap-2 mt-1">
+{% set tc = today_capture %}
+{% set pct = (tc.today * 100 // tc.total) if tc.total else 0 %}
+
+<div class="max-w-5xl mx-auto space-y-6">
+
+  <!-- P0.1 — Header status strip -->
+  <section class="bg-surface border border-line rounded-2xl shadow-soft p-5">
+    <div class="flex items-start justify-between gap-4 flex-wrap">
+      <div>
+        <p class="text-xs uppercase tracking-wider text-clay font-medium mb-1.5">VitroShelf · Dashboard</p>
+        <p class="text-xs text-muted mb-1">รอบการปลูกปัจจุบัน</p>
+        {% if ab %}
+        <h1 class="font-serif text-2xl md:text-3xl text-ink leading-tight">
+          {{ ab.name }}
           {% if ab.round_type == 'training' %}
-            <span class="text-xs bg-green-900 text-green-300 px-2 py-0.5 rounded-full">Training</span>
+            <span class="align-middle ml-2 text-xs font-sans bg-st-healthy/15 text-st-healthy px-2 py-0.5 rounded-full">Training</span>
           {% else %}
-            <span class="text-xs bg-purple-900 text-purple-300 px-2 py-0.5 rounded-full">Inference</span>
+            <span class="align-middle ml-2 text-xs font-sans bg-clay/15 text-clay px-2 py-0.5 rounded-full">Inference</span>
           {% endif %}
-          <span class="text-xs text-gray-500">เริ่ม {{ ab.start_date }}</span>
+        </h1>
+        <div class="flex items-center gap-3 mt-2 text-sm text-muted flex-wrap">
+          <span>📅 <b class="text-ink font-medium">Day <span id="hdr-day">0</span></b>
+            {% if ab and ab.sow_date %}<span class="text-xs text-muted">(หยอด {{ ab.sow_date }})</span>{% endif %}
+          </span>
+          <span class="text-line">·</span>
+          <span>📷 ถ่ายวันนี้ <b class="text-ink font-medium">{{ tc.today }}</b>/{{ tc.total }}</span>
+          <span class="text-line">·</span>
+          <span id="germ-badge" class="text-xs">🌱 <span id="germ-pct">—</span> งอก</span>
         </div>
-      {% else %}
-        <p class="text-sm text-gray-500">ยังไม่มีรอบการปลูก — กดเริ่มรอบแรกได้เลย</p>
-      {% endif %}
-    </div>
-    <button onclick="document.getElementById('modal-batch').classList.remove('hidden')"
-      class="text-sm bg-green-800 hover:bg-green-700 text-green-200 px-4 py-2 rounded-xl transition font-medium">
-      + เริ่มรอบใหม่
-    </button>
-  </div>
-  {% if batches|length > 1 %}
-  <details class="mt-3">
-    <summary class="text-xs text-gray-500 cursor-pointer hover:text-gray-300">ประวัติรอบก่อน ({{ batches|length - 1 }} รอบ)</summary>
-    <div class="mt-2 space-y-1">
-      {% for b in batches[1:] %}
-      <div class="flex items-center gap-2 text-xs text-gray-500">
-        <span class="{% if b.round_type == 'training' %}text-green-600{% else %}text-purple-600{% endif %}">■</span>
-        <span>{{ b.name }}</span>
-        <span class="text-gray-700">{{ b.start_date }}</span>
+        <div class="mt-2 w-56 max-w-full h-1.5 rounded-full bg-line overflow-hidden">
+          <div class="h-full bg-clay rounded-full" style="width:{{ pct }}%"></div>
+        </div>
+        {% else %}
+        <h1 class="font-serif text-2xl md:text-3xl text-ink leading-tight">ยังไม่มีรอบการปลูก</h1>
+        <p class="text-sm text-muted mt-2">เริ่มรอบแรกเพื่อเก็บภาพ 100 ขวด</p>
+        {% endif %}
       </div>
+      <a href="/scan" class="bg-clay hover:bg-clay-hover text-white font-medium text-sm px-5 py-3 rounded-xl shadow-soft transition flex items-center gap-2 shrink-0">
+        📷 เริ่มถ่าย
+      </a>
+    </div>
+  </section>
+
+  <!-- Mobile access banner (subtle) -->
+  <div class="flex items-center justify-between gap-3 text-xs text-muted px-1 flex-wrap">
+    <span>เปิดจากมือถือ (WiFi เดียวกัน):
+      <a href="http://{{ local_ip }}:{{ port }}" class="text-clay font-medium font-mono hover:text-clay-hover">http://{{ local_ip }}:{{ port }}</a>
+    </span>
+    <button onclick="navigator.clipboard.writeText('http://{{ local_ip }}:{{ port }}').then(()=>{this.textContent='✅ คัดลอกแล้ว';setTimeout(()=>{this.textContent='คัดลอก'},2000)})"
+      class="text-muted hover:text-ink border border-line rounded-lg px-2.5 py-1 transition">คัดลอก</button>
+  </div>
+
+  <!-- P0.2 — Operational zone (2-col) -->
+  <div class="grid md:grid-cols-2 gap-6">
+
+    <!-- Batch card -->
+    <section class="bg-surface border border-line rounded-2xl shadow-soft p-5">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="font-serif text-lg text-ink">รอบการปลูก</h2>
+        <button onclick="document.getElementById('modal-batch').classList.remove('hidden')"
+          class="text-xs text-clay hover:text-clay-hover font-medium">+ เริ่มรอบใหม่</button>
+      </div>
+      {% if ab %}
+        <p class="text-sm text-ink font-medium">{{ ab.name }}</p>
+        <p class="text-xs text-muted mt-1">เริ่ม {{ ab.start_date }} · ขวด {{ stats.total_bottles }} · ภาพสะสม {{ stats.total_photos }}</p>
+      {% else %}
+        <p class="text-sm text-muted">ยังไม่มีรอบการปลูก — กดเริ่มรอบแรกได้เลย</p>
+      {% endif %}
+      {% if batches|length > 1 %}
+      <details class="mt-3">
+        <summary class="text-xs text-muted cursor-pointer hover:text-ink">ประวัติรอบก่อน ({{ batches|length - 1 }} รอบ)</summary>
+        <div class="mt-2 space-y-1">
+          {% for b in batches[1:] %}
+          <div class="flex items-center gap-2 text-xs text-muted">
+            <span class="{% if b.round_type == 'training' %}text-st-healthy{% else %}text-clay{% endif %}">■</span>
+            <span>{{ b.name }}</span>
+            <span class="text-line">{{ b.start_date }}</span>
+          </div>
+          {% endfor %}
+        </div>
+      </details>
+      {% endif %}
+    </section>
+
+    <!-- Global Day stepper -->
+    <section class="bg-surface border border-line rounded-2xl shadow-soft p-5">
+      <div class="flex items-center justify-between mb-3">
+        <div>
+          <h2 class="font-serif text-lg text-ink">Day Point วันนี้</h2>
+          <p class="text-xs text-muted">ทุกขวดที่ถ่ายจะบันทึกเป็น Day นี้</p>
+        </div>
+        <button onclick="clearGlobalDay()" class="text-xs text-muted hover:text-st-dead transition">ล้างค่า</button>
+      </div>
+      <div class="flex items-center gap-3">
+        <button onclick="stepGlobalDay(-1)"
+          class="w-12 h-12 rounded-xl border border-line text-ink text-2xl font-medium hover:bg-paper active:bg-line transition flex items-center justify-center select-none">−</button>
+        <div class="flex-1 text-center">
+          <input id="global-day-display" type="number" min="0" value="0"
+            class="w-full text-center font-serif text-4xl text-clay bg-transparent border-b border-line focus:border-clay focus:outline-none py-1"
+            oninput="setGlobalDay(parseInt(this.value)||0)">
+          <div id="global-day-status" class="text-xs text-muted mt-1">ยังไม่ได้ตั้งค่า</div>
+        </div>
+        <button onclick="stepGlobalDay(1)"
+          class="w-12 h-12 rounded-xl border border-line text-ink text-2xl font-medium hover:bg-paper active:bg-line transition flex items-center justify-center select-none">+</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- Modal: เริ่มรอบใหม่ -->
+  <div id="modal-batch" class="hidden fixed inset-0 bg-ink/40 z-50 flex items-center justify-center px-4">
+    <div class="bg-surface border border-line rounded-2xl shadow-soft p-6 w-full max-w-sm">
+      <h2 class="font-serif text-lg text-ink mb-4">เริ่มรอบการปลูกใหม่</h2>
+      <form method="POST" action="/batch/new" class="space-y-4">
+        <div>
+          <label class="text-xs text-muted">ชื่อรอบ</label>
+          <input name="name" required placeholder="เช่น รอบ 1 - มิ.ย. 2026"
+            class="w-full mt-1 bg-paper border border-line rounded-lg px-3 py-2 text-ink text-sm focus:outline-none focus:border-clay">
+        </div>
+        <div>
+          <label class="text-xs text-muted">ประเภท</label>
+          <select name="round_type" class="w-full mt-1 bg-paper border border-line rounded-lg px-3 py-2 text-ink text-sm focus:outline-none focus:border-clay">
+            <option value="training">Training — เก็บ dataset</option>
+            <option value="inference">Inference — ทดสอบ model</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-xs text-muted">วันที่เริ่มรอบ (เพื่อบันทึก)</label>
+          <input name="start_date" type="date" required
+            class="w-full mt-1 bg-paper border border-line rounded-lg px-3 py-2 text-ink text-sm focus:outline-none focus:border-clay">
+        </div>
+        <div>
+          <label class="text-xs text-muted">วันหยอดเมล็ด (sow_date) — ใช้นับ day_point อัตโนมัติ</label>
+          <input name="sow_date" type="date"
+            class="w-full mt-1 bg-paper border border-line rounded-lg px-3 py-2 text-ink text-sm focus:outline-none focus:border-clay">
+        </div>
+        <div>
+          <label class="text-xs text-muted">หมายเหตุ (ไม่บังคับ)</label>
+          <input name="notes" placeholder="สูตรอาหาร, สภาวะ ฯลฯ"
+            class="w-full mt-1 bg-paper border border-line rounded-lg px-3 py-2 text-ink text-sm focus:outline-none focus:border-clay">
+        </div>
+        <div class="flex gap-3 pt-1">
+          <button type="button" onclick="document.getElementById('modal-batch').classList.add('hidden')"
+            class="flex-1 text-sm border border-line text-ink hover:bg-paper py-2 rounded-xl transition">ยกเลิก</button>
+          <button type="submit"
+            class="flex-1 text-sm bg-clay hover:bg-clay-hover text-white py-2 rounded-xl transition font-medium">เริ่มรอบใหม่</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- P0.3 — Stats -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="bg-surface border border-line rounded-2xl shadow-soft p-4">
+      <p class="text-xs text-muted mb-1">🧪 ขวดทั้งหมด</p>
+      <p class="font-serif text-3xl text-ink">{{ stats.total_bottles }}</p>
+    </div>
+    <div class="bg-surface border border-line rounded-2xl shadow-soft p-4">
+      <p class="text-xs text-muted mb-1">📷 ถ่ายวันนี้</p>
+      <p class="font-serif text-3xl text-ink">{{ tc.today }}<span class="text-lg text-muted">/{{ tc.total }}</span></p>
+      <div class="mt-2 h-1.5 rounded-full bg-line overflow-hidden">
+        <div class="h-full bg-clay rounded-full" style="width:{{ pct }}%"></div>
+      </div>
+    </div>
+    <div class="bg-surface border border-line rounded-2xl shadow-soft p-4">
+      <p class="text-xs text-muted mb-1">✓ Healthy</p>
+      <p class="font-serif text-3xl text-st-healthy">{{ stats.status_counts.get('healthy', 0) }}</p>
+    </div>
+    <div class="bg-surface border border-line rounded-2xl shadow-soft p-4">
+      <p class="text-xs text-muted mb-1">⚠ Contaminated / Dead</p>
+      <p class="font-serif text-3xl text-st-dead">
+        {{ stats.status_counts.get('contaminated', 0) + stats.status_counts.get('dead', 0) }}
+      </p>
+    </div>
+  </div>
+
+  <!-- Shelves (heatmap, 2-col) -->
+  <div>
+    <h2 class="font-serif text-lg text-ink mb-4">ชั้นวาง</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {% for shelf in shelves %}
+      {% set grid = grids[shelf] %}
+      <a href="/shelf/{{ shelf }}"
+         class="bg-surface border border-line rounded-2xl shadow-soft p-4 hover:border-clay/50 transition block">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-serif text-xl text-ink">{{ shelf }}</h3>
+          <div class="flex gap-1.5 text-xs">
+            {% set ns = namespace(h=0, c=0, d=0) %}
+            {% for r in rows %}{% for col in cols %}
+              {% set b = grid[r][col] %}{% if b %}
+                {% if b.latest_status == 'healthy' %}{% set ns.h = ns.h + 1 %}
+                {% elif b.latest_status == 'contaminated' %}{% set ns.c = ns.c + 1 %}
+                {% elif b.latest_status == 'dead' %}{% set ns.d = ns.d + 1 %}{% endif %}
+              {% endif %}
+            {% endfor %}{% endfor %}
+            <span class="bg-st-healthy/15 text-st-healthy px-2 py-0.5 rounded-full">{{ ns.h }} H</span>
+            <span class="bg-st-contam/15 text-st-contam px-2 py-0.5 rounded-full">{{ ns.c }} C</span>
+            <span class="bg-st-dead/15 text-st-dead px-2 py-0.5 rounded-full">{{ ns.d }} D</span>
+          </div>
+        </div>
+        <div class="grid grid-cols-10 gap-1.5">
+          {% for r in rows %}{% for col in cols %}
+            {% set b = grid[r][col] %}
+            {% if b %}
+              {% set s = b.latest_status %}
+              <div class="heat-cell w-full aspect-square rounded
+                {% if s == 'healthy' %}bg-st-healthy
+                {% elif s == 'contaminated' %}bg-st-contam
+                {% elif s == 'dead' %}bg-st-dead
+                {% else %}bg-st-unknown{% endif %}"
+                title="{{ b.bottle_id }} · {{ s }}"></div>
+            {% else %}
+              <div class="w-full aspect-square rounded bg-st-empty" title="{{ shelf }}-{{ r }}-{{ '%02d'|format(col) }} · ว่าง"></div>
+            {% endif %}
+          {% endfor %}{% endfor %}
+        </div>
+        <p class="text-clay text-xs mt-3 font-medium">ดูรายละเอียด →</p>
+      </a>
       {% endfor %}
     </div>
-  </details>
-  {% endif %}
+  </div>
+
+  <!-- Legend -->
+  <div class="flex gap-5 text-xs text-muted items-center flex-wrap pt-1">
+    <span class="font-medium text-ink">สัญลักษณ์:</span>
+    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-st-healthy inline-block"></span> Healthy</span>
+    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-st-contam inline-block"></span> Contaminated</span>
+    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-st-dead inline-block"></span> Dead</span>
+    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-st-unknown inline-block"></span> Unknown</span>
+  </div>
+
 </div>
 
-<!-- Modal: เริ่มรอบใหม่ -->
-<div id="modal-batch" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center px-4">
-  <div class="bg-gray-900 border border-gray-700 rounded-2xl p-6 w-full max-w-sm">
-    <h2 class="text-lg font-bold text-white mb-4">เริ่มรอบการปลูกใหม่</h2>
-    <form method="POST" action="/batch/new" class="space-y-4">
-      <div>
-        <label class="text-xs text-gray-400">ชื่อรอบ</label>
-        <input name="name" required placeholder="เช่น รอบ 1 - มิ.ย. 2026"
-          class="w-full mt-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-green-500">
-      </div>
-      <div>
-        <label class="text-xs text-gray-400">ประเภท</label>
-        <select name="round_type" class="w-full mt-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-green-500">
-          <option value="training">Training — เก็บ dataset</option>
-          <option value="inference">Inference — ทดสอบ model</option>
-        </select>
-      </div>
-      <div>
-        <label class="text-xs text-gray-400">วันที่เริ่ม</label>
-        <input name="start_date" type="date" required
-          class="w-full mt-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-green-500">
-      </div>
-      <div>
-        <label class="text-xs text-gray-400">หมายเหตุ (ไม่บังคับ)</label>
-        <input name="notes" placeholder="สูตรอาหาร, สภาวะ ฯลฯ"
-          class="w-full mt-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-green-500">
-      </div>
-      <div class="flex gap-3 pt-1">
-        <button type="button" onclick="document.getElementById('modal-batch').classList.add('hidden')"
-          class="flex-1 text-sm bg-gray-700 hover:bg-gray-600 text-gray-300 py-2 rounded-xl transition">ยกเลิก</button>
-        <button type="submit"
-          class="flex-1 text-sm bg-green-700 hover:bg-green-600 text-white py-2 rounded-xl transition font-medium">เริ่มรอบใหม่</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- Global Day Point -->
-<div class="bg-gray-900 border border-green-800 rounded-xl px-4 py-4 mb-6">
-  <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
-    <div>
-      <p class="text-xs text-gray-400">Day Point วันนี้</p>
-      <p class="text-xs text-gray-600 mt-0.5">ทุกขวดที่ถ่ายจะบันทึกเป็น Day นี้</p>
-    </div>
-    <button onclick="clearGlobalDay()"
-      class="text-xs text-gray-600 hover:text-red-400 transition">ล้างค่า</button>
-  </div>
-  <div class="flex items-center gap-3">
-    <button onclick="stepGlobalDay(-1)"
-      class="w-12 h-12 rounded-xl bg-gray-700 hover:bg-gray-600 active:bg-gray-500 text-white text-2xl font-bold flex items-center justify-center select-none">−</button>
-    <div class="flex-1 text-center">
-      <input id="global-day-display" type="number" min="0" value="0"
-        class="w-full text-center text-3xl font-bold text-green-400 bg-transparent border-b-2 border-gray-700 focus:border-green-400 focus:outline-none py-1"
-        oninput="setGlobalDay(parseInt(this.value)||0)">
-      <div id="global-day-status" class="text-xs text-gray-500 mt-1">ยังไม่ได้ตั้งค่า</div>
-    </div>
-    <button onclick="stepGlobalDay(1)"
-      class="w-12 h-12 rounded-xl bg-gray-700 hover:bg-gray-600 active:bg-gray-500 text-white text-2xl font-bold flex items-center justify-center select-none">+</button>
-  </div>
-</div>
-
-<!-- Stats -->
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-  <div class="bg-gray-900 rounded-xl p-4 border border-gray-800">
-    <p class="text-gray-400 text-xs mb-1">ขวดทั้งหมด</p>
-    <p class="text-3xl font-bold text-white">{{ stats.total_bottles }}</p>
-  </div>
-  <div class="bg-gray-900 rounded-xl p-4 border border-gray-800">
-    <p class="text-gray-400 text-xs mb-1">ภาพรอบนี้</p>
-    <p class="text-3xl font-bold text-white">{{ stats.total_photos }}</p>
-  </div>
-  <div class="bg-gray-900 rounded-xl p-4 border border-gray-800">
-    <p class="text-gray-400 text-xs mb-1">Healthy</p>
-    <p class="text-3xl font-bold text-green-400">{{ stats.status_counts.get('healthy', 0) }}</p>
-  </div>
-  <div class="bg-gray-900 rounded-xl p-4 border border-gray-800">
-    <p class="text-gray-400 text-xs mb-1">Contaminated / Dead</p>
-    <p class="text-3xl font-bold text-red-400">
-      {{ stats.status_counts.get('contaminated', 0) + stats.status_counts.get('dead', 0) }}
-    </p>
-  </div>
-</div>
-
-<!-- Shelf cards -->
-<h2 class="text-lg font-semibold mb-4 text-gray-200">ชั้นวาง</h2>
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-  {% for shelf in shelves %}
-  {% set grid = grids[shelf] %}
-  <a href="/shelf/{{ shelf }}"
-     class="bg-gray-900 border border-gray-800 rounded-2xl p-4 hover:border-green-500 transition block">
-    <div class="flex items-center justify-between mb-3">
-      <h3 class="text-xl font-bold text-white">{{ shelf }}</h3>
-      <div class="flex gap-2 text-xs text-gray-400">
-        {% set ns = namespace(h=0, c=0, d=0) %}
-        {% for r in rows %}{% for col in cols %}
-          {% set b = grid[r][col] %}{% if b %}
-            {% if b.latest_status == 'healthy' %}{% set ns.h = ns.h + 1 %}
-            {% elif b.latest_status == 'contaminated' %}{% set ns.c = ns.c + 1 %}
-            {% elif b.latest_status == 'dead' %}{% set ns.d = ns.d + 1 %}{% endif %}
-          {% endif %}
-        {% endfor %}{% endfor %}
-        {% if ns.h %}<span class="text-green-400">{{ ns.h }} H</span>{% endif %}
-        {% if ns.c %}<span class="text-orange-400">{{ ns.c }} C</span>{% endif %}
-        {% if ns.d %}<span class="text-red-400">{{ ns.d }} D</span>{% endif %}
-      </div>
-    </div>
-    <div class="grid grid-cols-10 gap-1">
-      {% for r in rows %}{% for col in cols %}
-        {% set b = grid[r][col] %}
-        {% if b %}
-          {% set s = b.latest_status %}
-          <div class="w-full aspect-square rounded-sm
-            {% if s == 'healthy' %}bg-green-500
-            {% elif s == 'contaminated' %}bg-orange-500
-            {% elif s == 'dead' %}bg-red-500
-            {% else %}bg-slate-600{% endif %}">
-          </div>
-        {% else %}
-          <div class="w-full aspect-square rounded-sm bg-gray-800"></div>
-        {% endif %}
-      {% endfor %}{% endfor %}
-    </div>
-    <p class="text-green-400 text-xs mt-3">ดูรายละเอียด →</p>
-  </a>
-  {% endfor %}
-</div>
-
-<!-- Legend -->
-<div class="mt-8 flex gap-4 text-sm text-gray-400 items-center flex-wrap">
-  <span class="font-medium text-gray-300">สัญลักษณ์:</span>
-  <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-sm bg-green-500 inline-block"></span> Healthy</span>
-  <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-sm bg-orange-500 inline-block"></span> Contaminated</span>
-  <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-sm bg-red-500 inline-block"></span> Dead</span>
-  <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-sm bg-slate-500 inline-block"></span> Unknown</span>
-</div>
+<style>
+  .heat-cell { transition: transform .08s ease; }
+  .heat-cell:hover { transform: scale(1.35); z-index: 5; position: relative; }
+</style>
 
 <script>
 const DAY_KEY = 'vitro_global_day';
+
+function syncHdrDay(val) {
+  const el = document.getElementById('hdr-day');
+  if (el) el.textContent = val;
+}
 
 function setGlobalDay(val) {
   val = Math.max(0, val);
   localStorage.setItem(DAY_KEY, val);
   document.getElementById('global-day-display').value = val;
   document.getElementById('global-day-status').textContent = `ล็อกค่าแล้ว — ทุกขวดจะบันทึกเป็น Day ${val}`;
-  document.getElementById('global-day-status').className = 'text-xs text-green-500 mt-1';
+  document.getElementById('global-day-status').className = 'text-xs text-st-healthy mt-1';
+  syncHdrDay(val);
 }
 
 function stepGlobalDay(delta) {
@@ -216,12 +266,19 @@ function clearGlobalDay() {
   localStorage.removeItem(DAY_KEY);
   document.getElementById('global-day-display').value = 0;
   document.getElementById('global-day-status').textContent = 'ยังไม่ได้ตั้งค่า';
-  document.getElementById('global-day-status').className = 'text-xs text-gray-500 mt-1';
+  document.getElementById('global-day-status').className = 'text-xs text-muted mt-1';
+  syncHdrDay(0);
 }
 
 const saved = localStorage.getItem(DAY_KEY);
 if (saved !== null) {
   setGlobalDay(parseInt(saved));
 }
+
+// โหลด germination stats
+fetch('/api/germination_stats').then(r => r.json()).then(d => {
+  const el = document.getElementById('germ-pct');
+  if (el) el.textContent = `${d.emerged}/${d.total} (${d.germination_pct}%)`;
+}).catch(() => {});
 </script>
 {% endblock %}
