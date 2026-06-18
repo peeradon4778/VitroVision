@@ -1,0 +1,50 @@
+name: Research Docs Auto-Sync
+
+on:
+  schedule:
+    - cron: '3 21 * * *'   # 04:03 ICT (UTC+7) ทุกวัน
+  workflow_dispatch:         # รันมือได้จาก GitHub UI
+
+jobs:
+  sync-docs:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Run Claude — sync research docs
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          claude --dangerously-skip-permissions -p "$(cat .github/prompts/research_sync.md)"
+
+      - name: Commit changes (ถ้ามี)
+        run: |
+          git config user.name  "VitroVision AutoSync"
+          git config user.email "claude-auto@noreply.github.com"
+          git add \
+            research/04_final_architecture_ux_plan.md \
+            research/14_image_dl_phenotyping.md \
+            research/10_methods_draft.md \
+            research/_narrative_spine.md \
+            research/_data_dictionary.md \
+            research/_citation_audit.md
+          git diff --staged --quiet \
+            && echo "ไม่มีการเปลี่ยนแปลง — ข้าม commit" \
+            || git commit -m "chore: auto-sync research docs $(date +'%Y-%m-%d')"
+
+      - name: Push
+        run: git push origin main
