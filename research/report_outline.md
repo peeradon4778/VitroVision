@@ -6,6 +6,10 @@
 
 **สถานะ:** ✍️ = เขียนได้เลย (ไม่ต้องรอ data) · ⏳ = รอ data จาก lab · 🔶 = ต้องเก็บกวาด/เช็คก่อน final
 
+**ชื่อโครงงาน Final (ล็อก 2026-06-18)**
+- **ไทย:** VitroVision: นวัตกรรมการวิเคราะห์ฟีโนไทป์เชิงคำนวณจากภาพของ *Capsicum annuum* L. ในการเพาะเลี้ยงเนื้อเยื่อด้วย Vision-Language Models
+- **EN:** VitroVision: Image-Based Computational Phenotyping of *Capsicum annuum* L. in Vitro via Vision-Language Models
+
 **One-liner (ท่องให้ขึ้นใจ):** *"CV ที่วัดสุขภาพ+การเจริญของพริก TC จากภาพผ่านขวด โดยไม่เปิดฝา — แทนสายตา subjective — แล้วพิสูจน์ว่าตรงกับผู้เชี่ยวชาญ + ทำนายการรอดจริงได้ โดยใช้ 5 สูตรอาหารเป็นบทพิสูจน์"*
 
 ---

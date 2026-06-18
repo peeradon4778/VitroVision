@@ -4,6 +4,12 @@
 > สร้าง 2026-06-12 · อิง research 01–14 (audit แล้ว) + Methods draft + citation ที่ verify แล้ว
 > **กรอบสาขา:** YSC 2027 → ISEF, **CSBI (ชีววิทยาเชิงคำนวณ)** — เครื่องมือ CV/ML ต้องผูกคำถามชีววิทยาเสมอ ห้ามลอยเป็น pure ML
 
+## 🏷️ ชื่อโครงงาน Final (ล็อก 2026-06-18)
+
+- **ไทย:** VitroVision: นวัตกรรมการวิเคราะห์ฟีโนไทป์เชิงคำนวณจากภาพของ *Capsicum annuum* L. ในการเพาะเลี้ยงเนื้อเยื่อด้วย Vision-Language Models
+- **EN:** VitroVision: Image-Based Computational Phenotyping of *Capsicum annuum* L. in Vitro via Vision-Language Models
+- **สาขา:** CS → CSBI (YSC 2027 → ISEF)
+
 ---
 
 ## 🎯 ประโยคเดียวที่ต้องจำ (one-liner / elevator pitch)
