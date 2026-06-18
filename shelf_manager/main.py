@@ -278,6 +278,22 @@ def api_predict():
     return jsonify({'ai_status': label, 'ai_confidence': conf, 'model_ready': True})
 
 
+@app.route("/api/analyze_vision", methods=["POST"])
+def api_analyze_vision():
+    """VLM วิเคราะห์ภาพพืชด้วย Claude Vision API (zero-shot)"""
+    if 'photo' not in request.files or not request.files['photo'].filename:
+        return jsonify({'error': 'ไม่มีภาพ'}), 400
+    image_bytes = request.files['photo'].read()
+    try:
+        import vision_analyzer
+        result = vision_analyzer.analyze_plant_image(image_bytes)
+        return jsonify({'ok': True, 'vlm': True, **result})
+    except ImportError:
+        return jsonify({'ok': False, 'vlm': False, 'error': 'anthropic ไม่ได้ติดตั้ง'}), 503
+    except Exception as e:
+        return jsonify({'ok': False, 'vlm': False, 'error': str(e)}), 500
+
+
 @app.route("/bottle/<bottle_id>/add_record_json", methods=["POST"])
 def add_record_json(bottle_id):
     day_point    = int(request.form.get("day_point", 0))

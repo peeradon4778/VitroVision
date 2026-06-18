@@ -4,7 +4,7 @@
 > **วิธีใช้:** จดอะไรก็โยนลง `📌 INBOX` ด้านล่างได้เลย (ไม่ต้องจัดระเบียบ) เดี๋ยว `/vitro` จะ triage ให้
 > **`/vitro` อ่านไฟล์นี้ทุกครั้ง** แล้วบอก direction ว่าควรเคาะ/ทำอะไรต่อ
 > สถานะ: 🔴 เร่ง · 🟡 ระหว่างต้นโต · 🟢 ภายหลัง · 💤 รอเคาะ(decision) · ✅ เสร็จ
-> อัปเดตล่าสุด: 2026-06-17
+> อัปเดตล่าสุด: 2026-06-17 (session 2)
 
 ---
 
@@ -20,16 +20,17 @@
 
 ## 📌 INBOX (จดเร็ว ยังไม่ triage — โยนอะไรลงตรงนี้ได้เลย)
 
-- _(ว่าง — จดที่นี่ได้เลย เช่น "เมื่อคืนคิดว่า...")_
+- VLM integration เสร็จแล้ว (vision_analyzer.py + /api/analyze_vision) — รอ Groq API key (`gsk_...`) จาก console.groq.com แล้วใส่ใน .env เป็น GROQ_API_KEY= แล้วจะ wire เข้าระบบต่อ
 
 ---
 
 ## 🔴 ก่อน batch 1 (เร่ง — กระทบ 3 วันนี้)
 
-- [ ] **GAP-3 · sow_date + emergence_date** ใน `bottles` → ให้ระบบนับ day-from-emergence อัตโนมัติ + ได้ germination% ฟรี — *anchor วันงอกหายถ้าไม่มีตั้งแต่หยอด*
-- [ ] **white-card auto-tune** เสียบใน `shelf_manager/phenotyper.py` (decision Q4) → scanner ที่มีอยู่เก็บ green% เทียบข้ามวันได้ — *แก้ปัญหา WB อัตโนมัติของ live scanner*
+- [x] **GAP-3 · sow_date + emergence_date** — DB + API + UI ✅ commit f502368
+- [x] **white-card auto-tune** — `_white_balance_correct()` พร้อมแล้ว ปิดอยู่ (`WB_CARD_CORNER=None`) ✅ commit f502368
 - [ ] **เทสต์ scanner + ArUco ที่ระยะ rig จริง (~18cm)** → อ่าน ID ออกไหม, clarity ≥75% ติดไหม, white card อยู่ในเฟรมพอ auto-tune
 - [ ] ตั้ง rig + Pro mode preset + ติด ArUco (`aruco_stickers.pdf`)
+- [ ] **เปิด WB_CARD_CORNER** หลังถ่าย calibration set แล้วส่งให้ดู (แก้ 1 บรรทัดใน `phenotyper.py`)
 
 ## 🟡 ระหว่างต้นโต (ก.ค. — ทำชิลๆ คู่ขนานกับถ่ายภาพ)
 

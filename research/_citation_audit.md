@@ -15,7 +15,7 @@
 | ✅ Verified (มีจริง ข้อมูลตรง) | 33 |
 | ⚠️ ต้องแก้รายละเอียด (มีจริง แต่ชื่อ/ปี/journal ผิด) | 2 |
 | ❌ ไม่พบ / อาจผี | 1 |
-| 🔍 Verify ไม่ได้ครบ — ต้องตรวจ manual | 0 (เคลียร์หมดแล้ว 2026-06-12) |
+| 🔍 Pending verify — ค้นพบใหม่ ยังไม่ผ่าน gate | 9 (หมวด 8 — 2026-06-18) |
 
 **รายชื่อ ❌ ที่ต้องจัดการด่วน:**
 - **Thomas 2026** — ไม่พบใน PubMed/Consensus (ยืนยันแล้วว่าเป็น AI hallucination — ถูกตัดออกจากไฟล์ 10 แล้ว แต่ยังอยู่ใน 08 เป็น historical note)
@@ -176,5 +176,42 @@ Ahmed 2026 และ Kongbangkerd 2026 มี DOI format `10.1186/s12870-026-082
 
 ---
 
+---
+
+## หมวด 8: งานวิจัยค้นพบใหม่ (2026-06-18) — 🔍 รอ verify
+
+> ค้นพบผ่าน **Consensus** (6 queries ใน session 2026-06-18 — 3 agents × 2 queries)  
+> หัวข้อ: (1) ArUco marker + plant detection, (2) green pixel segmentation real-time,  
+>   (3) VLM/LLM in agriculture, (4) auto-capture quality gate, (5) AI API in research workflow,  
+>   (6) AI in tissue culture / contamination detection  
+> **สถานะ:** 🔍 = Consensus คืนมา แต่ **ยังไม่ verify DOI + ข้อมูลเต็ม** — ห้ามเข้ารายงานจนกว่าจะเปลี่ยนเป็น ✅  
+> verify ด้วย: Consensus → PubMed MCP (ถ้าต้องการ full text) → WebSearch (fallback)
+
+| Citation ที่อ้าง | สถานะ | แหล่งที่พบ / ข้อมูลที่มี | ใช้ใน section ไหน |
+|---|---|---|---|
+| **Tharun et al. 2025** — ArUco marker detection in hydroponic plant monitoring, *IEEE Access* | 🔍 Pending | Consensus query "ArUco marker plant detection CV" — ตรงกับ Methods §3.5 เรื่อง marker-based bottle ID + scan logic | Methods §3.5 (ArUco scan logic) |
+| **Khan et al. 2024** — Real-time green pixel segmentation for plant health, *Frontiers in Artificial Intelligence* | 🔍 Pending | Consensus query "green pixel segmentation plant real-time" — รองรับ ExG formula `2G-R-B > 30` ใน 2-phase capture logic | Methods §3.7 (ExG green detection) |
+| **Ranario et al. 2025** — VLMs achieve ~62% in agricultural image tasks, *arXiv preprint* | 🔍 Pending | Consensus query "VLM agriculture image classification performance" — สนับสนุน classical CV primary + VLM helper framing; ค่า 62% accuracy หลัก | Methods §3.8 (VLM จัดเป็น AI-assisted labeling tool ไม่ใช่ primary method) |
+| **Taksoee-Vester et al. 2024** — Automated quality gate for image capture in plant phenotyping, *Scientific Reports* | 🔍 Pending | Consensus query "automatic image capture quality gate plant" — precedent ระบบ auto-capture + quality threshold | Methods §3.4 (auto-capture logic, clarity threshold) |
+| **Jeong et al. 2023** — WinCLIP: Zero-shot anomaly detection, *CVPR Proceedings* | 🔍 Pending | Consensus query "zero-shot vision anomaly detection VLM" — 493 citations; precedent zero-shot via VLM สำหรับ contamination detection | Methods §3.8 (zero-shot contamination detection framing) |
+| **Boiko et al. 2023** — Autonomous chemical research with LLMs, *arXiv* | 🔍 Pending | Consensus query "LLM AI automation laboratory research" — 172 citations; precedent LLM/AI ใน lab workflow อัตโนมัติ → Discussion "AI-assisted science" | Introduction / Discussion (AI ใน lab context) |
+| **Liu et al. 2026** — Bacterial contamination detection in plant explants, *Sensors* | 🔍 Pending | Consensus query "contamination detection tissue culture AI" — ตรงกับ claim เรื่อง contamination onset + visual indicator | Literature Review บท 2 (contamination บน TC) |
+| **Hesami et al. 2020** — Machine learning in plant tissue culture, *Applied Microbiology and Biotechnology* | 🔍 Pending | Consensus query "AI machine learning tissue culture optimization" — 181 citations; review ที่ดีสำหรับ framing AI in TC | บท 2 Literature Review (AI ใน TC overview) |
+| **Zhang et al. 2024** — Multimodal LLM for bioimage analysis, *Nature Methods* | 🔍 Pending | Consensus query "multimodal LLM bioimage plant analysis" — Nature Methods = high-impact venue; precedent LLM วิเคราะห์ภาพ biological | บท 2 / Methods §3.8 (VLM framing ใน biology) |
+
+**⚠️ คำเตือน:** ทั้ง 9 รายการนี้ยังไม่ verify — อาจมี hallucinated title/author/venue  
+ต้องผ่านขั้นตอน: Consensus URL คลิกได้ → DOI จริง → ตรงข้อมูลที่จะ cite → จึง flip เป็น ✅
+
+---
+
+## ✅ Resolution Log (2026-06-18, claude-sonnet-4-6)
+
+- **เพิ่มหมวด 8** — 9 candidate citations จาก 6 Consensus searches (2 query topics × 3 agents)
+- **อัปเดต summary table** — 🔍 count จาก 0 → 9
+- **ยังค้าง:** verify หมวด 8 ทั้งหมดก่อนใช้ในรายงาน
+
+---
+
 *ไฟล์นี้สร้างโดย citation-audit sub-agent (claude-sonnet-4-6) — 2026-06-12*  
-*ใช้เครื่องมือ: WebSearch (Springer, Nature, PubMed, Wiley, MDPI, ACM DL, PLOS, Semantic Scholar, ResearchGate)*
+*ใช้เครื่องมือ: WebSearch (Springer, Nature, PubMed, Wiley, MDPI, ACM DL, PLOS, Semantic Scholar, ResearchGate)*  
+*อัปเดต: 2026-06-18 — เพิ่มหมวด 8 (Consensus 6-query search session)*

@@ -210,6 +210,28 @@
               class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-green-500">
           </div>
         </div>
+        <!-- GAP-3: วันงอก (emergence_date) — บันทึกแยกผ่าน API -->
+        <div>
+          <label class="text-xs text-gray-400 block mb-1">
+            วันงอก <span class="text-gray-600">(emergence date — บันทึกแยก)</span>
+          </label>
+          <div class="flex gap-2 items-center">
+            <input id="emergence-date-input" type="date"
+              value="{{ bottle.emergence_date or '' }}"
+              class="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-green-500">
+            <button type="button" onclick="saveEmergenceDate()"
+              id="emergence-save-btn"
+              class="shrink-0 bg-green-700 hover:bg-green-600 active:bg-green-800 text-white text-xs font-medium px-3 py-2 rounded-lg transition">
+              บันทึก
+            </button>
+            <button type="button" onclick="clearEmergenceDate()"
+              class="shrink-0 text-gray-500 hover:text-red-400 text-xs px-2 py-2 rounded-lg transition"
+              title="ล้างวันงอก">✕</button>
+          </div>
+          <p id="emergence-status" class="text-xs mt-1 text-gray-600 min-h-[1rem]">
+            {% if bottle.emergence_date %}วันงอก: {{ bottle.emergence_date }}{% endif %}
+          </p>
+        </div>
         <div>
           <label class="text-xs text-gray-400 block mb-1">หมายเหตุ</label>
           <textarea name="notes" rows="2"
@@ -722,6 +744,42 @@ if (globalDay !== null) {
 // Status init
 setOverlayStatus(document.getElementById('status-select').value);
 
+// ─── Emergence Date ───────────────────────────────────────────────
+async function saveEmergenceDate() {
+  const val = document.getElementById('emergence-date-input').value.trim();
+  const btn = document.getElementById('emergence-save-btn');
+  const status = document.getElementById('emergence-status');
+  btn.disabled = true;
+  btn.textContent = '⏳';
+  try {
+    const res = await fetch('/api/bottle/{{ bottle.bottle_id }}/emergence', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ emergence_date: val }),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      const dayTxt = data.day_from_emergence != null
+        ? ` (Day ${data.day_from_emergence} จากวันงอก)` : '';
+      status.textContent = val ? `บันทึกแล้ว: ${val}${dayTxt}` : 'ล้างวันงอกแล้ว';
+      status.style.color = '#4ade80';
+    } else {
+      status.textContent = 'บันทึกไม่สำเร็จ';
+      status.style.color = '#f87171';
+    }
+  } catch (e) {
+    status.textContent = 'เกิดข้อผิดพลาด';
+    status.style.color = '#f87171';
+  }
+  btn.disabled = false;
+  btn.textContent = 'บันทึก';
+}
+
+function clearEmergenceDate() {
+  document.getElementById('emergence-date-input').value = '';
+  saveEmergenceDate();
+}
+
 // ─── Overlay open/close ───────────────────────────────────────────
 function openCaptureOverlay() {
   document.getElementById('ov-camera-area').classList.remove('hidden');
@@ -759,26 +817,58 @@ function compressForUpload(file, maxSize=640, quality=0.72) {
 async function runAIPrediction(blob) {
   const badge   = document.getElementById('ov-ai-badge');
   const saveBtn = document.getElementById('ov-save-btn');
+
+  // ── ลอง VLM (Claude Vision) ก่อน ────────────────────────────
   try {
     const form = new FormData();
     form.append('photo', blob, 'photo.jpg');
-    const res  = await fetch('/api/predict', { method: 'POST', body: form });
+    const res  = await fetch('/api/analyze_vision', { method: 'POST', body: form });
     const data = await res.json();
-    if (data.model_ready && data.ai_status !== 'unknown') {
-      const pct   = Math.round(data.ai_confidence * 100);
+
+    if (data.ok && data.vlm) {
+      const s = data.status;
+      const icon  = s === 'healthy' ? '🟢' : s === 'contaminated' ? '🟠' : s === 'dead' ? '⚫' : '❓';
+      const color = s === 'healthy' ? '#4ade80' : s === 'contaminated' ? '#fb923c'
+                  : s === 'dead' ? '#a8a29e' : '#64748b';
+      let html = icon + ' <span style="color:' + color + ';font-weight:700">' + s + '</span>'
+               + ' <span style="color:#475569;font-size:10px;margin-left:4px">VLM</span>';
+      if (data.notes)
+        html += '<br><span style="color:#94a3b8;font-size:11px;line-height:1.2">' + data.notes + '</span>';
+      badge.innerHTML = html;
+
+      if (s !== 'unknown') setOverlayStatus(s);
+      if (data.vigor > 0) setOvVigor(data.vigor);
+      if (data.dev_stage) setOvStage(data.dev_stage);
+
+      saveBtn.classList.remove('hidden');
+      return;
+    }
+    throw new Error(data.error || 'VLM ไม่พร้อม');
+  } catch (vlmErr) {
+    console.warn('VLM:', vlmErr.message);
+  }
+
+  // ── Fallback: EfficientNet classifier ────────────────────────
+  try {
+    const form2 = new FormData();
+    form2.append('photo', blob, 'photo.jpg');
+    const res2  = await fetch('/api/predict', { method: 'POST', body: form2 });
+    const data2 = await res2.json();
+    if (data2.model_ready && data2.ai_status !== 'unknown') {
+      const pct   = Math.round(data2.ai_confidence * 100);
       const color = pct >= 85 ? '#4ade80' : pct >= 65 ? '#facc15' : '#fb923c';
-      const icon  = data.ai_status === 'healthy' ? '🟢'
-                  : data.ai_status === 'contaminated' ? '🟠' : '⚫';
-      badge.innerHTML = icon + ' <span style="color:' + color + ';font-weight:700">' + data.ai_status + '</span>'
+      const icon  = data2.ai_status === 'healthy' ? '🟢'
+                  : data2.ai_status === 'contaminated' ? '🟠' : '⚫';
+      badge.innerHTML = icon + ' <span style="color:' + color + ';font-weight:700">' + data2.ai_status + '</span>'
                       + ' <span style="color:#64748b;font-size:11px">' + pct + '%</span>';
-      setOverlayStatus(data.ai_status);
-    } else if (!data.model_ready) {
+      setOverlayStatus(data2.ai_status);
+    } else if (!data2.model_ready) {
       badge.innerHTML = '<span style="color:#64748b">ยังไม่มี model — label เอง</span>';
     } else {
       badge.innerHTML = '<span style="color:#94a3b8">ไม่แน่ใจ — กรุณาเลือก label</span>';
     }
   } catch(e) {
-    badge.innerHTML = '<span style="color:#f87171">predict ไม่สำเร็จ</span>';
+    badge.innerHTML = '<span style="color:#f87171">วิเคราะห์ไม่สำเร็จ</span>';
   }
   saveBtn.classList.remove('hidden');
 }

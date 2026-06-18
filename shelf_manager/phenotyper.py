@@ -20,6 +20,16 @@ SEG_MODEL_PATH = Path(__file__).parent.parent / 'models' / 'phenotype' / 'seg.pt
 _seg_model = None
 _seg_mtime = 0.0
 
+# ── SAM2 config ───────────────────────────────────────────────────────────────
+# ดาวน์โหลด checkpoint:
+#   https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_tiny.pt
+# วางไว้ที่ models/sam2/sam2.1_hiera_tiny.pt
+# ติดตั้ง: pip install sam2
+SAM2_CFG  = 'configs/sam2.1/sam2.1_hiera_t.yaml'
+SAM2_CKPT = Path(__file__).parent.parent / 'models' / 'sam2' / 'sam2.1_hiera_tiny.pt'
+
+_sam2_predictor = None
+
 
 def _load_seg():
     global _seg_model, _seg_mtime
@@ -37,6 +47,24 @@ def _load_seg():
     except Exception as e:
         print(f'[phenotyper] โหลด seg ไม่ได้: {e}')
         _seg_model = None
+
+
+def _load_sam2():
+    global _sam2_predictor
+    if _sam2_predictor is not None:
+        return
+    if not SAM2_CKPT.exists():
+        return
+    try:
+        import torch
+        from sam2.build_sam import build_sam2
+        from sam2.sam2_image_predictor import SAM2ImagePredictor
+        model = build_sam2(SAM2_CFG, str(SAM2_CKPT), device='cpu')
+        _sam2_predictor = SAM2ImagePredictor(model)
+        print('[phenotyper] โหลด SAM2 predictor สำเร็จ (CPU)')
+    except Exception as e:
+        print(f'[phenotyper] SAM2 โหลดไม่ได้: {e}')
+        _sam2_predictor = None
 
 
 def _white_balance_correct(bgr: np.ndarray) -> np.ndarray:
@@ -95,8 +123,49 @@ def _glcm_features(gray: np.ndarray, levels: int = 16) -> tuple[float, float]:
     return round(contrast, 4), round(homogeneity, 4)
 
 
-def _classic_cv(bgr: np.ndarray) -> dict:
-    """วิเคราะห์ด้วย HSV color segmentation — ไม่ต้องมี model"""
+def _sam2_plant_mask(bgr: np.ndarray) -> np.ndarray | None:
+    """ใช้ SAM2 segment plant region ด้วย point prompt
+    fg = upper-center (plant zone), bg = lower-center (media) + corner
+    คืน binary mask (uint8 0/255) full-image size หรือ None
+    """
+    if _sam2_predictor is None:
+        return None
+    try:
+        import torch
+        h, w = bgr.shape[:2]
+        r0, r1 = int(h * 0.08), int(h * 0.92)
+        c0, c1 = int(w * 0.05), int(w * 0.95)
+        roi = bgr[r0:r1, c0:c1]
+        rh, rw = roi.shape[:2]
+
+        rgb = cv2.cvtColor(roi, cv2.COLOR_BGR2RGB)
+        with torch.inference_mode():
+            _sam2_predictor.set_image(rgb)
+            point_coords = np.array([
+                [rw // 2,        int(rh * 0.30)],   # plant (fg)
+                [rw // 2,        int(rh * 0.82)],   # media (bg)
+                [int(rw * 0.05), int(rh * 0.05)],   # corner (bg)
+            ])
+            point_labels = np.array([1, 0, 0])
+            masks, scores, _ = _sam2_predictor.predict(
+                point_coords=point_coords,
+                point_labels=point_labels,
+                multimask_output=True,
+            )
+        best = masks[int(np.argmax(scores))]
+        out = np.zeros((h, w), dtype=np.uint8)
+        out[r0:r1, c0:c1] = (best * 255).astype(np.uint8)
+        return out
+    except Exception as e:
+        print(f'[phenotyper] SAM2 inference ไม่สำเร็จ: {e}')
+        return None
+
+
+def _classic_cv(bgr: np.ndarray, plant_mask: np.ndarray | None = None) -> dict:
+    """วิเคราะห์ feature จากภาพขวด TC
+    plant_mask: SAM2 binary mask (uint8 0/255) → ใช้แทน HSV green threshold
+                None → ใช้ HSV threshold (fallback)
+    """
     h, w = bgr.shape[:2]
 
     # crop เฉพาะส่วนกลางขวด (หลีกเลี่ยง label + ฝา + ขอบ)
@@ -106,13 +175,21 @@ def _classic_cv(bgr: np.ndarray) -> dict:
 
     hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
 
-    # Green mask: Hue 35–90° (เขียว–เหลืองเขียว), ตัด background ขาว/มืด
-    mask = cv2.inRange(hsv,
-                       np.array([35, 35, 35]),
-                       np.array([90, 255, 235]))
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
-    mask   = cv2.morphologyEx(mask, cv2.MORPH_OPEN,  kernel)
-    mask   = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+
+    if plant_mask is not None:
+        # SAM2 mask → crop ให้ match ROI แล้วใช้เป็น plant region
+        r0, c0 = int(h * 0.08), int(w * 0.05)
+        mask = (plant_mask[r0:r0 + roi_h, c0:c0 + roi_w] > 127).astype(np.uint8) * 255
+        method_tag = 'sam2_cv'
+    else:
+        # HSV green threshold (fallback เมื่อไม่มี SAM2)
+        mask = cv2.inRange(hsv,
+                           np.array([35, 35, 35]),
+                           np.array([90, 255, 235]))
+        mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN,  kernel)
+        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+        method_tag = 'classic_cv'
 
     # ── Green coverage % ──────────────────────────────────────
     green_px      = int(mask.sum() // 255)
@@ -222,7 +299,7 @@ def _classic_cv(bgr: np.ndarray) -> dict:
         'vari_mean':          vari_mean,
         'glcm_contrast':      glcm_contrast,
         'glcm_homogeneity':   glcm_homogeneity,
-        'method':             'classic_cv',
+        'method':             method_tag,
     }
 
 
@@ -297,7 +374,7 @@ def measure(image_bytes: bytes) -> dict:
         vari_mean           float  VARI เฉลี่ย (vegetation index ทนแสง, -1..1)
         glcm_contrast       float  GLCM contrast (พื้นผิวหยาบ/ตัดกัน)
         glcm_homogeneity    float  GLCM homogeneity (พื้นผิวเรียบสม่ำเสมอ)
-        method              str    classic_cv หรือ yolov8_seg
+        method              str    sam2_cv | classic_cv | yolov8_seg
     """
     arr = np.frombuffer(image_bytes, np.uint8)
     bgr = cv2.imdecode(arr, cv2.IMREAD_COLOR)
@@ -306,10 +383,23 @@ def measure(image_bytes: bytes) -> dict:
 
     bgr = _white_balance_correct(bgr)
     _load_seg()
-    result = _yolov8_seg(bgr) if _seg_model is not None else None
-    return result if result is not None else _classic_cv(bgr)
+    _load_sam2()
+
+    # Priority: YOLOv8-seg > SAM2+CV > Classic HSV
+    if _seg_model is not None:
+        result = _yolov8_seg(bgr)
+        if result is not None:
+            return result
+
+    plant_mask = _sam2_plant_mask(bgr)
+    return _classic_cv(bgr, plant_mask=plant_mask)
 
 
 def seg_model_ready() -> bool:
     _load_seg()
     return _seg_model is not None
+
+
+def sam2_ready() -> bool:
+    _load_sam2()
+    return _sam2_predictor is not None
