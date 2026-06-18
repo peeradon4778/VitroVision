@@ -145,8 +145,8 @@ def run_training(db_path, base_dir, model_out, cfg, on_log):
     vl_loader = DataLoader(_DS(vl_p, vl_l, vl_aug), batch_size=8, shuffle=False, num_workers=0)
     te_loader = DataLoader(_DS(te_p, te_l, vl_aug), batch_size=8, shuffle=False, num_workers=0)
 
-    model     = timm.create_model('efficientnet_b0', pretrained=True, num_classes=3,
-                                   drop_rate=0.4, drop_path_rate=0.15)
+    model     = timm.create_model('vit_small_patch14_dinov2', pretrained=True,
+                                   num_classes=3, img_size=224)
     criterion = nn.CrossEntropyLoss(weight=class_weights, label_smoothing=0.1)
     mixup_fn  = Mixup(mixup_alpha=0.2, cutmix_alpha=0.0,
                       label_smoothing=0.1, num_classes=3)
@@ -195,8 +195,8 @@ def run_training(db_path, base_dir, model_out, cfg, on_log):
 
     # Phase 1 — head only (lr → lr*0.01 แบบ cosine)
     for p in model.parameters(): p.requires_grad = False
-    for p in model.classifier.parameters(): p.requires_grad = True
-    opt1 = torch.optim.AdamW(model.classifier.parameters(), lr=lr, weight_decay=1e-2)
+    for p in model.head.parameters(): p.requires_grad = True
+    opt1 = torch.optim.AdamW(model.head.parameters(), lr=lr, weight_decay=1e-2)
     sch1 = CosineAnnealingLR(opt1, T_max=ep_head, eta_min=lr * 0.01)
     if not phase(1, ep_head, opt1, sch1):
         return
@@ -204,8 +204,8 @@ def run_training(db_path, base_dir, model_out, cfg, on_log):
     # Phase 2 — fine-tune all (lr*0.1 → lr*0.001 แบบ cosine)
     for p in model.parameters(): p.requires_grad = True
     opt2 = torch.optim.AdamW([
-        {'params': [p for n, p in model.named_parameters() if 'classifier' not in n], 'lr': 1e-5},
-        {'params': model.classifier.parameters(), 'lr': 1e-4},
+        {'params': [p for n, p in model.named_parameters() if 'head' not in n], 'lr': 1e-5},
+        {'params': model.head.parameters(), 'lr': 1e-4},
     ], weight_decay=1e-2)
     sch2 = CosineAnnealingLR(opt2, T_max=ep_full, eta_min=1e-7)
     if not phase(2, ep_full, opt2, sch2):
