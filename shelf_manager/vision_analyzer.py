@@ -52,7 +52,7 @@ def analyze_plant_image(image_bytes: bytes) -> dict:
     client = _get_client()
     img = PIL.Image.open(io.BytesIO(image_bytes))
     response = client.models.generate_content(
-        model="gemini-1.5-flash",
+        model="gemini-3.5-flash",
         contents=[img, PROMPT],
     )
     text = response.text.strip()

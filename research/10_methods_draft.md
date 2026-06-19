@@ -35,7 +35,7 @@
 - [ ] เก็บ survival ตอนอนุบาล (§4.6) — ต้องวางแผน timeline ให้ทันก่อน ต.ค. 2026
 
 **D. งาน code/data ที่ตามมาจาก research 12–14 (เฟส implement):**
-- [ ] §3.5 เพิ่ม traits classical: PLA, Convex Hull Ratio, ExG/VARI, GLCM (ทำได้เลยใน phenotyper.py)
+- [x] §3.5 เพิ่ม traits classical: PLA, Convex Hull Ratio, ExG/VARI, GLCM — **เสร็จ (14 features, §3.2)** + SAM2 segmentation layer
 - [ ] §3.5 leaf count ด้วย YOLOv8-seg (ต้องมี labeled data)
 - [ ] §3.6/§2.3 เพิ่ม **hyperhydric binary flag** ใน data capture + DB schema
 - [ ] §2.4 label developmental stage ต่อภาพ (radicle/hypocotyl/cotyledon/true-leaf)
@@ -179,33 +179,40 @@ label ระยะพัฒนาการต่อภาพ เพื่อ ali
 
 ### 3.1 Hybrid pipeline overview
 
-ระบบ VitroVision เป็น **hybrid** — classical CV (โปร่งใส อธิบายได้) + deep learning เหมาะกับสภาพแสงควบคุมของตู้เพาะ
+ระบบ VitroVision เป็น **hybrid 3 ชั้น**: (1) **segmentation ด้วย foundation model (SAM2)** แยกพืชออกจากอาหาร/ขวด → (2) **classical CV** สกัด 14 quantitative features จาก mask (โปร่งใส อธิบายได้) → (3) **deep-learning classifier** จำแนกสถานะ (EfficientNet-B0 baseline + DINOv2 ที่ distill จาก **vision-language model (VLM) teacher**) เหมาะกับสภาพแสงควบคุมของตู้เพาะ
 
-### 3.2 Classical CV — quantitative image analysis (7 features)
+> **honest framing (CSBI):** pipeline ทั้ง 3 ชั้น "สร้างเสร็จและรันได้แล้วในระดับโค้ด" (SAM2 verified, EfficientNet/DINOv2 trainer + VLM pseudo-label pipeline พร้อม) — เลขผลจริง (κ/F1/ρ) จะรายงานหลังเก็บภาพ batch 1 + ครูให้คะแนน (§4); **เค้าโครงนี้รายงาน *วิธี* ไม่ใช่ *ผล***
 
-สกัด 7 features ต่อภาพ (โค้ดจริง `shelf_manager/phenotyper.py`):
+### 3.2 Segmentation (SAM2) + classical CV quantitative analysis (14 features)
 
-| Feature | วิธีคำนวณ |
+**ชั้น segmentation — SAM2 (foundation model):** ใช้ **SAM2 point-prompt** (Ravi et al. 2024) segment บริเวณพืชออกจากอาหาร/ผนังขวด (point บวกที่โซนพืชกลาง-บน, point ลบที่อาหารล่าง + มุมภาพ) → ได้ binary plant mask แล้วสกัด feature บน mask นั้น (โค้ดจริง `shelf_manager/phenotyper.py`, `method='sam2_cv'`). **Fallback chain:** YOLOv8-seg (ถ้าเทรน) > SAM2 > HSV green threshold — รับประกันทำงานได้แม้ไม่มี model
+
+**ชั้น quantitative — 14 classical features ต่อภาพ (คำนวณบน mask):**
+
+| กลุ่ม | Features |
 |---|---|
-| `green_coverage_pct` | HSV thresholding แยก pixel เขียว / pixel พืชทั้งหมด ×100 |
-| `leaf_color_index` (LCI) | อัตราส่วน G/R เฉลี่ยในพื้นที่พืช |
-| `shoot_count` | connected components / morphology นับยอด |
-| `media_color` | สีเฉลี่ยของอาหาร (proxy การเปลี่ยนแปลง/ปนเปื้อน) |
-| `texture_entropy` | Shannon entropy ของ texture |
-| `brown_coverage_pct` | HSV threshold สีน้ำตาล (necrosis/browning) |
-| `vigor_score` | weighted score ตั้งมือ 0–10 (ดูหมายเหตุล่าง) |
+| Area / color | `green_coverage_pct` (= projected leaf area, **primary**), `brown_coverage_pct`, `leaf_color_index` (G/R), `media_color_cv` |
+| Vegetation index (threshold-free) | `exg_mean` (Excess Green), `vari_mean` (VARI) — chlorophyll proxy ทนแสงกว่า HSV |
+| Architecture | `shoot_count_cv`, `convex_hull_ratio` (solidity ทรงพุ่ม กระจุก vs กระจาย) |
+| Texture | `texture_entropy` (Shannon), `glcm_contrast`, `glcm_homogeneity` |
+| Composite / meta | `vigor_score` (rule-based 0–10, ดู §3.4/§4.6), `phenotype_method` (provenance: sam2_cv/classic_cv/yolov8_seg) |
 
-⚠️ **ต้องกรอก/calibrate:** ค่า HSV threshold (green/brown range) ต้อง calibrate กับ lighting rig จริง (§2.1) — ค่าใน prototype อาจไม่ตรงกับ setup ใหม่; ระบุค่าที่ใช้จริงใน appendix
+⚠️ **ต้อง calibrate:** ค่า HSV threshold (ใช้ใน fallback + brown range) calibrate กับ lighting rig จริง (§2.1) → ระบุค่าที่ใช้จริงใน appendix
 
-> **honest framing (CSBI):** 7 features นี้ = classical CV/คณิต **ไม่ใช่ AI** (HSV threshold, morphology, entropy, weighted score) — อย่าเรียกว่า "AI". ข้อจำกัด color index คือไวต่อแสง [Lu 2022] แต่ตู้เพาะคุมแสง → ข้อจำกัดเบาลง = เหตุผลที่ CV ใช้ได้ดีในบริบทนี้
+> **honest framing (CSBI):** แยกชั้นให้ชัด — **SAM2 = foundation model (DL จริง)** ที่ทำ segmentation; **14 features = quantitative image analysis** (คณิต/classical CV ที่อยู่ downstream ของ mask) **ไม่ใช่ AI**; classifier (§3.3) = DL จริงอีกชั้น. ข้อจำกัด color index ไวต่อแสง [Lu 2022] แต่ตู้เพาะคุมแสง → เบาลง = เหตุผลที่ CV ใช้ได้ดีในบริบทนี้
 
-### 3.3 Deep learning components
+### 3.3 Deep-learning classifier + VLM teacher
 
-- **EfficientNet-B0** (transfer learning) จำแนกสถานะ **healthy / contaminated / dead**
-- **YOLOv8-seg** (optional, ถ้าเทรน) — segmentation แยกพืช/อาหาร + นับยอดแม่นขึ้น (hook `models/phenotype/seg.pt`)
-- = **AI จริง** ของโปรเจกต์ (justify EfficientNet choice: Atila 2021)
+จำแนกสถานะ **healthy / contaminated / dead** จากภาพ ด้วยสถาปัตย์ 2 ระดับ + teacher:
 
-⚠️ **ต้องอัปเดตด้วยผลจริง:** baseline ปัจจุบัน Cohen's κ=0.6274, weighted F1=0.7496 จาก n=28 (CI กว้าง ~±0.20) — ต้องรัน **5-fold CV** + เทรนด้วยภาพจริง (ตอนนี้ใช้ภาพสังเคราะห์/mock) ก่อนรายงานเลขใน proposal; healthy recall ยังอ่อน (60%) รอแก้ด้วย class weight
+- **Baseline — EfficientNet-B0** (transfer learning, `shelf_manager/trainer.py`) — justify: Atila 2021
+- **Upgrade — DINOv2 (vit_small_patch14_dinov2)** (`vitro_vision/trainer.py`) — self-supervised foundation backbone, ทนต่อ domain shift/ภาพน้อยกว่า supervised CNN
+- **VLM teacher (semi-automated labeling):** **Gemini** vision-language model (`vitro_vision/pseudo_labeler.py` + `shelf_manager/vision_analyzer.py`) ทำหน้าที่ **teacher** — ให้ pseudo-label (status/vigor/dev_stage) กับภาพที่ยังไม่มี label → ผ่าน **human review** → commit เข้า DB → ใช้เทรน/distill ลง DINOv2. **deploy จริงใช้ local model ไม่พึ่ง cloud API** (VLM ทำงานเฉพาะช่วง training)
+- **YOLOv8-seg** (optional, hook `models/phenotype/seg.pt`) — instance segmentation นับยอดแม่นขึ้นเมื่อมี labeled data
+
+> = **AI/DL จริง** ของโปรเจกต์ (SAM2 + DINOv2 + EfficientNet + VLM teacher) — สอดคล้องชื่อโครงงาน *"...via Vision-Language Models"*: VLM ทำงานช่วง training (teacher pseudo-label → distill ลง local model)
+
+⚠️ **เลขผลจริงยังไม่เกิด — ห้ามใส่ในเค้าโครง:** ค่าใน `models/metrics.json` (κ=0.6274 / F1=0.7496, n=28) เป็น **smoke-test บนภาพสังเคราะห์** เช็คว่า pipeline รันได้เท่านั้น **ไม่ใช่ผลวิจัย**. เลขจริงรายงานหลัง: เทรนด้วยภาพ batch 1 จริง → 5-fold CV + bootstrap CI → แก้ healthy recall ด้วย class weight (ดู §4 validation)
 
 ### 3.4 Endpoints
 
@@ -215,7 +222,7 @@ label ระยะพัฒนาการต่อภาพ เพื่อ ali
 
 ### 3.5 Morphological trait roadmap (จาก research 12–14)
 
-**Traits ที่ควรเพิ่ม** (เรียงตามทำง่าย→ยาก, ดู `14_image_dl_phenotyping.md`):
+**สถานะ:** PLA, Convex Hull Ratio, ExG/VARI, GLCM — **implement แล้วใน 14 features (§3.2)**; เหลือ leaf count (DL) ที่รอ labeled data:
 
 | Trait | วิธี | สถานะ |
 |---|---|---|

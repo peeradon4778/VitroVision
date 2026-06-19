@@ -4,17 +4,17 @@
 > **วิธีใช้:** จดอะไรก็โยนลง `📌 INBOX` ด้านล่างได้เลย (ไม่ต้องจัดระเบียบ) เดี๋ยว `/vitro` จะ triage ให้
 > **`/vitro` อ่านไฟล์นี้ทุกครั้ง** แล้วบอก direction ว่าควรเคาะ/ทำอะไรต่อ
 > สถานะ: 🔴 เร่ง · 🟡 ระหว่างต้นโต · 🟢 ภายหลัง · 💤 รอเคาะ(decision) · ✅ เสร็จ
-> อัปเดตล่าสุด: 2026-06-19 (session 4 — camera research ครบ 5 agents, web app arch proposal พร้อม)
+> อัปเดตล่าสุด: 2026-06-19 (session 6 — Gemini Auth key ✅, gemini-3.5-flash ✅, 7-layer architecture review ✅, 12 comments สำหรับ polish architecture จด pending)
 
 ---
 
 ## 🧭 DIRECTION ตอนนี้ (next move ที่แนะนำ)
 
-> **deadline:** เอกสาร ~กลาง ก.ย. · ตัวโครงงาน ถึง ต.ค. · **batch 1 หยอด 20 มิ.ย. (อีก 3 วัน)**
+> **deadline:** เอกสาร ~กลาง ก.ย. · ตัวโครงงาน ถึง ต.ค. · **batch 1 หยอดวันนี้ 20 มิ.ย.**
 
-1. **เร่งสุด (ก่อน 20 มิ.ย.):** batch 1 หยอดพรุ่งนี้ — ติด ArUco + เทสต์ scanner/ArUco ที่ระยะจริง
-2. **ปลดล็อก claim หลัก:** GAP-1 (`expert_scores` table) — ต้องมีก่อนครูให้คะแนน (ส.ค.)
-3. **เขียนคู่ขนาน (ก.ค.):** บท 1–3 ของรูปเล่ม + C3 camera optimize + Web App Phase A
+1. **วันนี้:** ติด ArUco + หยอดเมล็ด + ถ่าย day 0 — ระบบ capture พร้อมแล้ว
+2. **ระหว่างต้นโต (ก.ค.):** Polish 7-layer architecture (12 comments) + GAP-1 + C3 camera + Web App Phase A
+3. **ก่อนส่ง เค้าโครง:** sync `_narrative_spine.md` §3 + `report_outline.md` §3.8 ให้ตรง methods v2
 
 ---
 
@@ -24,17 +24,37 @@
 
 ---
 
+## 🏗️ Architecture Polish (12 comments — 2026-06-19)
+
+> ภาพรวม 7-layer ถูก map ครั้งแรก session 6 — พีรดนย์เขียน 12 comments ไว้สำหรับ polish แต่ละส่วน
+> รอ session ถัดไปมาค่อยๆ implement ทีละ comment
+
+- [ ] **Polish L0:** Physical setup — rig spec / white card position / ArUco placement guideline
+- [ ] **Polish L1:** scan.html — เพิ่ม dev_stage + hyperhydricity ใน auto-capture FormData (GAP-4/5)
+- [ ] **Polish L1:** C3 camera gates — Laplacian sharpness, glare, orientation, grid overlay
+- [ ] **Polish L2:** Google Drive sync — verify drive_uploader.py ทำงานจริงกับ batch 1
+- [ ] **Polish L3:** WB calibration — เปิด WB_CARD_CORNER หลังถ่าย white card จาก rig จริง
+- [ ] **Polish L3:** HSV threshold — calibrate กับ rig จริงหลัง batch 1 day 0
+- [ ] **Polish L4:** train.html label fix — "EfficientNet-B0" → "DINOv2-Small"
+- [ ] **Polish L5:** pseudo_labeler.py — ทดสอบ run() จริงกับภาพ batch 1
+- [ ] **Polish L6:** GAP-1 expert_scores table + routes
+- [ ] **Polish L6:** GAP-2 survival field ใน bottles
+- [ ] **Polish L7:** เขียน validation_stats.py (κ/ICC/ART-C calculators)
+- [ ] **Polish L7:** sync _narrative_spine.md §3 + report_outline.md §3.8
+
+---
+
 ## 🔴 ก่อน batch 1 (เร่ง — กระทบ 3 วันนี้)
 
 - [x] **GAP-3 · sow_date + emergence_date** — DB + API + UI ✅ commit f502368
 - [x] **white-card auto-tune** — `_white_balance_correct()` พร้อมแล้ว ปิดอยู่ (`WB_CARD_CORNER=None`) ✅ commit f502368
 - [ ] **เทสต์ scanner + ArUco ที่ระยะ rig จริง (~18cm)** → อ่าน ID ออกไหม, clarity ≥75% ติดไหม, white card อยู่ในเฟรมพอ auto-tune
-- [ ] ตั้ง rig + Pro mode preset + ติด ArUco (`aruco_stickers.pdf`)
+- [ ] ตั้ง rig + Pro mode preset + ติด ArUco (`aruco_stickers.pdf`) — ✅ ได้ sticker มาแล้ว (19 มิ.ย.) จะติดพรุ่งนี้ก่อนหยอด
 - [ ] **เปิด WB_CARD_CORNER** หลังถ่าย calibration set แล้วส่งให้ดู (แก้ 1 บรรทัดใน `phenotyper.py`)
 
 ## 🟡 ระหว่างต้นโต (ก.ค. — ทำชิลๆ คู่ขนานกับถ่ายภาพ)
 
-- [ ] **VLM integration (Groq)** — `vision_analyzer.py` + `/api/analyze_vision` พร้อมแล้ว รอเพียง Groq API key (`gsk_...`) จาก console.groq.com ใส่ใน `.env` เป็น `GROQ_API_KEY=` แล้ว wire เข้าระบบได้เลย
+- [ ] **VLM integration (Gemini)** — `vision_analyzer.py` + `pseudo_labeler.py` (Gemini teacher) พร้อมแล้ว รอเพียง **`GOOGLE_API_KEY`** ใส่ใน `.env` แล้วรันได้เลย *(แก้ 2026-06-19: เดิมจดผิดว่า Groq/gsk_ — โค้ดจริงใช้ `google.genai` = Gemini)*
 
 - [ ] **C3 · Camera optimization ใน `scan.html`** — research 5 agents ครบแล้ว พร้อม implement: torch auto-on, Laplacian sharpness gate (patch-based, threshold ~100–200), glare detection, color calibration matrix, grid overlay, orientation check, EXIF metadata — ดูแผนใน `research/camera_optimization_plan.md`
 
@@ -73,6 +93,17 @@
 - [ ] ลบ paper ผี "Thomas 2026" — ✅ ลบแล้ว (2026-06-19) ไม่มีเหลือแล้ว
 
 ---
+
+## ✅ เสร็จแล้ว (2026-06-19 session 6)
+- **Gemini Auth key** ✅ — `.env` พร้อม, `vision_analyzer.py` อัปเดตเป็น `gemini-3.5-flash`
+- **7-layer architecture map** ✅ — L0 Physical → L7 Analysis/Validation ครบทุก module, จด GAPs, pending polish 12 items
+- **VLM research** ✅ — ทางเลือก Gemini/GPT-4o/Qwen/LLaVA พร้อม research backing (Ranario 2025, Paci 2024, Roumeliotis 2025)
+- **เครื่อง spec** ✅ — 8GB RAM, AMD iGPU, CPU-only → local VLM ไม่เหมาะ → API เท่านั้น
+
+## ✅ เสร็จแล้ว (2026-06-19 session 5)
+- **ล็อก methodology §3** ใน `10_methods_draft.md` ให้ตรงสถาปัตย์จริง: SAM2 segmentation + 14 features (เดิมเขียน 7/HSV) + EfficientNet baseline + DINOv2 + **VLM (Gemini) teacher** (เดิมไม่พูดถึงเลยทั้งที่ชื่อโครงงานมี VLM) + กรอบ honest "เค้าโครง=วิธี ไม่ใช่ผล, ห้ามใส่ κ=0.6274"
+- แก้ factual: config.py ARUCO_DICT 4X4_50→4X4_100 (dead code) · memory trainer=DINOv2 (จริง: 2 trainer, ตัวเว็บยัง EfficientNet) · VLM=Gemini ไม่ใช่ Groq
+- **follow-up (ค้าง):** sync `_narrative_spine.md` org3 + `report_outline.md` §3.8 ให้ตรง §3 ใหม่ (ยังอ้าง EfficientNet/12-feat ไม่มี SAM2/VLM)
 
 ## ✅ เสร็จแล้ว (2026-06-17 session)
 - ปิด decision Q1–Q6 (batch1=20มิ.ย., batch2=deployment, rubric, Q4 auto-tune, Q5 capture-time, Q6 flag)
