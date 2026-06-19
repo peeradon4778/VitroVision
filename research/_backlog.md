@@ -4,7 +4,7 @@
 > **วิธีใช้:** จดอะไรก็โยนลง `📌 INBOX` ด้านล่างได้เลย (ไม่ต้องจัดระเบียบ) เดี๋ยว `/vitro` จะ triage ให้
 > **`/vitro` อ่านไฟล์นี้ทุกครั้ง** แล้วบอก direction ว่าควรเคาะ/ทำอะไรต่อ
 > สถานะ: 🔴 เร่ง · 🟡 ระหว่างต้นโต · 🟢 ภายหลัง · 💤 รอเคาะ(decision) · ✅ เสร็จ
-> อัปเดตล่าสุด: 2026-06-19 (session 3 — triage VLM INBOX, ก่อน batch 1)
+> อัปเดตล่าสุด: 2026-06-19 (session 4 — camera research ครบ 5 agents, web app arch proposal พร้อม)
 
 ---
 
@@ -12,9 +12,9 @@
 
 > **deadline:** เอกสาร ~กลาง ก.ย. · ตัวโครงงาน ถึง ต.ค. · **batch 1 หยอด 20 มิ.ย. (อีก 3 วัน)**
 
-1. **เร่งสุด (ก่อน 20 มิ.ย.):** GAP-3 (sow/emergence date) + white-card auto-tune + เทสต์ scanner/ArUco ที่ระยะ rig จริง
+1. **เร่งสุด (ก่อน 20 มิ.ย.):** batch 1 หยอดพรุ่งนี้ — ติด ArUco + เทสต์ scanner/ArUco ที่ระยะจริง
 2. **ปลดล็อก claim หลัก:** GAP-1 (`expert_scores` table) — ต้องมีก่อนครูให้คะแนน (ส.ค.)
-3. **เขียนคู่ขนาน (ก.ค.):** บท 1–3 ของรูปเล่ม (ไม่ต้องรอ data)
+3. **เขียนคู่ขนาน (ก.ค.):** บท 1–3 ของรูปเล่ม + C3 camera optimize + Web App Phase A
 
 ---
 
@@ -35,6 +35,12 @@
 ## 🟡 ระหว่างต้นโต (ก.ค. — ทำชิลๆ คู่ขนานกับถ่ายภาพ)
 
 - [ ] **VLM integration (Groq)** — `vision_analyzer.py` + `/api/analyze_vision` พร้อมแล้ว รอเพียง Groq API key (`gsk_...`) จาก console.groq.com ใส่ใน `.env` เป็น `GROQ_API_KEY=` แล้ว wire เข้าระบบได้เลย
+
+- [ ] **C3 · Camera optimization ใน `scan.html`** — research 5 agents ครบแล้ว พร้อม implement: torch auto-on, Laplacian sharpness gate (patch-based, threshold ~100–200), glare detection, color calibration matrix, grid overlay, orientation check, EXIF metadata — ดูแผนใน `research/camera_optimization_plan.md`
+
+- [ ] **Web App Phase A** (low-hanging fruit) — เพิ่ม `manifest.json` → PWA installable; ลด free-text → dropdown/tap; เพิ่ม rate-of-change column ใน dashboard — evidence จาก 5 agents ใน `research/webapp_arch_proposal.md`
+
+- [ ] **Web App Phase B** (ก.ค.) — Module nav (Capture/Analysis/Data/Reports); linked view timeline↔ภาพขวด; Flag button ใน scan.html ไม่ตัด flow
 
 - [ ] **GAP-1 · ตาราง `expert_scores`** (image_id, rater_id, vigor_grade 1–5, hyperhydric_flag, ts) รองรับ ≥2 rater + consensus median — *ปลดล็อก validation = พระเอกเอกสาร*
 - [ ] **GAP-4 · field `dev_stage`** ใน images (radicle/hypocotyl/cotyledon/true_leaf) + capture UI 1-tap (Task #4) (decision Q5)
@@ -64,7 +70,7 @@
 
 - [ ] n ให้ตรงทุกที่ (05=181 vs 10=28) → ยึด `models/metrics.json`
 - [ ] แยก κ vigor-rubric ≠ κ classifier-3class ทุกที่
-- [ ] ลบ paper ผี "Thomas 2026" (เหลือ note ใน `08_survival_contamination.md`)
+- [ ] ลบ paper ผี "Thomas 2026" — ✅ ลบแล้ว (2026-06-19) ไม่มีเหลือแล้ว
 
 ---
 
