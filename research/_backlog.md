@@ -4,7 +4,7 @@
 > **วิธีใช้:** จดอะไรก็โยนลง `📌 INBOX` ด้านล่างได้เลย (ไม่ต้องจัดระเบียบ) เดี๋ยว `/vitro` จะ triage ให้
 > **`/vitro` อ่านไฟล์นี้ทุกครั้ง** แล้วบอก direction ว่าควรเคาะ/ทำอะไรต่อ
 > สถานะ: 🔴 เร่ง · 🟡 ระหว่างต้นโต · 🟢 ภายหลัง · 💤 รอเคาะ(decision) · ✅ เสร็จ
-> อัปเดตล่าสุด: 2026-06-17 (session 2)
+> อัปเดตล่าสุด: 2026-06-19 (session 3 — triage VLM INBOX, ก่อน batch 1)
 
 ---
 
@@ -20,7 +20,7 @@
 
 ## 📌 INBOX (จดเร็ว ยังไม่ triage — โยนอะไรลงตรงนี้ได้เลย)
 
-- VLM integration เสร็จแล้ว (vision_analyzer.py + /api/analyze_vision) — รอ Groq API key (`gsk_...`) จาก console.groq.com แล้วใส่ใน .env เป็น GROQ_API_KEY= แล้วจะ wire เข้าระบบต่อ
+*(ว่าง)*
 
 ---
 
@@ -33,6 +33,8 @@
 - [ ] **เปิด WB_CARD_CORNER** หลังถ่าย calibration set แล้วส่งให้ดู (แก้ 1 บรรทัดใน `phenotyper.py`)
 
 ## 🟡 ระหว่างต้นโต (ก.ค. — ทำชิลๆ คู่ขนานกับถ่ายภาพ)
+
+- [ ] **VLM integration (Groq)** — `vision_analyzer.py` + `/api/analyze_vision` พร้อมแล้ว รอเพียง Groq API key (`gsk_...`) จาก console.groq.com ใส่ใน `.env` เป็น `GROQ_API_KEY=` แล้ว wire เข้าระบบได้เลย
 
 - [ ] **GAP-1 · ตาราง `expert_scores`** (image_id, rater_id, vigor_grade 1–5, hyperhydric_flag, ts) รองรับ ≥2 rater + consensus median — *ปลดล็อก validation = พระเอกเอกสาร*
 - [ ] **GAP-4 · field `dev_stage`** ใน images (radicle/hypocotyl/cotyledon/true_leaf) + capture UI 1-tap (Task #4) (decision Q5)

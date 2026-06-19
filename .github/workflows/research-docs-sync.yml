@@ -41,7 +41,13 @@ jobs:
             research/10_methods_draft.md \
             research/_narrative_spine.md \
             research/_data_dictionary.md \
-            research/_citation_audit.md
+            research/_citation_audit.md \
+            research/05_narrative_problem_objective_impact.md \
+            research/report_outline.md \
+            research/_decisions_pending.md \
+            research/_backlog.md \
+            research/_audit_issues.md \
+            README.md
           git diff --staged --quiet \
             && echo "ไม่มีการเปลี่ยนแปลง — ข้าม commit" \
             || git commit -m "chore: auto-sync research docs $(date +'%Y-%m-%d')"
