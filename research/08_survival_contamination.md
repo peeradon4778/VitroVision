@@ -11,8 +11,6 @@
 
 การวิเคราะห์ด้านเวลาใน tissue culture มีสองแกนหลักที่เชื่อมกัน: (A) **time-to-contamination** — contamination เป็น absorbing state ใน TC ดังนั้น Kaplan-Meier (KM) + log-rank test จึงเหมาะสมทางทฤษฎี แต่มีข้อจำกัดสำคัญเมื่อ event มีน้อย; (B) **survival-to-acclimatization** — ใช้เป็น criterion validity เชิง objective ตรวจสอบว่า green% หรือ vigor score ที่วัดได้ใน vitro จริงๆ ทำนายผลลัพธ์ปลายทาง (ex vitro survival) ได้ไหม — นี่คือแกน non-circular ที่แข็งแกร่งที่สุดของ validation
 
-**Thomas 2026 — verify ผล:** ไม่พบใน PubMed และ Consensus ว่ามีอยู่จริง (ค้นหลายรูปแบบแล้ว) อาจเป็น citation ที่สร้างขึ้นโดย AI hallucination หรือ preprint ที่ไม่ได้ index ทั้งสองฐาน ไฟล์นี้ระบุ paper ทดแทนที่เชื่อถือได้และ peer-reviewed จากฐานข้อมูลจริงแทน
-
 ---
 
 ## 2. Kaplan-Meier + Log-rank ใน Contamination ของ In Vitro Culture
@@ -58,19 +56,7 @@ Time-to-event analysis ถูกนำมาใช้กับข้อมูล
 
 ---
 
-## 3. Citation ที่ Verify ไม่ผ่าน — "Thomas 2026" **[ตัดทิ้ง — AI hallucination]**
-
-> 🚫 **"Thomas 2026" ไม่มีอยู่จริง** — verify ไม่เจอทั้ง PubMed และ Consensus = AI hallucination. **ห้ามอ้างอิงในรายงาน/proposal ใดๆ.** section นี้เก็บไว้เป็นบันทึกการ verify + paper ทดแทนที่ verify แล้ว (§3.2) เท่านั้น
-
-### 3.1 ผลการค้นหา (ยืนยันว่าไม่มี paper นี้)
-
-ค้นหาใน **PubMed** (query: "Thomas acclimatization ex vitro survival micropropagated plantlet quality 2024 2025 2026") และ **Consensus** (query: "Thomas 2026 acclimatization survival in vitro plantlet quality") — **ไม่พบ paper ที่ตรงกัน**
-
-Consensus คืน paper ที่ใกล้เคียงที่สุดคือ Jibu P. Thomas et al. (2010) ซึ่งเป็น paper เกี่ยวกับ beneficial microorganisms ระหว่าง acclimatization ของ tea (*Camellia sinensis*) [9] — ไม่ใช่ Thomas 2026 ที่อ้างถึง
-
-**ข้อสรุป:** Thomas 2026 มีความเป็นไปได้สูงว่าเป็น AI hallucination หรือ citation ที่ยังไม่ได้รับการ index (preprint ที่ยังไม่ publish) ห้ามนำไปอ้างอิงในรายงาน YSC/JSTP โดยไม่ verify ตัวเต็มก่อน
-
-### 3.2 Paper ทดแทนที่ verify แล้ว (peer-reviewed, PubMed-indexed)
+## 3. Paper อ้างอิง: Survival-to-Acclimatization (peer-reviewed, PubMed-indexed)
 
 **[T-alt-1] Ahmed et al. (2026) — Dragon fruit micropropagation and acclimatization**  
 วัด survival rate 97% ระหว่าง acclimatization ใน peat moss:perlite 1:1 เชื่อมกับ morphophysiological parameters (shoot length, root number, fresh weight) — ตัวอย่างชัดของ in vitro phenotype → ex vitro survival  
@@ -238,4 +224,4 @@ URL: https://consensus.app/papers/details/0ccdfc0adbeb5d0bbc3ff412c6c42d14/
 
 ---
 
-*ไฟล์นี้สร้างโดย research sub-agent VitroVision สำหรับ YSC 2027 — **"Thomas 2026" = AI hallucination ไม่มีอยู่จริง ห้ามอ้างอิงเด็ดขาด** (ใช้ Ahmed 2026 / Kongbangkerd 2026 / Méndez-Hernández 2023 แทน — ดู §3.2)*
+*ไฟล์นี้สร้างโดย research sub-agent VitroVision สำหรับ YSC 2027*
