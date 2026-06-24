@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>VitroCapture 📷</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  body { background:#0a0f1e; color:#f1f5f9; font-family:system-ui,sans-serif; -webkit-font-smoothing:antialiased; }
+  .bottle { transition: all .15s; user-select:none; }
+  .bottle:active { transform: scale(.92); }
+  #sheet { transition: transform .25s cubic-bezier(.4,0,.2,1); }
+  .status-btn:active { transform: scale(.93); }
+</style>
+</head>
+<body class="min-h-screen pb-8">
+
+<!-- ── Config (กรอก Supabase Keys หลังจาก sign up) ── -->
+<script>
+  /* ── แก้ 2 บรรทัดนี้ด้วย keys จาก Supabase Dashboard > Settings > API ── */
+  const SUPABASE_URL = 'https://gguaqtxzzwpowvlvpgvx.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdndWFxdHh6endwb3d2bHZwZ3Z4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyODc4MDcsImV4cCI6MjA5Nzg2MzgwN30.ccwOS523XteRfoee7nFnMnlKfaSQ-3Ci5AAUY7JS4nI';
+  const STORAGE_BUCKET = 'photos';            // ชื่อ bucket ใน Supabase Storage
+  /* ──────────────────────────────────────────────────────────────────────── */
+</script>
+
+<!-- Header -->
+<header class="sticky top-0 z-20 bg-[#111827]/90 backdrop-blur border-b border-[#1e3a5f] px-4 py-3 flex items-center gap-3">
+  <span class="text-2xl">🌱</span>
+  <div class="flex-1">
+    <h1 class="font-bold text-base leading-tight">VitroCapture</h1>
+    <p id="batchLabel" class="text-xs text-slate-400">กำลังโหลด...</p>
+  </div>
+  <div class="text-right">
+    <div id="dayBadge" class="bg-sky-600 text-white text-xs font-bold px-2 py-1 rounded-lg">Day –</div>
+    <div id="progressLabel" class="text-xs text-slate-400 mt-0.5">–/100</div>
+  </div>
+</header>
+
+<!-- Status legend -->
+<div class="flex gap-3 px-4 pt-3 pb-1 text-xs text-slate-400">
+  <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-sm bg-green-500 inline-block"></span>สมบูรณ์</span>
+  <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-sm bg-amber-500 inline-block"></span>ปนเปื้อน</span>
+  <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-sm bg-red-500 inline-block"></span>ตาย</span>
+  <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-sm bg-slate-600 inline-block"></span>ไม่ทราบ</span>
+  <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-sm bg-sky-500/50 border border-sky-400 inline-block"></span>บันทึกแล้ว</span>
+</div>
+
+<!-- Bottle grid -->
+<div class="px-3 py-2 space-y-3">
+  <div id="gridS01">
+    <p class="text-xs text-slate-500 mb-1.5 font-mono">SHELF S01</p>
+    <div id="g01" class="grid grid-cols-10 gap-1"></div>
+  </div>
+  <div id="gridS02">
+    <p class="text-xs text-slate-500 mb-1.5 font-mono">SHELF S02</p>
+    <div id="g02" class="grid grid-cols-10 gap-1"></div>
+  </div>
+</div>
+
+<!-- Refresh button -->
+<div class="px-4 mt-3">
+  <button onclick="loadGrid()" class="w-full py-2 rounded-xl border border-[#1e3a5f] text-slate-400 text-sm hover:border-sky-500 hover:text-sky-400 transition">
+    🔄 รีเฟรช
+  </button>
+</div>
+
+<!-- Offline indicator -->
+<div id="offlineBar" class="hidden mx-4 mt-3 px-3 py-2 bg-amber-900/40 border border-amber-700 rounded-xl text-amber-400 text-xs text-center">
+  ⚠️ ไม่มีอินเทอร์เน็ต — บันทึกไม่ได้
+</div>
+
+<!-- Error bar -->
+<div id="errBar" class="hidden mx-4 mt-3 px-3 py-2 bg-red-900/40 border border-red-700 rounded-xl text-red-400 text-xs text-center"></div>
+
+<!-- ── Bottom sheet for capture ── -->
+<div id="overlay" class="fixed inset-0 bg-black/60 z-40 hidden" onclick="closeSheet()"></div>
+
+<div id="sheet" class="fixed bottom-0 left-0 right-0 z-50 bg-[#111827] border-t border-[#1e3a5f] rounded-t-2xl translate-y-full">
+  <div class="w-10 h-1 bg-slate-600 rounded-full mx-auto mt-3"></div>
+  <div class="px-5 pt-3 pb-8">
+
+    <!-- Bottle header -->
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <p class="text-xs text-slate-400">ขวด</p>
+        <p id="sheetTitle" class="text-xl font-bold font-mono"></p>
+      </div>
+      <button onclick="closeSheet()" class="text-slate-500 text-2xl leading-none">&times;</button>
+    </div>
+
+    <!-- Status picker -->
+    <p class="text-xs text-slate-400 mb-2">สถานะพืช</p>
+    <div class="grid grid-cols-4 gap-2 mb-4">
+      <button class="status-btn flex flex-col items-center gap-1 py-3 rounded-xl border border-green-700 bg-green-900/30 text-green-400 text-xs"
+              onclick="setStatus('healthy')" id="btn-healthy">
+        <span class="text-xl">✅</span>สมบูรณ์
+      </button>
+      <button class="status-btn flex flex-col items-center gap-1 py-3 rounded-xl border border-amber-700 bg-amber-900/30 text-amber-400 text-xs"
+              onclick="setStatus('contaminated')" id="btn-contaminated">
+        <span class="text-xl">⚠️</span>ปนเปื้อน
+      </button>
+      <button class="status-btn flex flex-col items-center gap-1 py-3 rounded-xl border border-red-700 bg-red-900/30 text-red-400 text-xs"
+              onclick="setStatus('dead')" id="btn-dead">
+        <span class="text-xl">💀</span>ตาย
+      </button>
+      <button class="status-btn flex flex-col items-center gap-1 py-3 rounded-xl border border-slate-600 bg-slate-800/50 text-slate-400 text-xs active-status"
+              onclick="setStatus('unknown')" id="btn-unknown">
+        <span class="text-xl">❓</span>ไม่ทราบ
+      </button>
+    </div>
+
+    <!-- Photo picker -->
+    <p class="text-xs text-slate-400 mb-2">ภาพ <span class="text-slate-600">(ไม่บังคับ)</span></p>
+    <label class="flex items-center gap-3 bg-[#0a0f1e] border border-[#1e3a5f] rounded-xl px-4 py-3 mb-4 cursor-pointer active:border-sky-500">
+      <span id="photoIcon" class="text-2xl">📷</span>
+      <div class="flex-1">
+        <p id="photoName" class="text-sm text-slate-400">แตะเพื่อถ่ายหรือเลือกจาก Gallery</p>
+        <p id="photoSize" class="text-xs text-slate-600 hidden"></p>
+      </div>
+      <input type="file" accept="image/*" capture="environment" class="hidden" id="photoInput" onchange="onPhotoChange(this)">
+    </label>
+
+    <!-- Preview -->
+    <div id="previewWrap" class="hidden mb-4 relative">
+      <img id="previewImg" class="w-full max-h-44 object-cover rounded-xl">
+      <button onclick="clearPhoto()" class="absolute top-2 right-2 bg-black/60 text-white w-7 h-7 rounded-full text-sm flex items-center justify-center">&times;</button>
+    </div>
+
+    <!-- Notes -->
+    <textarea id="notesInput" placeholder="บันทึกเพิ่มเติม (ไม่บังคับ)" rows="2"
+              class="w-full bg-[#0a0f1e] border border-[#1e3a5f] rounded-xl px-4 py-2 text-sm text-slate-300 placeholder-slate-600 resize-none mb-4 focus:outline-none focus:border-sky-500">
+    </textarea>
+
+    <!-- Save button -->
+    <button id="saveBtn" onclick="saveCapture()"
+            class="w-full py-4 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-base transition active:scale-95">
+      💾 บันทึก
+    </button>
+    <p id="saveStatus" class="text-center text-xs text-slate-500 mt-2 h-4"></p>
+  </div>
+</div>
+
+<script>
+// ── Supabase client ──────────────────────────────────────────────────────────
+let sb = null;
+function initSupabase() {
+  if (SUPABASE_URL === 'YOUR_SUPABASE_URL') {
+    showErr('ยังไม่ได้กรอก Supabase URL/KEY ในไฟล์ capture.html');
+    return false;
+  }
+  try {
+    sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    return true;
+  } catch(e) {
+    showErr('Supabase init error: ' + e.message);
+    return false;
+  }
+}
+
+// ── State ────────────────────────────────────────────────────────────────────
+let currentBatch   = null;
+let currentDay     = 0;
+let activeBottleId = null;
+let selectedStatus = 'unknown';
+let selectedFile   = null;
+let todayCaptures  = {};  // bottle_id → true
+
+// ── Color helpers ────────────────────────────────────────────────────────────
+const STATUS_BG = {
+  healthy:     'bg-green-700',
+  contaminated:'bg-amber-600',
+  dead:        'bg-red-700',
+  unknown:     'bg-slate-600',
+  empty:       'bg-[#1e293b]',
+};
+const TODAY_RING = 'ring-2 ring-sky-400 ring-offset-1 ring-offset-[#0a0f1e]';
+
+// ── Load grid ────────────────────────────────────────────────────────────────
+async function loadGrid() {
+  if (!sb) return;
+  document.getElementById('errBar').classList.add('hidden');
+  try {
+    // ดึง active batch
+    const { data: batches } = await sb.from('batches').select('*').order('id', {ascending: false}).limit(1);
+    currentBatch = batches?.[0] || null;
+    if (currentBatch) {
+      const sow = new Date(currentBatch.sow_date + 'T00:00:00');
+      const today = new Date(); today.setHours(0,0,0,0);
+      currentDay = Math.round((today - sow) / 86400000);
+      document.getElementById('batchLabel').textContent = currentBatch.name + ' · sow ' + currentBatch.sow_date;
+      document.getElementById('dayBadge').textContent = 'Day ' + currentDay;
+    }
+
+    // ดึงสถานะล่าสุดของแต่ละขวด (latest image)
+    const { data: latestImgs } = await sb.from('images')
+      .select('bottle_id, status')
+      .eq('batch_id', currentBatch?.id)
+      .order('id', {ascending: false});
+
+    const latestStatus = {};
+    (latestImgs || []).forEach(r => {
+      if (!latestStatus[r.bottle_id]) latestStatus[r.bottle_id] = r.status;
+    });
+
+    // ดึงภาพวันนี้
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const { data: todayImgs } = await sb.from('images')
+      .select('bottle_id')
+      .eq('batch_id', currentBatch?.id)
+      .eq('date_taken', todayStr);
+
+    todayCaptures = {};
+    (todayImgs || []).forEach(r => { todayCaptures[r.bottle_id] = true; });
+
+    // ดึง bottles
+    const { data: bottles } = await sb.from('bottles').select('bottle_id,shelf,row,col').order('bottle_id');
+
+    // Build grids
+    const g01 = document.getElementById('g01');
+    const g02 = document.getElementById('g02');
+    g01.innerHTML = ''; g02.innerHTML = '';
+
+    (bottles || []).forEach(b => {
+      const status = latestStatus[b.bottle_id] || 'empty';
+      const doneToday = todayCaptures[b.bottle_id];
+      const bg = doneToday ? 'bg-sky-900/60 border border-sky-500/50' : (STATUS_BG[status] || STATUS_BG.empty);
+      const label = b.row + b.col.toString().padStart(2, '0');
+      const div = document.createElement('div');
+      div.className = `bottle ${bg} rounded text-[10px] text-white/80 font-mono aspect-square flex items-center justify-center cursor-pointer select-none`;
+      div.textContent = label;
+      div.onclick = () => openSheet(b.bottle_id, status);
+      const grid = b.shelf === 'S01' ? g01 : g02;
+      grid.appendChild(div);
+    });
+
+    // Update progress
+    const total = (bottles || []).length;
+    const done  = Object.keys(todayCaptures).length;
+    document.getElementById('progressLabel').textContent = done + '/' + total;
+
+  } catch(e) {
+    showErr('โหลดข้อมูลล้มเหลว: ' + e.message);
+  }
+}
+
+// ── Sheet ────────────────────────────────────────────────────────────────────
+function openSheet(bottleId, currentStatus) {
+  activeBottleId = bottleId;
+  selectedStatus = currentStatus in STATUS_BG ? currentStatus : 'unknown';
+  selectedFile   = null;
+
+  document.getElementById('sheetTitle').textContent = bottleId;
+  document.getElementById('notesInput').value = '';
+  document.getElementById('saveStatus').textContent = '';
+  clearPhoto();
+  highlightStatus(selectedStatus);
+
+  document.getElementById('overlay').classList.remove('hidden');
+  const sheet = document.getElementById('sheet');
+  sheet.style.transform = 'translateY(0)';
+  requestAnimationFrame(() => sheet.style.transform = 'translateY(0)');
+}
+
+function closeSheet() {
+  document.getElementById('sheet').style.transform = 'translateY(100%)';
+  setTimeout(() => document.getElementById('overlay').classList.add('hidden'), 250);
+  activeBottleId = null;
+}
+
+// ── Status ───────────────────────────────────────────────────────────────────
+const STATUS_RING = {
+  healthy:     'border-2 border-green-400',
+  contaminated:'border-2 border-amber-400',
+  dead:        'border-2 border-red-400',
+  unknown:     'border-2 border-slate-400',
+};
+
+function setStatus(s) {
+  selectedStatus = s;
+  highlightStatus(s);
+}
+
+function highlightStatus(s) {
+  ['healthy','contaminated','dead','unknown'].forEach(k => {
+    const btn = document.getElementById('btn-' + k);
+    if (!btn) return;
+    btn.classList.remove('border-green-400','border-amber-400','border-red-400','border-slate-400',
+                         'border-green-700','border-amber-700','border-red-700','border-slate-600',
+                         'scale-95','opacity-100');
+    if (k === s) {
+      btn.classList.add(STATUS_RING[k].split(' ')[1], STATUS_RING[k].split(' ')[2]);
+    } else {
+      const def = {healthy:'border-green-700',contaminated:'border-amber-700',dead:'border-red-700',unknown:'border-slate-600'};
+      btn.classList.add(def[k]);
+    }
+  });
+}
+
+// ── Photo ────────────────────────────────────────────────────────────────────
+function onPhotoChange(input) {
+  const file = input.files[0];
+  if (!file) return;
+  selectedFile = file;
+  document.getElementById('photoName').textContent = file.name;
+  document.getElementById('photoSize').textContent = (file.size / 1024).toFixed(0) + ' KB';
+  document.getElementById('photoSize').classList.remove('hidden');
+  document.getElementById('photoIcon').textContent = '🖼️';
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('previewImg').src = e.target.result;
+    document.getElementById('previewWrap').classList.remove('hidden');
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearPhoto() {
+  selectedFile = null;
+  document.getElementById('photoInput').value = '';
+  document.getElementById('photoName').textContent = 'แตะเพื่อถ่ายหรือเลือกจาก Gallery';
+  document.getElementById('photoSize').classList.add('hidden');
+  document.getElementById('photoIcon').textContent = '📷';
+  document.getElementById('previewWrap').classList.add('hidden');
+  document.getElementById('previewImg').src = '';
+}
+
+// ── Save ─────────────────────────────────────────────────────────────────────
+async function saveCapture() {
+  if (!activeBottleId) return;
+  const btn = document.getElementById('saveBtn');
+  const statusEl = document.getElementById('saveStatus');
+  btn.disabled = true;
+  btn.textContent = '⏳ กำลังบันทึก...';
+  statusEl.textContent = '';
+
+  try {
+    let storagePath = '';
+
+    // อัปโหลดภาพ (ถ้ามี)
+    if (selectedFile) {
+      statusEl.textContent = 'กำลังอัปโหลดภาพ...';
+      const ext  = selectedFile.name.split('.').pop() || 'jpg';
+      const path = `batch${currentBatch?.id || 1}/day${currentDay}/${activeBottleId}_${Date.now()}.${ext}`;
+      const { error: uploadErr } = await sb.storage
+        .from(STORAGE_BUCKET)
+        .upload(path, selectedFile, { contentType: selectedFile.type || 'image/jpeg' });
+      if (uploadErr) throw new Error('Storage upload: ' + uploadErr.message);
+      storagePath = path;
+    }
+
+    // บันทึก record
+    statusEl.textContent = 'กำลังบันทึกข้อมูล...';
+    const record = {
+      bottle_id:    activeBottleId,
+      batch_id:     currentBatch?.id || null,
+      day_point:    currentDay,
+      date_taken:   new Date().toISOString().slice(0, 10),
+      status:       selectedStatus,
+      source:       'mobile',
+      storage_path: storagePath,
+      synced_local: false,
+    };
+    const notes = document.getElementById('notesInput').value.trim();
+    if (notes) record.notes = notes;
+
+    const { error: insertErr } = await sb.from('images').insert(record);
+    if (insertErr) throw new Error('DB insert: ' + insertErr.message);
+
+    // success
+    statusEl.textContent = '✅ บันทึกแล้ว';
+    todayCaptures[activeBottleId] = true;
+    document.getElementById('progressLabel').textContent =
+      Object.keys(todayCaptures).length + '/100';
+
+    setTimeout(closeSheet, 800);
+    setTimeout(loadGrid, 900);
+
+  } catch (e) {
+    statusEl.textContent = '❌ ' + e.message;
+    console.error(e);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '💾 บันทึก';
+  }
+}
+
+// ── Offline ──────────────────────────────────────────────────────────────────
+window.addEventListener('online',  () => document.getElementById('offlineBar').classList.add('hidden'));
+window.addEventListener('offline', () => document.getElementById('offlineBar').classList.remove('hidden'));
+if (!navigator.onLine) document.getElementById('offlineBar').classList.remove('hidden');
+
+function showErr(msg) {
+  const el = document.getElementById('errBar');
+  el.textContent = msg;
+  el.classList.remove('hidden');
+}
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  if (initSupabase()) loadGrid();
+});
+</script>
+</body>
+</html>

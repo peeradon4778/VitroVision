@@ -12,15 +12,15 @@
     tailwind.config = {
       theme: { extend: {
         colors: {
-          paper:'#FAF9F5', surface:'#FFFFFF', ink:'#2A2722', muted:'#908A7E',
-          line:'#EAE7DF', clay:{DEFAULT:'#D97757', hover:'#C45D3E'},
-          st:{ healthy:'#6E8B5A', contam:'#C98A3C', dead:'#B84A3E',
-               unknown:'#B8B3A8', empty:'#EFECE4' },
-          // legacy aliases (หน้าอื่นยังอ้างชื่อเดิม — map ให้เข้าโทนอุ่น)
-          healthy:'#6E8B5A', contaminated:'#C98A3C', dead:'#B84A3E', unknown:'#B8B3A8',
+          paper:'#0a0f1e', surface:'#111827', ink:'#f1f5f9', muted:'#94a3b8',
+          line:'#1e3a5f', clay:{DEFAULT:'#38bdf8', hover:'#0ea5e9'},
+          st:{ healthy:'#22c55e', contam:'#f59e0b', dead:'#ef4444',
+               unknown:'#64748b', empty:'#1e293b' },
+          // legacy aliases
+          healthy:'#22c55e', contaminated:'#f59e0b', dead:'#ef4444', unknown:'#64748b',
         },
         fontFamily: { serif:['Fraunces','Georgia','serif'], sans:['Inter','system-ui','sans-serif'] },
-        boxShadow: { soft:'0 1px 2px rgba(42,39,34,.04), 0 1px 3px rgba(42,39,34,.03)' },
+        boxShadow: { soft:'0 1px 2px rgba(0,0,0,.3), 0 1px 3px rgba(0,0,0,.2)' },
       } },
     }
   </script>
@@ -35,22 +35,22 @@
     <a href="/train" class="text-muted hover:text-ink transition text-sm hidden md:block">🧠 Train Model</a>
     <a href="/scan" class="text-muted hover:text-ink transition text-sm hidden md:block">📷 Scanner</a>
     <a href="/analytics" class="text-muted hover:text-ink transition text-sm hidden md:block">📈 Analytics</a>
-    <a href="/glass" class="text-muted hover:text-ink transition text-sm hidden md:block">🔬 Glass Room</a>
+    <a href="/import" class="text-muted hover:text-ink transition text-sm hidden md:block">📥 Import</a>
   </nav>
 
   <!-- ML loading banner -->
-  <div id="ml-banner" style="display:none;background:#FBF6F0;border-bottom:1px solid #EAE7DF;padding:6px 16px;font-size:12px;color:#908A7E;display:flex;align-items:center;gap:8px">
-    <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#D97757;animation:pulse 1s infinite"></span>
+  <div id="ml-banner" style="display:none;background:#0f172a;border-bottom:1px solid #1e3a5f;padding:6px 16px;font-size:12px;color:#94a3b8;display:flex;align-items:center;gap:8px">
+    <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#38bdf8;animation:pulse 1s infinite"></span>
     <span id="ml-banner-text">กำลังโหลด ML modules (torch, timm)... Train และ Scanner ยังไม่พร้อม</span>
   </div>
   <style>
     @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-    #topnav a.nav-active { color:#2A2722 !important; font-weight:500; position:relative; }
+    #topnav a.nav-active { color:#f1f5f9 !important; font-weight:500; position:relative; }
     #topnav a.nav-active::after {
       content:''; position:absolute; bottom:-13px; left:0; right:0;
-      height:2px; background:#D97757; border-radius:1px;
+      height:2px; background:#38bdf8; border-radius:1px;
     }
-    #bottomnav a.nav-active { color:#D97757 !important; }
+    #bottomnav a.nav-active { color:#38bdf8 !important; }
     #bottomnav a.nav-active span.text-xl { filter:saturate(1.3); }
   </style>
   <script>
@@ -99,6 +99,10 @@
     <a href="/analytics" class="flex flex-col items-center gap-0.5 text-muted hover:text-clay px-4 py-1">
       <span class="text-xl">📈</span>
       <span class="text-xs">Analytics</span>
+    </a>
+    <a href="/import" class="flex flex-col items-center gap-0.5 text-muted hover:text-clay px-4 py-1">
+      <span class="text-xl">📥</span>
+      <span class="text-xs">Import</span>
     </a>
   </nav>
 

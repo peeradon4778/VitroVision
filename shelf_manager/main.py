@@ -1,9 +1,14 @@
-import json, time, threading
+import json, time, threading, queue as _queue
 from pathlib import Path
 from flask import Flask, render_template, request, redirect, url_for, jsonify, Response, send_file
 import database as db
 import drive_uploader as drive
 import socket
+
+try:
+    import supabase_sync as _sb_sync
+except Exception:
+    _sb_sync = None
 
 # ── ML modules — โหลดใน background thread (ไม่บล็อก startup) ──
 _trainer    = None
@@ -87,23 +92,6 @@ def _auto_retrain(cfg):
         _is_training = False
     threading.Thread(target=_run, daemon=True).start()
 
-# ── Glass Room event log ──────────────────────────────────────
-import collections
-_glass_log   = collections.deque(maxlen=300)
-_glass_lock  = threading.Lock()
-_glass_state = {}   # bottle_id → {state, clarity, time, status}
-
-def _glass_event(ev: dict):
-    with _glass_lock:
-        _glass_log.append(ev)
-        bid = ev.get('bottle_id')
-        if bid:
-            _glass_state[bid] = {
-                'state':   ev['type'],
-                'clarity': ev.get('clarity', 0),
-                'time':    ev.get('time', ''),
-                'status':  ev.get('status', 'unknown'),
-            }
 
 _MODEL_OUT   = Path(__file__).parent.parent / 'models' / 'final' / 'classifier.pt'
 _DB_PATH     = Path(__file__).parent / 'vitroshelf.db'
@@ -186,6 +174,11 @@ def api_set_emergence(bottle_id):
 @app.route("/api/germination_stats")
 def api_germination_stats():
     return jsonify(db.get_germination_stats())
+
+
+@app.route("/api/expert_score_count")
+def api_expert_score_count():
+    return jsonify(db.get_expert_score_count())
 
 
 @app.route("/api/suggest_day_point")
@@ -341,6 +334,9 @@ def add_record_json(bottle_id):
                     vari_mean=pheno.get('vari_mean'),
                     glcm_contrast=pheno.get('glcm_contrast'),
                     glcm_homogeneity=pheno.get('glcm_homogeneity'),
+                    specular_fraction=pheno.get('specular_fraction'),
+                    ngrdi_mean=pheno.get('ngrdi_mean'),
+                    cive_mean=pheno.get('cive_mean'),
                 )
     _al_increment_and_check(status)
     return jsonify({"ok": True, "ai_status": ai_status, "ai_confidence": ai_conf,
@@ -555,7 +551,10 @@ def api_scan_save():
     if not bottle:
         return jsonify({'error': 'ไม่พบขวด'}), 404
     status   = ai_status if ai_status in ('healthy', 'contaminated', 'dead') else 'unknown'
-    image_id    = db.add_image(bottle_id, day_point, status)
+    dev_stage     = request.form.get('dev_stage', '')
+    hyper         = int(request.form.get('hyperhydricity', 0) or 0)
+    image_id      = db.add_image(bottle_id, day_point, status,
+                                  dev_stage=dev_stage, hyperhydricity=bool(hyper))
     image_bytes = None
     if 'photo' in request.files and request.files['photo'].filename:
         image_bytes = request.files['photo'].read()
@@ -564,8 +563,15 @@ def api_scan_save():
             db.update_image_cv(image_id, -1, 'normal', False, False, ai_status, ai_confidence)
     pheno = {}
     bottle_count = int(request.form.get('bottle_count', 1) or 1)
+    corners_json = request.form.get('aruco_corners', '')
+    aruco_corners = json.loads(corners_json) if corners_json else None
+    aruco_fw = int(request.form.get('aruco_frame_w', 0) or 0)
+    aruco_fh = int(request.form.get('aruco_frame_h', 0) or 0)
     if image_bytes and PHENOTYPER_OK and bottle_count == 1:
-        pheno = _phenotyper.measure(image_bytes)
+        pheno = _phenotyper.measure(image_bytes,
+                                    aruco_corners=aruco_corners,
+                                    aruco_frame_w=aruco_fw,
+                                    aruco_frame_h=aruco_fh)
         if pheno:
             db.update_image_phenotype(
                 image_id,
@@ -582,48 +588,39 @@ def api_scan_save():
                 vari_mean=pheno.get('vari_mean'),
                 glcm_contrast=pheno.get('glcm_contrast'),
                 glcm_homogeneity=pheno.get('glcm_homogeneity'),
+                specular_fraction=pheno.get('specular_fraction'),
+                ngrdi_mean=pheno.get('ngrdi_mean'),
+                cive_mean=pheno.get('cive_mean'),
             )
     _al_increment_and_check(status)
-    _glass_event({
-        'type':      'save',
-        'bottle_id': bottle_id,
-        'clarity':   int(request.form.get('clarity', 0) or 0),
-        'status':    status,
-        'time':      time.strftime('%H:%M:%S'),
-        'green_pct': pheno.get('green_coverage_pct'),
-        'lci':       pheno.get('leaf_color_index'),
-        'media':     pheno.get('media_color_cv', ''),
-    })
+    if _sb_sync:
+        _sb_sync.push_image_async({'id': image_id, 'bottle_id': bottle_id,
+                                   'batch_id': db.get_active_batch_id(),
+                                   'day_point': day_point, 'date_taken': time.strftime('%Y-%m-%d'),
+                                   'status': status, 'source': 'desktop'})
     return jsonify({'ok': True, 'image_id': image_id, 'bottle_id': bottle_id, 'phenotype': pheno})
 
 
-@app.route('/glass')
-def glass_page():
-    return render_template('glass.html',
-                           shelves=db.SHELVES, rows=db.ROWS, cols=db.COLS)
+@app.route('/api/expert_score', methods=['POST'])
+def api_expert_score():
+    data       = request.get_json(force=True)
+    image_id   = data.get('image_id')
+    rater_id   = (data.get('rater_id') or '').strip()
+    vigor      = int(data.get('vigor_grade', 0))
+    hyper_flag = int(data.get('hyperhydric_flag', 0))
+    stage_chk  = data.get('dev_stage_check', '')
+    notes      = data.get('notes', '')
+    if not image_id or not rater_id or vigor not in range(1, 6):
+        return jsonify({'error': 'image_id, rater_id, vigor_grade(1–5) จำเป็น'}), 400
+    score_id = db.add_expert_score(image_id, rater_id, vigor, hyper_flag, stage_chk, notes)
+    return jsonify({'ok': True, 'id': score_id})
 
-@app.route('/api/glass_stream')
-def glass_stream():
-    def generate():
-        with _glass_lock:
-            snapshot = list(_glass_log)
-        for ev in snapshot[-30:]:
-            yield f'data: {json.dumps(ev, ensure_ascii=False)}\n\n'
-        sent = len(snapshot)
-        while True:
-            with _glass_lock:
-                current = list(_glass_log)
-            for ev in current[sent:]:
-                yield f'data: {json.dumps(ev, ensure_ascii=False)}\n\n'
-            sent = len(current)
-            time.sleep(0.35)
-    return Response(generate(), mimetype='text/event-stream',
-                    headers={'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no'})
 
-@app.route('/api/glass_state')
-def glass_state_api():
-    with _glass_lock:
-        return jsonify(dict(_glass_state))
+@app.route('/api/expert_scores/<int:image_id>', methods=['GET'])
+def api_get_expert_scores(image_id):
+    rows = db.get_expert_scores_by_image(image_id)
+    return jsonify(rows)
+
 
 @app.route('/scan')
 def scan_page():
@@ -656,15 +653,6 @@ def api_scan_aruco():
             'bottle':        bottle,
             'ai_status':     ai_status,
             'ai_confidence': ai_conf,
-        })
-    for item in detections:
-        clarity = _aruco.calc_clarity(item['corners']) if ARUCO_OK else 0
-        _glass_event({
-            'type':      'detect',
-            'bottle_id': item['bottle_id'],
-            'clarity':   clarity,
-            'status':    (item['bottle'] or {}).get('status', 'unknown'),
-            'time':      time.strftime('%H:%M:%S'),
         })
     return jsonify({'detections': detections, 'model_ready': model_ready})
 
@@ -699,8 +687,10 @@ def api_growth_data():
     import statistics as stat
 
     FORMULAS = ['A', 'B', 'C', 'D', 'E']
-    METRICS  = ['vigor_score', 'green_coverage_pct', 'leaf_color_index',
-                'brown_coverage_pct', 'texture_entropy', 'shoot_count_cv']
+    METRICS  = ['green_coverage_pct', 'ngrdi_mean', 'cive_mean',
+                'vigor_score', 'leaf_color_index',
+                'brown_coverage_pct', 'texture_entropy', 'shoot_count_cv',
+                'specular_fraction']
 
     # group by formula → day_point → list of values
     from collections import defaultdict
@@ -777,6 +767,187 @@ def _infer_formula(bottle_id):
     if n <= 60:  return 'C'
     if n <= 80:  return 'D'
     return 'E'
+
+
+# ── Gallery Import ─────────────────────────────────────────────────────────────
+_pheno_q      = _queue.Queue()
+_pheno_thread = None
+
+
+def _crop_bottle_region(bgr, target_det, all_dets):
+    """ตัดภาพ vertical strip เฉพาะขวดเดียว จาก row photo ที่มีหลาย ArUco"""
+    import numpy as np
+    h, w = bgr.shape[:2]
+
+    def cx(det):
+        c = det['corners']
+        return sum(pt[0] for pt in c) / len(c)
+
+    sorted_dets = sorted(all_dets, key=cx)
+    idx = next(i for i, d in enumerate(sorted_dets)
+               if d['bottle_id'] == target_det['bottle_id'])
+    tcx = cx(sorted_dets[idx])
+
+    x_left  = int((cx(sorted_dets[idx - 1]) + tcx) / 2) if idx > 0 else 0
+    x_right = int((tcx + cx(sorted_dets[idx + 1])) / 2) if idx < len(sorted_dets) - 1 else w
+
+    pad = max(20, (x_right - x_left) // 8)
+    return bgr[:, max(0, x_left - pad): min(w, x_right + pad)]
+
+
+def _pheno_worker():
+    while True:
+        task = _pheno_q.get()
+        if task is None:
+            break
+        image_id, img_bytes, corners, fw, fh = task
+        try:
+            if PHENOTYPER_OK:
+                feat = _phenotyper.measure(img_bytes,
+                                           aruco_corners=corners,
+                                           aruco_frame_w=fw,
+                                           aruco_frame_h=fh)
+                if feat:
+                    db.update_image_phenotype(
+                        image_id,
+                        green_coverage_pct=feat.get('green_coverage_pct'),
+                        leaf_color_index   =feat.get('leaf_color_index'),
+                        shoot_count_cv     =feat.get('shoot_count_cv'),
+                        media_color_cv     =feat.get('media_color_cv'),
+                        phenotype_method   =feat.get('method', ''),
+                        texture_entropy    =feat.get('texture_entropy'),
+                        brown_coverage_pct =feat.get('brown_coverage_pct'),
+                        vigor_score        =feat.get('vigor_score'),
+                        convex_hull_ratio  =feat.get('convex_hull_ratio'),
+                        exg_mean           =feat.get('exg_mean'),
+                        vari_mean          =feat.get('vari_mean'),
+                        glcm_contrast      =feat.get('glcm_contrast'),
+                        glcm_homogeneity   =feat.get('glcm_homogeneity'),
+                        specular_fraction   =feat.get('specular_fraction'),
+                        ngrdi_mean         =feat.get('ngrdi_mean'),
+                        cive_mean          =feat.get('cive_mean'),
+                    )
+        except Exception as e:
+            print(f'[Pheno] error img={image_id}: {e}')
+        finally:
+            _pheno_q.task_done()
+
+
+def _queue_phenotype(image_id, img_bytes, corners=None, frame_w=0, frame_h=0):
+    global _pheno_thread
+    if _pheno_thread is None or not _pheno_thread.is_alive():
+        _pheno_thread = threading.Thread(target=_pheno_worker, daemon=True)
+        _pheno_thread.start()
+    _pheno_q.put((image_id, img_bytes, corners, frame_w, frame_h))
+
+
+@app.route('/import')
+def import_page():
+    suggested = db.suggest_day_point() or 1
+    return render_template('gallery_import.html', suggested_day=suggested)
+
+
+@app.route('/api/gallery_import', methods=['POST'])
+def api_gallery_import():
+    import cv2
+    import numpy as np
+
+    day_point = int(request.form.get('day_point', 1) or 1)
+    photos    = request.files.getlist('photos')
+    if not photos or not photos[0].filename:
+        return jsonify({'ok': False, 'error': 'ไม่มีไฟล์'}), 400
+
+    all_results = []
+
+    for photo in photos:
+        raw = photo.read()
+        if not raw:
+            all_results.append({'file': photo.filename, 'status': 'empty',
+                                 'count': 0, 'bottles': []})
+            continue
+
+        detections = _aruco.detect(raw)
+        if not detections:
+            all_results.append({'file': photo.filename, 'status': 'no_marker',
+                                 'count': 0, 'bottles': []})
+            continue
+
+        arr = np.frombuffer(raw, np.uint8)
+        bgr = cv2.imdecode(arr, cv2.IMREAD_COLOR)
+        bottles_saved = []
+
+        for det in detections:
+            bottle_id      = det['bottle_id']
+            bottle, _      = db.get_bottle(bottle_id)
+            if not bottle:
+                continue
+
+            if len(detections) > 1:
+                crop            = _crop_bottle_region(bgr, det, detections)
+                _, buf          = cv2.imencode('.jpg', crop, [cv2.IMWRITE_JPEG_QUALITY, 90])
+                img_bytes       = buf.tobytes()
+                corners, fw, fh = None, 0, 0
+            else:
+                img_bytes       = raw
+                corners         = det['corners']
+                fw, fh          = det['frame_w'], det['frame_h']
+
+            image_id = db.add_image(bottle_id, day_point, 'unknown')
+            try:
+                drive.queue_upload(image_id, bottle_id, day_point, 'unknown', img_bytes)
+            except Exception as e:
+                print(f'[Import] drive error: {e}')
+
+            _queue_phenotype(image_id, img_bytes, corners, fw, fh)
+            bottles_saved.append(bottle_id)
+            if _sb_sync:
+                _sb_sync.push_image_async({'id': image_id, 'bottle_id': bottle_id,
+                                           'batch_id': db.get_active_batch_id(),
+                                           'day_point': day_point, 'date_taken': time.strftime('%Y-%m-%d'),
+                                           'status': 'unknown', 'source': 'desktop'})
+
+        all_results.append({
+            'file':    photo.filename,
+            'status':  'ok',
+            'count':   len(bottles_saved),
+            'bottles': bottles_saved,
+        })
+
+    total = sum(r.get('count', 0) for r in all_results)
+    return jsonify({'ok': True, 'total': total, 'results': all_results})
+
+
+@app.route('/api/supabase_status')
+def api_supabase_status():
+    if not _sb_sync:
+        return jsonify({'ok': False, 'reason': 'supabase_sync ไม่ได้โหลด'})
+    return jsonify(_sb_sync.status())
+
+
+@app.route('/api/pull_mobile', methods=['POST'])
+def api_pull_mobile():
+    """ดึง captures จาก mobile → import เข้า SQLite local"""
+    if not _sb_sync:
+        return jsonify({'ok': False, 'reason': 'Supabase ไม่ได้ตั้งค่า'})
+    rows = _sb_sync.pull_mobile(batch_id=db.get_active_batch_id())
+    if not rows:
+        return jsonify({'ok': True, 'imported': 0})
+    imported = 0
+    synced_ids = []
+    for row in rows:
+        try:
+            iid = db.add_image(
+                row['bottle_id'],
+                row.get('day_point', 0),
+                row.get('status', 'unknown'),
+            )
+            if iid:
+                imported += 1
+                synced_ids.append(row['id'])
+        except Exception as e:
+            print(f'[PullMobile] error: {e}')
+    _sb_sync.mark_synced(synced_ids)
+    return jsonify({'ok': True, 'imported': imported})
 
 
 if __name__ == "__main__":

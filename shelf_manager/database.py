@@ -121,6 +121,9 @@ def _migrate_db():
             ("vari_mean",           "REAL    DEFAULT NULL"),
             ("glcm_contrast",       "REAL    DEFAULT NULL"),
             ("glcm_homogeneity",    "REAL    DEFAULT NULL"),
+            ("specular_fraction",   "REAL    DEFAULT NULL"),
+            ("ngrdi_mean",          "REAL    DEFAULT NULL"),
+            ("cive_mean",           "REAL    DEFAULT NULL"),
         ]
         for col_name, col_def in new_images_growth:
             if col_name not in existing_img:
@@ -145,6 +148,22 @@ def _migrate_db():
         conn.execute("""
             CREATE INDEX IF NOT EXISTS idx_images_batch ON images(batch_id)
         """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS expert_scores (
+                id               INTEGER PRIMARY KEY AUTOINCREMENT,
+                image_id         INTEGER NOT NULL,
+                rater_id         TEXT    NOT NULL,
+                vigor_grade      INTEGER NOT NULL,
+                hyperhydric_flag INTEGER DEFAULT 0,
+                dev_stage_check  TEXT    DEFAULT '',
+                notes            TEXT    DEFAULT '',
+                ts               TEXT    NOT NULL,
+                FOREIGN KEY (image_id) REFERENCES images(id)
+            )
+        """)
+        conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_expert_image ON expert_scores(image_id)
+        """)
         conn.commit()
 
 
@@ -168,6 +187,11 @@ def get_active_batch():
             "SELECT * FROM batches ORDER BY id DESC LIMIT 1"
         ).fetchone()
     return dict(row) if row else None
+
+
+def get_active_batch_id() -> int | None:
+    b = get_active_batch()
+    return b['id'] if b else None
 
 
 def get_all_batches():
@@ -326,20 +350,23 @@ def update_image_phenotype(image_id, green_coverage_pct, leaf_color_index,
                            texture_entropy=None, brown_coverage_pct=None,
                            vigor_score=None, convex_hull_ratio=None,
                            exg_mean=None, vari_mean=None,
-                           glcm_contrast=None, glcm_homogeneity=None):
+                           glcm_contrast=None, glcm_homogeneity=None,
+                           specular_fraction=None, ngrdi_mean=None, cive_mean=None):
     with get_conn() as conn:
         conn.execute("""
             UPDATE images SET green_coverage_pct=?, leaf_color_index=?,
                               shoot_count_cv=?, media_color_cv=?, phenotype_method=?,
                               texture_entropy=?, brown_coverage_pct=?, vigor_score=?,
                               convex_hull_ratio=?, exg_mean=?, vari_mean=?,
-                              glcm_contrast=?, glcm_homogeneity=?
+                              glcm_contrast=?, glcm_homogeneity=?,
+                              specular_fraction=?, ngrdi_mean=?, cive_mean=?
             WHERE id=?
         """, (green_coverage_pct, leaf_color_index,
               shoot_count_cv, media_color_cv, phenotype_method,
               texture_entropy, brown_coverage_pct, vigor_score,
               convex_hull_ratio, exg_mean, vari_mean,
-              glcm_contrast, glcm_homogeneity, image_id))
+              glcm_contrast, glcm_homogeneity,
+              specular_fraction, ngrdi_mean, cive_mean, image_id))
         conn.commit()
 
 
@@ -370,7 +397,8 @@ def get_formulation_series(batch_id=None):
                    i.texture_entropy, i.brown_coverage_pct, i.vigor_score,
                    i.convex_hull_ratio, i.exg_mean, i.vari_mean,
                    i.glcm_contrast, i.glcm_homogeneity,
-                   i.media_color_cv, i.phenotype_method
+                   i.media_color_cv, i.phenotype_method,
+                   i.ngrdi_mean, i.cive_mean, i.specular_fraction
             FROM images i
             JOIN bottles b ON i.bottle_id = b.bottle_id
             {filter_sql}
@@ -391,7 +419,8 @@ def get_bottle_timeline(bottle_id):
                    texture_entropy, brown_coverage_pct,
                    convex_hull_ratio, exg_mean, vari_mean,
                    glcm_contrast, glcm_homogeneity,
-                   ai_status, ai_confidence, phenotype_method
+                   ai_status, ai_confidence, phenotype_method,
+                   ngrdi_mean, cive_mean, specular_fraction
             FROM images
             WHERE bottle_id=?
             ORDER BY day_point, date_taken
@@ -430,6 +459,38 @@ def get_image_sources(image_id):
     if not row:
         return None
     return {"drive_url": row["drive_url"], "local_path": row["local_path"]}
+
+
+def add_expert_score(image_id, rater_id, vigor_grade,
+                     hyperhydric_flag=0, dev_stage_check='', notes=''):
+    ts = datetime.now().strftime("%Y-%m-%d %H:%M")
+    with get_conn() as conn:
+        cur = conn.execute("""
+            INSERT INTO expert_scores(image_id, rater_id, vigor_grade,
+                                      hyperhydric_flag, dev_stage_check, notes, ts)
+            VALUES (?,?,?,?,?,?,?)
+        """, (image_id, rater_id, vigor_grade,
+              int(hyperhydric_flag), dev_stage_check, notes, ts))
+        conn.commit()
+        return cur.lastrowid
+
+
+def get_expert_scores_by_image(image_id):
+    with get_conn() as conn:
+        rows = conn.execute(
+            "SELECT * FROM expert_scores WHERE image_id=? ORDER BY ts",
+            (image_id,)
+        ).fetchall()
+    return [dict(r) for r in rows]
+
+
+def get_expert_score_count():
+    with get_conn() as conn:
+        count = conn.execute("SELECT COUNT(*) FROM expert_scores").fetchone()[0]
+        raters = conn.execute(
+            "SELECT COUNT(DISTINCT rater_id) FROM expert_scores"
+        ).fetchone()[0]
+    return {"count": count, "rater_count": raters}
 
 
 def get_next_bottle_id(bottle_id):

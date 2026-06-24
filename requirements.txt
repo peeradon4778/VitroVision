@@ -20,3 +20,4 @@ tqdm>=4.6
 plotly>=5.0
 ipywidgets>=8.0
 wandb>=0.17
+supabase>=2.0
