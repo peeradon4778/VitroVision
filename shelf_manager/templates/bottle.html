@@ -331,6 +331,25 @@
       <p class="text-xs text-gray-600">complexity</p>
     </div>
   </div>
+  <!-- summary cards row 3: vegetation indices v2 -->
+  <div class="grid grid-cols-3 gap-3 mb-4">
+    <div class="bg-gray-800 rounded-xl p-3 text-center">
+      <p class="text-xs text-gray-500 mb-1">NGRDI 🥇</p>
+      <p id="tl-ngrdi" class="text-xl font-bold font-mono text-green-300">—</p>
+      <p id="tl-ngrdi-hint" class="text-xs text-gray-600">(G−R)/(G+R)</p>
+    </div>
+    <div class="bg-gray-800 rounded-xl p-3 text-center">
+      <p class="text-xs text-gray-500 mb-1">CIVE</p>
+      <p id="tl-cive" class="text-xl font-bold font-mono text-lime-300">—</p>
+      <p class="text-xs text-gray-600">Color Veg. Index</p>
+    </div>
+    <div class="bg-gray-800 rounded-xl p-3 text-center">
+      <p class="text-xs text-gray-500 mb-1">Specular (glare)</p>
+      <p id="tl-specular" class="text-xl font-bold font-mono text-yellow-300">—</p>
+      <p id="tl-specular-hint" class="text-xs text-gray-600">% · HH marker</p>
+    </div>
+  </div>
+
   <!-- latest flags: ระยะพัฒนาการ + hyperhydric -->
   <div id="tl-flags" class="flex flex-wrap items-center gap-2 mb-5 text-xs min-h-[1.5rem]"></div>
 
@@ -373,6 +392,18 @@
     </div>
   </div>
 
+  <!-- indices v2 chart row -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+    <div class="bg-gray-800 rounded-xl p-3">
+      <p class="text-xs text-gray-500 mb-2 font-medium">NGRDI <span class="text-gray-700">&gt;0 = สีเขียวเด่น · ขีดเส้น 0</span></p>
+      <canvas id="chartNGRDI" height="120"></canvas>
+    </div>
+    <div class="bg-gray-800 rounded-xl p-3">
+      <p class="text-xs text-gray-500 mb-2 font-medium">Specular Fraction <span class="text-gray-700">&gt;15% = glare</span></p>
+      <canvas id="chartSpecular" height="120"></canvas>
+    </div>
+  </div>
+
   <p id="tl-empty" class="hidden text-center text-gray-600 text-sm py-4 mt-2">ยังไม่มีข้อมูล — ถ่ายภาพแล้วระบบจะวัดอัตโนมัติ</p>
 </div>
 
@@ -383,22 +414,25 @@
   <div class="overflow-x-auto">
     <table class="w-full text-sm">
       <thead>
-        <tr class="text-gray-400 border-b border-gray-800">
-          <th class="text-left py-2 pr-4">Day</th>
-          <th class="text-left py-2 pr-4">วันที่บันทึก</th>
-          <th class="text-left py-2 pr-4">สถานะ</th>
-          <th class="text-left py-2 pr-4">Green%</th>
-          <th class="text-left py-2 pr-4">LCI</th>
-          <th class="text-left py-2">ภาพ</th>
+        <tr class="text-gray-400 border-b border-gray-800 text-xs">
+          <th class="text-left py-2 pr-3">Day</th>
+          <th class="text-left py-2 pr-3">วันที่</th>
+          <th class="text-left py-2 pr-3">สถานะ</th>
+          <th class="text-left py-2 pr-3">Green%</th>
+          <th class="text-left py-2 pr-3">NGRDI</th>
+          <th class="text-left py-2 pr-3">ระยะ</th>
+          <th class="text-left py-2 pr-3">HH</th>
+          <th class="text-left py-2 pr-3">ภาพ</th>
+          <th class="text-left py-2">คะแนนผู้เชี่ยวชาญ</th>
         </tr>
       </thead>
       <tbody>
         {% for img in images %}
-        <tr class="border-b border-gray-800 hover:bg-gray-800 transition">
-          <td class="py-2 pr-4 font-mono text-green-400">Day {{ img.day_point }}</td>
-          <td class="py-2 pr-4 text-gray-300">{{ img.date_taken }}</td>
-          <td class="py-2 pr-4">
-            <span class="px-2 py-0.5 rounded-full text-xs font-medium
+        <tr class="border-b border-gray-800 hover:bg-gray-800/50 transition text-xs" id="img-row-{{ img.id }}">
+          <td class="py-2 pr-3 font-mono text-green-400">Day {{ img.day_point }}</td>
+          <td class="py-2 pr-3 text-gray-400">{{ img.date_taken[:10] }}</td>
+          <td class="py-2 pr-3">
+            <span class="px-2 py-0.5 rounded-full font-medium
               {% if img.status == 'healthy' %}bg-green-900 text-green-300
               {% elif img.status == 'contaminated' %}bg-orange-900 text-orange-300
               {% elif img.status == 'dead' %}bg-red-900 text-red-300
@@ -406,26 +440,80 @@
               {{ img.status }}
             </span>
           </td>
-          <td class="py-2 pr-4 font-mono text-xs text-green-400">
+          <td class="py-2 pr-3 font-mono text-green-400">
             {% if img.green_coverage_pct is not none %}{{ "%.1f"|format(img.green_coverage_pct) }}%{% else %}—{% endif %}
           </td>
-          <td class="py-2 pr-4 font-mono text-xs text-yellow-300">
-            {% if img.leaf_color_index is not none %}{{ "%.3f"|format(img.leaf_color_index) }}{% else %}—{% endif %}
+          <td class="py-2 pr-3 font-mono text-green-300">
+            {# ngrdi ไม่อยู่ใน images query เดิม — แสดงผ่าน JS หลัง loadTimeline #}
+            <span class="ngrdi-cell" data-imgid="{{ img.id }}">—</span>
           </td>
-          <td class="py-2">
+          <td class="py-2 pr-3 text-gray-400">
+            {% if img.dev_stage %}
+              {% set STAGE={'radicle':'ราก','hypocotyl':'ลำต้น','cotyledon':'ใบเลี้ยง','true_leaf':'ใบจริง'} %}
+              <span class="px-1.5 py-0.5 rounded bg-gray-700 text-gray-300">{{ STAGE.get(img.dev_stage, img.dev_stage) }}</span>
+            {% else %}—{% endif %}
+          </td>
+          <td class="py-2 pr-3">
+            {% if img.hyperhydricity %}
+              <span class="px-1.5 py-0.5 rounded bg-amber-900/40 text-amber-400">HH</span>
+            {% else %}<span class="text-gray-700">—</span>{% endif %}
+          </td>
+          <td class="py-2 pr-3">
             {% if img.drive_url %}
             <a href="{{ img.drive_url }}" target="_blank"
-              class="text-blue-400 hover:text-blue-300 text-xs underline">ดูภาพ</a>
+              class="text-blue-400 hover:text-blue-300 underline">ดูภาพ</a>
             {% elif img.local_path %}
-            {# Drive ยังไม่พร้อม → ใช้ไฟล์ local ผ่าน /image/<id> #}
-            <a href="/image/{{ img.id }}" target="_blank"
-              class="inline-block">
+            <a href="/image/{{ img.id }}" target="_blank" class="inline-block">
               <img src="/image/{{ img.id }}" alt="ภาพ local"
                 class="w-12 h-12 rounded object-cover bg-gray-700 hover:ring-2 hover:ring-green-500 transition">
             </a>
             {% else %}
-            <span class="text-gray-600 text-xs">ไม่มีภาพ</span>
+            <span class="text-gray-700">—</span>
             {% endif %}
+          </td>
+          <td class="py-2">
+            <button onclick="toggleExpertForm({{ img.id }})"
+              class="text-xs px-2.5 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white border border-gray-700 transition"
+              id="expert-btn-{{ img.id }}">
+              ให้คะแนน
+            </button>
+          </td>
+        </tr>
+        <!-- Expert scoring inline form (collapsed by default) -->
+        <tr id="expert-form-{{ img.id }}" class="hidden border-b border-gray-800 bg-gray-900/50">
+          <td colspan="9" class="px-3 py-3">
+            <div class="flex flex-wrap items-end gap-3">
+              <div>
+                <p class="text-xs text-gray-500 mb-1">Rater ID</p>
+                <input id="rater-{{ img.id }}" type="text" placeholder="เช่น teacher_1"
+                  class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-xs text-white w-32 focus:outline-none focus:border-green-500">
+              </div>
+              <div>
+                <p class="text-xs text-gray-500 mb-1">Vigor 1–5</p>
+                <div class="flex gap-1" id="vigor-btns-{{ img.id }}">
+                  {% for v in [1,2,3,4,5] %}
+                  <button type="button" onclick="selectVigor({{ img.id }}, {{ v }})"
+                    id="vbtn-{{ img.id }}-{{ v }}"
+                    class="w-9 h-9 rounded-lg text-sm font-bold bg-gray-800 text-gray-500 hover:bg-gray-700 transition">{{ v }}</button>
+                  {% endfor %}
+                </div>
+                <input type="hidden" id="vigor-val-{{ img.id }}" value="0">
+              </div>
+              <div class="flex items-center gap-2">
+                <input type="checkbox" id="hh-{{ img.id }}" class="w-4 h-4 rounded accent-amber-500">
+                <label for="hh-{{ img.id }}" class="text-xs text-gray-400">Hyperhydric</label>
+              </div>
+              <div>
+                <p class="text-xs text-gray-500 mb-1">Notes</p>
+                <input id="notes-{{ img.id }}" type="text" placeholder="ไม่บังคับ"
+                  class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-xs text-white w-36 focus:outline-none focus:border-green-500">
+              </div>
+              <button onclick="submitExpertScore({{ img.id }})"
+                class="px-4 py-1.5 rounded-lg bg-green-700 hover:bg-green-600 text-white text-xs font-bold transition">
+                บันทึก
+              </button>
+            </div>
+            <div id="expert-scores-{{ img.id }}" class="mt-3 text-xs text-gray-500"></div>
           </td>
         </tr>
         {% endfor %}
@@ -512,6 +600,25 @@ async function loadTimeline() {
 
     const ent = lt.texture_entropy;
     document.getElementById('tl-entropy').textContent = ent != null ? ent.toFixed(2) : '—';
+
+    // ── NGRDI / CIVE / Specular (v2 indices) ──
+    const ngrdi = lt.ngrdi_mean;
+    document.getElementById('tl-ngrdi').textContent = ngrdi != null ? ngrdi.toFixed(3) : '—';
+    if (ngrdi != null) {
+      document.getElementById('tl-ngrdi-hint').textContent = ngrdi > 0 ? '🟢 เขียวเด่น' : '🔴 ไม่เขียว';
+      document.getElementById('tl-ngrdi').style.color = ngrdi > 0 ? '#86efac' : '#f87171';
+    }
+
+    const cive = lt.cive_mean;
+    document.getElementById('tl-cive').textContent = cive != null ? cive.toFixed(1) : '—';
+
+    const spec = lt.specular_fraction;
+    document.getElementById('tl-specular').textContent = spec != null ? (spec * 100).toFixed(1) + '%' : '—';
+    if (spec != null) {
+      const glareHigh = spec > 0.15;
+      document.getElementById('tl-specular-hint').textContent = glareHigh ? '⚠️ glare สูง' : 'ปกติ';
+      document.getElementById('tl-specular').style.color = glareHigh ? '#fbbf24' : '#94a3b8';
+    }
 
     // ── flags: ระยะพัฒนาการ + hyperhydric ──
     const STAGE_TH = { radicle:'🌱 ระยะราก', hypocotyl:'🌿 ลำต้นอ่อน',
@@ -602,6 +709,41 @@ async function loadTimeline() {
   echart.data.labels = withPheno.map(r => 'Day ' + r.day_point);
   echart.data.datasets[0].data = withPheno.map(r => r.texture_entropy);
   echart.update();
+
+  // ── NGRDI (เส้น threshold ที่ 0) ──
+  const nchart = _mkChart('chartNGRDI', [
+    _lineCfg('NGRDI', '#86efac', true),
+    { label: 'threshold=0', data: [], borderColor: '#f87171', borderDash: [5,3],
+      borderWidth: 1.5, pointRadius: 0, fill: false },
+  ]);
+  const nDays = withPheno.map(r => 'Day ' + r.day_point);
+  nchart.data.labels = nDays;
+  nchart.data.datasets[0].data = withPheno.map(r => r.ngrdi_mean);
+  nchart.data.datasets[1].data = nDays.map(() => 0);
+  nchart.update();
+
+  // ── Specular Fraction (glare warning > 15%) ──
+  const spchart = _mkChart('chartSpecular', [_lineCfg('Specular %', '#fbbf24', false)]);
+  spchart.data.labels = withPheno.map(r => 'Day ' + r.day_point);
+  spchart.data.datasets[0].data = withPheno.map(r =>
+    r.specular_fraction != null ? +(r.specular_fraction * 100).toFixed(2) : null);
+  spchart.options.scales.y = { ..._axisStyle, min: 0, max: 50 };
+  spchart.update();
+
+  // ── ใส่ NGRDI ใน ngrdi-cell ของ image history ──
+  const ngrdiByDay = {};
+  withPheno.forEach(r => { ngrdiByDay[r.day_point] = r.ngrdi_mean; });
+  document.querySelectorAll('.ngrdi-cell').forEach(cell => {
+    const imgId  = cell.dataset.imgid;
+    const tr     = document.getElementById('img-row-' + imgId);
+    const dayTxt = tr?.querySelector('td')?.textContent || '';
+    const day    = parseInt(dayTxt.replace('Day ', ''));
+    const v      = ngrdiByDay[day];
+    if (v != null) {
+      cell.textContent = v.toFixed(3);
+      cell.style.color = v > 0 ? '#86efac' : '#f87171';
+    }
+  });
 }
 
 // โหลดตอนเปิดหน้า
@@ -611,6 +753,70 @@ else {
   s.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js';
   s.onload = loadTimeline;
   document.head.appendChild(s);
+}
+
+// ─── Expert Scoring (GAP-1 Validation) ──────────────────────
+function toggleExpertForm(imgId) {
+  const row  = document.getElementById('expert-form-' + imgId);
+  const open = row.classList.toggle('hidden');
+  if (!open) loadExpertScores(imgId);  // โหลด scores เมื่อ expand
+}
+
+function selectVigor(imgId, v) {
+  document.getElementById('vigor-val-' + imgId).value = v;
+  for (let i = 1; i <= 5; i++) {
+    const btn = document.getElementById('vbtn-' + imgId + '-' + i);
+    btn.className = i === v
+      ? 'w-9 h-9 rounded-lg text-sm font-bold bg-green-700 text-white transition'
+      : 'w-9 h-9 rounded-lg text-sm font-bold bg-gray-800 text-gray-500 hover:bg-gray-700 transition';
+  }
+}
+
+async function loadExpertScores(imgId) {
+  const container = document.getElementById('expert-scores-' + imgId);
+  try {
+    const rows = await fetch('/api/expert_scores/' + imgId).then(r => r.json());
+    if (!rows.length) { container.textContent = 'ยังไม่มีคะแนน'; return; }
+    const VIGOR_TH = {1:'ต่ำมาก',2:'ต่ำ',3:'ปกติ',4:'ดี',5:'ดีมาก'};
+    container.innerHTML = '<p class="text-gray-500 mb-1 font-medium">คะแนนที่มีอยู่:</p>'
+      + rows.map(r =>
+        `<span class="inline-flex items-center gap-1.5 mr-2 px-2 py-0.5 rounded bg-gray-800 text-gray-300">
+          ${r.rater_id}
+          <b class="text-green-400">Vigor ${r.vigor_grade} (${VIGOR_TH[r.vigor_grade]||''})</b>
+          ${r.hyperhydric_flag ? '<span class="text-amber-400">HH</span>' : ''}
+          ${r.notes ? `<span class="text-gray-600">"${r.notes}"</span>` : ''}
+        </span>`
+      ).join('');
+    // consensus median
+    const vigorVals = rows.map(r => r.vigor_grade).sort((a,b)=>a-b);
+    const mid = Math.floor(vigorVals.length / 2);
+    const median = vigorVals.length % 2 ? vigorVals[mid] : (vigorVals[mid-1] + vigorVals[mid]) / 2;
+    container.innerHTML += `<p class="mt-1.5 text-gray-500">Consensus median: <b class="text-green-300">${median}</b> (n=${rows.length})</p>`;
+  } catch { container.textContent = 'โหลดไม่ได้'; }
+}
+
+async function submitExpertScore(imgId) {
+  const rater  = document.getElementById('rater-' + imgId).value.trim();
+  const vigor  = parseInt(document.getElementById('vigor-val-' + imgId).value);
+  const hh     = document.getElementById('hh-' + imgId).checked ? 1 : 0;
+  const notes  = document.getElementById('notes-' + imgId).value.trim();
+  if (!rater) { alert('กรอก Rater ID ก่อน'); return; }
+  if (!vigor) { alert('เลือก Vigor 1–5 ก่อน'); return; }
+  const res = await fetch('/api/expert_score', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ image_id: imgId, rater_id: rater, vigor_grade: vigor,
+                           hyperhydric_flag: hh, notes }),
+  });
+  const data = await res.json();
+  if (data.ok) {
+    document.getElementById('expert-btn-' + imgId).textContent = '✓ บันทึกแล้ว';
+    document.getElementById('expert-btn-' + imgId).className =
+      'text-xs px-2.5 py-1 rounded-lg bg-green-900 text-green-300 border border-green-700 transition';
+    loadExpertScores(imgId);
+  } else {
+    alert(data.error || 'บันทึกไม่สำเร็จ');
+  }
 }
 
 // ─── Overlay observation controls ────────────────────────────────

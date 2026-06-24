@@ -1,7 +1,7 @@
-# 🌱 VitroVision — Expert Assessment Rubric (One-Pager)
+﻿# 🌱 VitroVision — Expert Assessment Rubric (One-Pager)
 
 > **สำหรับผู้ประเมิน (ครู/ผู้เชี่ยวชาญ TC)** · ให้คะแนนจากภาพ 1 ภาพ/ขวด
-> *Capsicum annuum* cv.'พริกจินดา' เพาะเลี้ยงในขวดแยมแก้ว 240 mL · sync กับ methods §4.1
+> *Capsicum frutescens* cv.'พริกจินดา' เพาะเลี้ยงในขวดแยมแก้ว 125 mL · sync กับ methods §4.1
 > **ทุกคนได้ rubric ชุดเดียวกันก่อนเริ่ม — ห้ามปรึกษากันระหว่างให้คะแนน (blind)**
 
 ---

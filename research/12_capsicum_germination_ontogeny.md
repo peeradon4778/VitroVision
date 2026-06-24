@@ -1,4 +1,4 @@
-# พัฒนาการของต้นกล้าพริก: Germination → Early Seedling Ontogeny
+﻿# พัฒนาการของต้นกล้าพริก: Germination → Early Seedling Ontogeny
 **VitroVision Research Note #12**
 วันที่รวบรวม: 2026-06-11 | Sub-agent: Research (Consensus + PubMed)
 
@@ -29,7 +29,7 @@
 ## 2. Germination Physiology
 
 ### 2.1 กระบวนการงอก
-เมล็ดพริก *Capsicum annuum* มี **physiological dormancy** ระดับปานกลาง เนื่องจากสาร polyphenol ในผนังเซลล์ของ seed coat (testa) [1] กระบวนการงอกแบ่งเป็น 3 phase:
+เมล็ดพริก *Capsicum frutescens* มี **physiological dormancy** ระดับปานกลาง เนื่องจากสาร polyphenol ในผนังเซลล์ของ seed coat (testa) [1] กระบวนการงอกแบ่งเป็น 3 phase:
 
 1. **Imbibition** — เมล็ดดูดน้ำอย่างรวดเร็ว ปริมาณน้ำในเนื้อเยื่อสูงถึง ~91% [1]
 2. **Lag phase** — metabolic reactivation, repair DNA, protein synthesis ระยะนี้ใช้เวลา 3–17 วัน ขึ้นกับพันธุ์และสภาพแวดล้อม
@@ -53,7 +53,7 @@
 
 ## 3. สภาพ In Vitro — ความแตกต่างจากในดิน
 
-### 3.1 โปรโตคอล In Vitro Germination ของ *Capsicum annuum*
+### 3.1 โปรโตคอล In Vitro Germination ของ *Capsicum frutescens*
 - เพาะเมล็ดบน Murashige & Skoog (MS) medium, agar-gelled
 - วางในที่มืด 10–12 วันเพื่อกระตุ้นงอก [7]
 - ขวดปิดผนึก → สภาพ sealed culture vessel (CSV)
@@ -127,19 +127,19 @@ Stage 6: True-leaf-present
 
 ## 5. References
 
-[1] [Study on variation in morpho-anatomical attributes and germination features of five varieties of Capsicum annuum L. grown in Algeria](https://consensus.app/papers/details/bda19ba1e30e5331b6b96e23919e4247/?utm_source=claude_code) — Saliha Meliani et al., 2022, South Asian Journal of Experimental Biology
+[1] [Study on variation in morpho-anatomical attributes and germination features of five varieties of Capsicum frutescens Mill. grown in Algeria](https://consensus.app/papers/details/bda19ba1e30e5331b6b96e23919e4247/?utm_source=claude_code) — Saliha Meliani et al., 2022, South Asian Journal of Experimental Biology
 
-[2] [Gibberellic Acid in the Germination of "Achilito" Chili Pepper Seeds (Capsicum annuum L.)](https://consensus.app/papers/details/d22ee657c8ed50dda5aa2e173361dc77/?utm_source=claude_code) — Damián Cárdenas-Hidalgo et al., 2026, Agro Productividad
+[2] [Gibberellic Acid in the Germination of "Achilito" Chili Pepper Seeds (Capsicum frutescens Mill.)](https://consensus.app/papers/details/d22ee657c8ed50dda5aa2e173361dc77/?utm_source=claude_code) — Damián Cárdenas-Hidalgo et al., 2026, Agro Productividad
 
-[3] [Response of sweet pepper (Capsicum annuum) to different priming treatments on germination and early growth](https://consensus.app/papers/details/43d5a1a81e3b5e64b0861e354b1fcea4/?utm_source=claude_code) — Rumbidzai Munatsi et al., 2024, International Journal of Science and Research Archive
+[3] [Response of sweet pepper (Capsicum frutescens) to different priming treatments on germination and early growth](https://consensus.app/papers/details/43d5a1a81e3b5e64b0861e354b1fcea4/?utm_source=claude_code) — Rumbidzai Munatsi et al., 2024, International Journal of Science and Research Archive
 
 [4] [Root Morphology and Development of Bell Peppers](https://consensus.app/papers/details/1b2d5b56c56d5fb79c3989a8825a52aa/?utm_source=claude_code) — P. Stoffella et al., 1988, HortScience (14 citations)
 
 [5] [Fenología del crecimiento y desarrollo de plántulas de ají dulce (Capsicum frutescens L.)](https://consensus.app/papers/details/0c5a7371794b5a839bbd2e3b56c92b42/?utm_source=claude_code) — Sol Mundarain et al., 2005 (6 citations) — hypocotyl emergence DAP 6, horizontal cotyledon DAP 8, lateral roots DAP 11
 
-[6] [Effect of Sweet Pepper (Capsicum annuum L.) Seedling Age and Cultivation Method on Seedling Quality, Photosynthetic Parameters and Productivity](https://consensus.app/papers/details/03a4cad220cf573eb8e79f2dcd3fa15a/?utm_source=claude_code) — J. Jankauskienė et al., 2023, Agronomy (8 citations)
+[6] [Effect of Sweet Pepper (Capsicum frutescens Mill.) Seedling Age and Cultivation Method on Seedling Quality, Photosynthetic Parameters and Productivity](https://consensus.app/papers/details/03a4cad220cf573eb8e79f2dcd3fa15a/?utm_source=claude_code) — J. Jankauskienė et al., 2023, Agronomy (8 citations)
 
-[7] [Direct regeneration protocols of five Capsicum annuum L. varieties](https://consensus.app/papers/details/bd7de73261db528b8ef2000e2f801826/?utm_source=claude_code) — S. Swamy et al., 2014, African Journal of Biotechnology — germination in dark 10–12 days on MS medium
+[7] [Direct regeneration protocols of five Capsicum frutescens Mill. varieties](https://consensus.app/papers/details/bd7de73261db528b8ef2000e2f801826/?utm_source=claude_code) — S. Swamy et al., 2014, African Journal of Biotechnology — germination in dark 10–12 days on MS medium
 
 [8] Md Setamam N. et al., 2014 — "Induction of hairy roots by various strains of *Agrobacterium rhizogenes* in different types of *Capsicum* species explants." BMC Research Notes 7:414. DOI: [10.1186/1756-0500-7-414](https://doi.org/10.1186/1756-0500-7-414) *(PubMed PMID: 24981787)* — confirms: 2 weeks in vitro germination → cotyledon, hypocotyl, radicle usable as explant
 
@@ -147,13 +147,13 @@ Stage 6: True-leaf-present
 
 [10] [Evaluation of a closed system, diffusive and humidity-induced convective throughflow ventilation on the growth and physiology of cauliflower in vitro](https://consensus.app/papers/details/16239604c7805c11a4eff5818946fa1d/?utm_source=claude_code) — S. Zobayed et al., 1999, Plant Cell, Tissue and Organ Culture (31 citations) — sealed vessel → CO₂ depletion + ethylene build-up → hyperhydricity
 
-[11] [Effect of Light Intensity on Gene Expression in Hypocotyl during the Elongation in a Leaf-Yellowing Mutant of Pepper (Capsicum annuum L.)](https://consensus.app/papers/details/195ea945c4495ab383347776856017ef/?utm_source=claude_code) — Lianzhen Mao et al., 2022, Agronomy (9 citations) — low light → hypocotyl elongation via BRI1/auxin pathways
+[11] [Effect of Light Intensity on Gene Expression in Hypocotyl during the Elongation in a Leaf-Yellowing Mutant of Pepper (Capsicum frutescens Mill.)](https://consensus.app/papers/details/195ea945c4495ab383347776856017ef/?utm_source=claude_code) — Lianzhen Mao et al., 2022, Agronomy (9 citations) — low light → hypocotyl elongation via BRI1/auxin pathways
 
 [12] [Hyperhydricity in Plant Tissue Culture](https://consensus.app/papers/details/7ba487e729365e3bb751a4a7cb57b0e1/?utm_source=claude_code) — O. Polivanova et al., 2022, Plants (102 citations) — comprehensive review: symptoms, causes (ethylene, oxidative stress, N metabolism), management
 
 [13] [Relationship between position and morphogenetic response of pepper hypocotyl explants cultured in vitro](https://consensus.app/papers/details/a23195d0af72548b9ef790e207e47873/?utm_source=claude_code) — M. Fári et al., 1981, Scientia Horticulturae (69 citations) — 3-week-old in vitro pepper seedling: hypocotyl already fully developed
 
-[14] [Development of In Vitro Regeneration Protocol for Sweet Pepper (Capsicum annuum L.) using Cotyledon as Explant](https://consensus.app/papers/details/3e2de8ef6ed052939014617cc97d1519/?utm_source=claude_code) — M. Nadim et al., 2024, Journal of the Bangladesh Agricultural University (2 citations) — cotyledon node explant responsive at 11–12 days in vitro
+[14] [Development of In Vitro Regeneration Protocol for Sweet Pepper (Capsicum frutescens Mill.) using Cotyledon as Explant](https://consensus.app/papers/details/3e2de8ef6ed052939014617cc97d1519/?utm_source=claude_code) — M. Nadim et al., 2024, Journal of the Bangladesh Agricultural University (2 citations) — cotyledon node explant responsive at 11–12 days in vitro
 
 ---
 

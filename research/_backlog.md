@@ -4,17 +4,24 @@
 > **วิธีใช้:** จดอะไรก็โยนลง `📌 INBOX` ด้านล่างได้เลย (ไม่ต้องจัดระเบียบ) เดี๋ยว `/vitro` จะ triage ให้
 > **`/vitro` อ่านไฟล์นี้ทุกครั้ง** แล้วบอก direction ว่าควรเคาะ/ทำอะไรต่อ
 > สถานะ: 🔴 เร่ง · 🟡 ระหว่างต้นโต · 🟢 ภายหลัง · 💤 รอเคาะ(decision) · ✅ เสร็จ
-> อัปเดตล่าสุด: 2026-06-19 (session 6 — Gemini Auth key ✅, gemini-3.5-flash ✅, 7-layer architecture review ✅, 12 comments สำหรับ polish architecture จด pending)
+> อัปเดตล่าสุด: 2026-06-21 (T2/T3/T5/T7/T15 ✅ implement แล้ว · R5D synthesize ✅ — Depetris 2025 + lag period เพิ่มใน R5_validation_stats)
 
 ---
 
 ## 🧭 DIRECTION ตอนนี้ (next move ที่แนะนำ)
 
-> **deadline:** เอกสาร ~กลาง ก.ย. · ตัวโครงงาน ถึง ต.ค. · **batch 1 หยอดวันนี้ 20 มิ.ย.**
+> **deadline:** เอกสาร ~กลาง ก.ย. · ตัวโครงงาน ถึง ต.ค. · **batch 1 day 0 = 22 มิ.ย. 2026 · ตอนนี้ day 2 (24 มิ.ย.) · เก็บภาพ day 1 แล้ว 1 รอบ**
 
-1. **วันนี้:** ติด ArUco + หยอดเมล็ด + ถ่าย day 0 — ระบบ capture พร้อมแล้ว
-2. **ระหว่างต้นโต (ก.ค.):** Polish 7-layer architecture (12 comments) + GAP-1 + C3 camera + Web App Phase A
-3. **ก่อนส่ง เค้าโครง:** sync `_narrative_spine.md` §3 + `report_outline.md` §3.8 ให้ตรง methods v2
+1. **ถัดไปทันที:** implement **T1 Bridge study** + ทักครู **T6** (≥2 rater, lead time นาน)
+2. **ระหว่างต้นโต (ก.ค.):** T9 ArUco px→cm · T10 C3 camera gates · T13 validation_stats.py · T14 PWA manifest.json
+3. **ก่อนส่ง เค้าโครง:** T22 sync `_narrative_spine.md` + `report_outline.md` §3.8 + T16–T18 ART/Gompertz/KM modules
+
+✅ **เสร็จ 2026-06-21 (session นี้):**
+- T2 GAP-1: `expert_scores` table + `add_expert_score()` + `get_expert_scores_by_image()` + routes POST/GET
+- T3 GAP-4/5: `dev_stage` + `hyperhydricity` ใน scan.html FormData + ปุ่ม stage/HH ใน topbar
+- T5 Glare mask: `_glare_mask()` + `specular_fraction` feature ใน phenotyper.py + DB migration
+- T7 NGRDI/CIVE: `ngrdi_mean` + `cive_mean` ใน phenotyper.py + DB migration + update_image_phenotype
+- T15 Cut glass: ลบ `/glass`, `/api/glass_stream`, `/api/glass_state`, `_glass_*` vars+fn ออกจาก main.py
 
 ---
 
@@ -24,20 +31,36 @@
 
 ---
 
+## 🏛️ ARCHITECTURE REDESIGN (กำลังทำ — session 2026-06-20)
+
+> **state เต็มอยู่ที่ `research/_architecture_redesign_session.md`** (grill decisions + research)
+> grill ปิดแล้ว 10 decisions (Q1–Q10 lock, Q11 parked) · research 5 หัวข้อ ทำทีละ R ด้วย 5 sub-agents
+
+- [x] **Grill session** — 10 decisions locked (CLI cut, Glass cut, Drive backup-only, Pro mode manual, ArUco scale-cm, API async classifier, SAM=seg/API=classify, classical=quant/API=qual)
+- [x] **R1** Phenomics features → `R1_phenomics_feature_audit.md`
+- [x] **R2** Segmentation lineup → `R2_segmentation_lineup.md`
+- [x] **R3** Feature impact → `R3_feature_impact_engine_change.md`
+- [x] **R4** WB/แสง (Physical+Algorithmic) — ✅ เสร็จ 2026-06-21 (5 sub-agents) → `R4_wb_lighting.md` + R4A–E
+- [x] **R5** Validation stats (ปลด Q11) — ✅ เสร็จ 2026-06-21 (10 sub-files, 2 sessions) → `R5_validation_stats.md`
+- [x] **Synthesize** R1–R5 → final architecture v2 + task breakdown ✅ เสร็จ 2026-06-21 → `_architecture_v2_final.md`
+- [ ] ⚠️ **verify "Ranario 2025"+"Paci 2024" ใน PubMed** ก่อนใช้ (เสี่ยง hallucinate แบบ Thomas 2026)
+
+---
+
 ## 🏗️ Architecture Polish (12 comments — 2026-06-19)
 
 > ภาพรวม 7-layer ถูก map ครั้งแรก session 6 — พีรดนย์เขียน 12 comments ไว้สำหรับ polish แต่ละส่วน
 > รอ session ถัดไปมาค่อยๆ implement ทีละ comment
 
 - [ ] **Polish L0:** Physical setup — rig spec / white card position / ArUco placement guideline
-- [ ] **Polish L1:** scan.html — เพิ่ม dev_stage + hyperhydricity ใน auto-capture FormData (GAP-4/5)
+- [x] **Polish L1:** scan.html — เพิ่ม dev_stage + hyperhydricity ใน auto-capture FormData (GAP-4/5) ✅ 2026-06-21
 - [ ] **Polish L1:** C3 camera gates — Laplacian sharpness, glare, orientation, grid overlay
 - [ ] **Polish L2:** Google Drive sync — verify drive_uploader.py ทำงานจริงกับ batch 1
 - [ ] **Polish L3:** WB calibration — เปิด WB_CARD_CORNER หลังถ่าย white card จาก rig จริง
 - [ ] **Polish L3:** HSV threshold — calibrate กับ rig จริงหลัง batch 1 day 0
 - [ ] **Polish L4:** train.html label fix — "EfficientNet-B0" → "DINOv2-Small"
 - [ ] **Polish L5:** pseudo_labeler.py — ทดสอบ run() จริงกับภาพ batch 1
-- [ ] **Polish L6:** GAP-1 expert_scores table + routes
+- [x] **Polish L6:** GAP-1 expert_scores table + routes ✅ 2026-06-21
 - [ ] **Polish L6:** GAP-2 survival field ใน bottles
 - [ ] **Polish L7:** เขียน validation_stats.py (κ/ICC/ART-C calculators)
 - [ ] **Polish L7:** sync _narrative_spine.md §3 + report_outline.md §3.8
@@ -49,7 +72,7 @@
 - [x] **GAP-3 · sow_date + emergence_date** — DB + API + UI ✅ commit f502368
 - [x] **white-card auto-tune** — `_white_balance_correct()` พร้อมแล้ว ปิดอยู่ (`WB_CARD_CORNER=None`) ✅ commit f502368
 - [ ] **เทสต์ scanner + ArUco ที่ระยะ rig จริง (~18cm)** → อ่าน ID ออกไหม, clarity ≥75% ติดไหม, white card อยู่ในเฟรมพอ auto-tune
-- [ ] ตั้ง rig + Pro mode preset + ติด ArUco (`aruco_stickers.pdf`) — ✅ ได้ sticker มาแล้ว (19 มิ.ย.) จะติดพรุ่งนี้ก่อนหยอด
+- [x] ตั้ง rig + Pro mode preset + ติด ArUco (`aruco_stickers.pdf`) — ✅ **ติด ArUco ครบทุกขวดแล้ว 2026-06-21**
 - [ ] **เปิด WB_CARD_CORNER** หลังถ่าย calibration set แล้วส่งให้ดู (แก้ 1 บรรทัดใน `phenotyper.py`)
 
 ## 🟡 ระหว่างต้นโต (ก.ค. — ทำชิลๆ คู่ขนานกับถ่ายภาพ)
@@ -62,9 +85,9 @@
 
 - [ ] **Web App Phase B** (ก.ค.) — Module nav (Capture/Analysis/Data/Reports); linked view timeline↔ภาพขวด; Flag button ใน scan.html ไม่ตัด flow
 
-- [ ] **GAP-1 · ตาราง `expert_scores`** (image_id, rater_id, vigor_grade 1–5, hyperhydric_flag, ts) รองรับ ≥2 rater + consensus median — *ปลดล็อก validation = พระเอกเอกสาร*
-- [ ] **GAP-4 · field `dev_stage`** ใน images (radicle/hypocotyl/cotyledon/true_leaf) + capture UI 1-tap (Task #4) (decision Q5)
-- [ ] **GAP-5 · เช็ค hyperhydric** — scanner ส่งค่า `hyperhydricity` เข้า DB จริงไหม ถ้ายัง เพิ่ม checkbox (decision Q6)
+- [x] **GAP-1 · ตาราง `expert_scores`** (image_id, rater_id, vigor_grade 1–5, hyperhydric_flag, ts) รองรับ ≥2 rater + consensus median ✅ 2026-06-21
+- [x] **GAP-4 · field `dev_stage`** ใน images — capture UI 1-tap ใน scan.html (ปุ่ม "ระยะ") ✅ 2026-06-21
+- [x] **GAP-5 · เช็ค hyperhydric** — scan.html ส่ง `hyperhydricity` เข้า DB แล้ว (ปุ่ม HH) ✅ 2026-06-21
 - [ ] **เขียนรูปเล่ม บท 1–3** จาก research docs (ดู `report_outline.md`) — *60% ของเล่ม ทำได้เลย*
 - [ ] **Task #1 · ทักครู ≥2 คน** เป็น rater (lead time นาน ทักเนิ่นๆ)
 - [ ] สคริปต์คำนวณ inter-rater (κ + ICC) เขียนรอ (Task #3)

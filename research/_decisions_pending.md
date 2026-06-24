@@ -1,4 +1,4 @@
-# 📋 ใบกรอก/ตัดสินใจ — VitroVision Methodology
+﻿# 📋 ใบกรอก/ตัดสินใจ — VitroVision Methodology
 
 > **ใบนี้คืออะไร:** รวม checkbox ทั้งหมดที่รอพีรดนย์เติมข้อมูล/ตัดสินใจ มาไว้ที่เดียว (เดิมกระจายอยู่หัว `10_methods_draft.md` §📌 TODO + do-now checklist เมื่อคืนที่อยู่ในแชตเฉยๆ ไม่เคยเซฟ)
 > **วิธีใช้:** อ่าน "ผมแนะนำ" → กรอกในช่อง `→ ตอบ:` ได้เลย หรือบอกผมในแชต ผมจะ fold เข้า Methods v2 ให้
@@ -10,9 +10,9 @@
 
 ตัดสินไปแล้ว ใช้เป็นกรอบได้เลย:
 
-- **พืช/วัสดุ:** *Capsicum annuum* cv.'พริกจินดา', เมล็ดคีบจากผล (เกษตรกร อ.สตึก บุรีรัมย์), 1 เมล็ด/ขวด ขวดปิดผนึก
+- **พืช/วัสดุ:** *Capsicum frutescens* cv.'พริกจินดา', เมล็ดคีบจากผล (เกษตรกร อ.สตึก บุรีรัมย์), 1 เมล็ด/ขวด ขวดปิดผนึก
 - **ฟอกเชื้อ:** whole-fruit Clorox 15%→10% ฟอก 2 รอบ รอบละ 15 นาที (Clorox อย่างเดียว ไม่ Tween/EtOH), ไม่ใช้ GA₃
-- **อาหาร:** MS full · Glucose 20 g/L · Kelcogel 3 g/L · pH 5.6–5.8 · PGR ก่อน autoclave · 121°C 15–20 min · ~30 mL/ขวด · **ขวดแยมแก้ว 240 mL**
+- **อาหาร:** MS full · Glucose 20 g/L · Kelcogel 3 g/L · pH 5.6–5.8 · PGR ก่อน autoclave · 121°C 15–20 min · ~30 mL/ขวด · **ขวดแยมแก้ว 125 mL**
 - **ถ่ายภาพ:** Samsung S24 FE (main 50MP, ถ่าย 12MP) · ระยะ ~18 cm (ช่วง 15–20) · ไม่ใช้ lightbox (คุมแสง+Pro mode+white card) · **เวลา 17:00 ทุกวัน**
 - **5 สูตร:** A=MS, B=BAP1, C=BAP5, D=BAP5+NAA0.05, E=IBA1
 - **Replication:** ≥2 batch → pool n≈40/สูตร · over-sow ~24-25 ขวด/สูตร/batch
@@ -45,9 +45,14 @@
 - **ผมแนะนำ:** ยังกรอกไม่ได้ตอนนี้ — ต้อง **ถ่ายภาพ calibration 5–10 รูปด้วย rig จริงก่อน** แล้วผม tune ค่าให้ตรงแสง (ค่าใน prototype อาจเพี้ยน)
   - → action: ถ่าย calibration set แล้วส่งให้ผม (ทำตอนตั้ง rig เสร็จ)
 
+### A5 · WB/แสง/สี (จาก R4 — `R4_wb_lighting.md`) — 🆕 รอเคาะ
+- **A5.1 🔴 cross-polarizer + LED ไหม?** — แก้ glare บนขวด/ใบเงาดีสุด แต่ CP กิน 1.5–2 stops = เปลี่ยน rig/protocol (ชน "ไม่ใช้ lightbox/ISO50") · ทางเลือก (a) CP+LED เต็ม (b) diffuse light-tent เบากว่า (c) algo mask-out อย่างเดียว → **เทสต์ day 0 ก่อนเคาะ**
+- **A5.2 🟡 white card → 6-patch DIY (R/G/B/W/gray/black)** — low-cost evidence แข็ง (≈ColorChecker 24) แทบไม่มี downside → น่าจะ "เอา"
+- **A5.3 🟡 `phenotyper._white_balance_correct()` → PlantCV affine CCM (3×3)** จาก 6-patch แทน tune HSV มือ · CCM ต้องมาก่อน vegetation index เสมอ
+
 ### A4 · §1.1 เวลาฟอก Clorox + §1.2 ชนิดขวด — ✅ **ตอบแล้ว (2026-06-12)**
 - เวลาแช่ Clorox ต่อรอบ → **15 นาที/รอบ** · **Clorox อย่างเดียว ไม่จุ่ม Tween-20/EtOH**
-- ชนิด/ขนาดขวด → **ขวดแยมแก้วใส 240 mL** (อาหาร ~30 mL)
+- ชนิด/ขนาดขวด → **ขวดแยมแก้วใส 125 mL** (อาหาร ~30 mL)
 
 ---
 

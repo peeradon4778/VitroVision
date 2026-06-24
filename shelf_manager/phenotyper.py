@@ -161,6 +161,26 @@ def _sam2_plant_mask(bgr: np.ndarray) -> np.ndarray | None:
         return None
 
 
+def _mask_aruco(bgr: np.ndarray, corners: list, frame_w: int, frame_h: int) -> None:
+    """กาก ArUco marker ด้วย neutral gray (in-place) ก่อน phenotype
+    กัน checkerboard pattern skew GLCM contrast + texture entropy
+    ขยาย polygon 15% รวม quiet zone ของ marker ด้วย
+    """
+    h, w = bgr.shape[:2]
+    pts = np.array(corners, dtype=np.float32)
+    if frame_w > 0 and frame_h > 0:
+        pts[:, 0] = pts[:, 0] * w / frame_w
+        pts[:, 1] = pts[:, 1] * h / frame_h
+    cx, cy = float(pts[:, 0].mean()), float(pts[:, 1].mean())
+    pts = (pts - [cx, cy]) * 1.15 + [cx, cy]
+    cv2.fillPoly(bgr, [pts.astype(np.int32)], color=(127, 127, 127))
+
+
+def _glare_mask(hsv_roi: np.ndarray) -> np.ndarray:
+    """ตรวจ specular highlight: V สูง + S ต่ำ → MASK-OUT ก่อนคำนวณ index"""
+    return cv2.inRange(hsv_roi, np.array([0, 0, 220]), np.array([180, 40, 255]))
+
+
 def _classic_cv(bgr: np.ndarray, plant_mask: np.ndarray | None = None) -> dict:
     """วิเคราะห์ feature จากภาพขวด TC
     plant_mask: SAM2 binary mask (uint8 0/255) → ใช้แทน HSV green threshold
@@ -174,6 +194,10 @@ def _classic_cv(bgr: np.ndarray, plant_mask: np.ndarray | None = None) -> dict:
     roi_area = roi_h * roi_w
 
     hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
+
+    glare_mask        = _glare_mask(hsv)
+    specular_px       = int(glare_mask.sum() // 255)
+    specular_fraction = round(specular_px / roi_area, 4)
 
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
 
@@ -283,6 +307,12 @@ def _classic_cv(bgr: np.ndarray, plant_mask: np.ndarray | None = None) -> dict:
     vari      = (gn - rn) / (gn + rn - bn + 1e-6)
     vari_mean = round(float(np.clip(vari, -1.0, 1.0).mean()), 4)
 
+    # NGRDI (Normalized Green-Red Difference Index) — robust ต่อ intensity variation
+    ngrdi_mean = round(float(((gf - rf) / (gf + rf + 1e-6)).mean()), 4)
+
+    # CIVE (Color Index of Vegetation Extraction) — empirical TC-validated
+    cive_mean  = round(float((0.441 * rf - 0.811 * gf + 0.385 * bf + 18.787).mean()), 4)
+
     # GLCM texture (contrast/homogeneity) — ละเอียดกว่า Shannon entropy เดิม
     glcm_contrast, glcm_homogeneity = _glcm_features(gray)
 
@@ -299,6 +329,9 @@ def _classic_cv(bgr: np.ndarray, plant_mask: np.ndarray | None = None) -> dict:
         'vari_mean':          vari_mean,
         'glcm_contrast':      glcm_contrast,
         'glcm_homogeneity':   glcm_homogeneity,
+        'specular_fraction':  specular_fraction,
+        'ngrdi_mean':         ngrdi_mean,
+        'cive_mean':          cive_mean,
         'method':             method_tag,
     }
 
@@ -351,6 +384,9 @@ def _yolov8_seg(bgr: np.ndarray) -> dict | None:
             'vari_mean':          classic['vari_mean'],
             'glcm_contrast':      classic['glcm_contrast'],
             'glcm_homogeneity':   classic['glcm_homogeneity'],
+            'specular_fraction':  classic.get('specular_fraction'),
+            'ngrdi_mean':         classic.get('ngrdi_mean'),
+            'cive_mean':          classic.get('cive_mean'),
             'method':             'yolov8_seg',
         }
     except Exception as e:
@@ -358,7 +394,7 @@ def _yolov8_seg(bgr: np.ndarray) -> dict | None:
         return None
 
 
-def measure(image_bytes: bytes) -> dict:
+def measure(image_bytes: bytes, aruco_corners=None, aruco_frame_w: int = 0, aruco_frame_h: int = 0) -> dict:
     """วัด phenotyping parameters — คืน dict หรือ {} ถ้าภาพอ่านไม่ได้
 
     Returns:
@@ -382,6 +418,8 @@ def measure(image_bytes: bytes) -> dict:
         return {}
 
     bgr = _white_balance_correct(bgr)
+    if aruco_corners:
+        _mask_aruco(bgr, aruco_corners, aruco_frame_w, aruco_frame_h)
     _load_seg()
     _load_sam2()
 

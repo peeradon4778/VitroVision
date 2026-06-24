@@ -1,4 +1,4 @@
-# 03 — บริบทเศรษฐกิจและความสำคัญของพริก (Capsicum) สำหรับบทนำ VitroVision
+﻿# 03 — บริบทเศรษฐกิจและความสำคัญของพริก (Capsicum) สำหรับบทนำ VitroVision
 
 > เอกสารนี้รวบรวมข้อมูล general + สถิติเศรษฐกิจของพริก เพื่อใช้สร้าง "hook" และ "ความสำคัญของปัญหา" ในบทนำ (Introduction) ของโครงงาน VitroVision (YSC 2027 → ISEF)
 > โครงเรื่อง: **ความสำคัญของพริก → ปัญหาการผลิต → tissue culture เป็นทางออก → ช่องว่าง (การ monitor ด้วยตาคน) → งานเราเติมช่องว่าง**
@@ -8,7 +8,7 @@
 
 ## 1. พริกคือพืชเศรษฐกิจสำคัญระดับโลก (The Hook)
 
-พริก (*Capsicum* spp.) เป็นทั้ง **พืชผักและเครื่องเทศ** ที่ปลูกกันทั่วโลก มีต้นกำเนิดจากเขตร้อนของทวีปอเมริกา และปัจจุบันถูกปลูกในทุกทวีปทั้งในรูปแบบพริกสด พริกแห้ง และพริกแปรรูป [2]. สกุล *Capsicum* มีมากกว่า 30 ชนิด โดยมี 5 ชนิดที่ถูกปลูกเพื่อการบริโภค (*C. annuum*, *C. frutescens*, *C. chinense*, *C. baccatum*, *C. pubescens*) และ *C. annuum* เป็นชนิดที่สำคัญที่สุดในเชิงพาณิชย์ระดับโลก [1][2][12].
+พริก (*Capsicum* spp.) เป็นทั้ง **พืชผักและเครื่องเทศ** ที่ปลูกกันทั่วโลก มีต้นกำเนิดจากเขตร้อนของทวีปอเมริกา และปัจจุบันถูกปลูกในทุกทวีปทั้งในรูปแบบพริกสด พริกแห้ง และพริกแปรรูป [2]. สกุล *Capsicum* มีมากกว่า 30 ชนิด โดยมี 5 ชนิดที่ถูกปลูกเพื่อการบริโภค (*C. frutescens*, *C. frutescens*, *C. chinense*, *C. baccatum*, *C. pubescens*) และ *C. frutescens* เป็นชนิดที่สำคัญที่สุดในเชิงพาณิชย์ระดับโลก [1][2][12].
 
 สิ่งที่ทำให้พริกมีมูลค่าสูงกว่าผักทั่วไปคือ **สารออกฤทธิ์ทางชีวภาพ (bioactive compounds)** โดยเฉพาะ **capsaicin** ซึ่งเป็นสารให้ความเผ็ดที่มีคุณค่าทั้งในอุตสาหกรรมอาหาร เครื่องสำอาง และเภสัชกรรม [3][12]. งานวิจัยทบทวนพบว่า capsaicin และ capsaicinoids มีฤทธิ์ต้านอนุมูลอิสระ ต้านการอักเสบ ต้านมะเร็ง ลดน้ำหนัก ป้องกันหัวใจ และระงับปวด (ออกฤทธิ์ผ่าน TRPV1 receptor) [3][10][11]. ความต้องการพริกในตลาดโลกจึงเพิ่มขึ้นต่อเนื่องทั้งจากคุณค่าทางอาหารและคุณค่าทางสุขภาพ [1].
 
@@ -60,7 +60,7 @@
 
 มีการพิสูจน์แล้วว่า **computer vision + deep learning** สามารถ phenotype พืชแบบ high-throughput, non-destructive และลดการใช้แรงงานมนุษย์ได้ [21][22]. โดยเฉพาะระบบ **"Phenomenon"** ที่เป็น low-cost multi-sensor สำหรับ monitor พืชใน vitro แบบอัตโนมัติ ต่อเนื่อง และ objective **ผ่านขวดที่ปิดสนิทโดยรักษาสภาพปลอดเชื้อ (aseptic)** — RGB segmentation pipeline ให้ค่าสัมพันธ์สูงมากกับการ annotate ด้วยมือ ชี้ว่าระบบอัตโนมัติทดแทนการประเมินด้วยคนได้จริง [19].
 
-**VitroVision** วางตำแหน่งตรงนี้พอดี: ใช้ computer vision วิเคราะห์พริก (*Capsicum annuum*) เพาะเลี้ยงเนื้อเยื่อในขวด เพื่อ **เปลี่ยนการตรวจติดตามจาก subjective/manual → objective/automated/scalable** ตอบโจทย์ทั้งการผลิตต้นพันธุ์พริกปลอดโรคในเชิงพาณิชย์ และเป็น CSBI (Computational Science applied to Biology) ที่มีคำถามทางชีววิทยาชัดเจน
+**VitroVision** วางตำแหน่งตรงนี้พอดี: ใช้ computer vision วิเคราะห์พริก (*Capsicum frutescens*) เพาะเลี้ยงเนื้อเยื่อในขวด เพื่อ **เปลี่ยนการตรวจติดตามจาก subjective/manual → objective/automated/scalable** ตอบโจทย์ทั้งการผลิตต้นพันธุ์พริกปลอดโรคในเชิงพาณิชย์ และเป็น CSBI (Computational Science applied to Biology) ที่มีคำถามทางชีววิทยาชัดเจน
 
 ---
 
@@ -79,7 +79,7 @@
 | ประเด็น | ตัวเลข/ข้อเท็จจริง | แหล่ง |
 |---|---|---|
 | พื้นที่ปลูกพริกโลก | ~3.69 ล้านเฮกตาร์ (FAOSTAT 2022) | [4] |
-| จำนวนชนิดในสกุล Capsicum | >30 ชนิด, ปลูกบริโภค 5 ชนิด, *C. annuum* สำคัญสุด | [1][2] |
+| จำนวนชนิดในสกุล Capsicum | >30 ชนิด, ปลูกบริโภค 5 ชนิด, *C. frutescens* สำคัญสุด | [1][2] |
 | ฤทธิ์ทางเภสัชของ capsaicin | ต้านอนุมูลอิสระ/อักเสบ/มะเร็ง/อ้วน, ป้องกันหัวใจ, ระงับปวด (ผ่าน TRPV1) | [3][10][11] |
 | อุบัติการณ์แอนแทรคโนส (บาหลี) | เฉลี่ย 63%, ความรุนแรง 68% | [6] |
 | จำนวนไวรัสที่รายงานในพริก | >65 ชนิดทั่วโลก; ChiLCVD ทำลายล้างสุด | [8] |
@@ -105,7 +105,7 @@
 
 [2] [The Capsicum Crop: An Introduction](https://consensus.app/papers/details/3b6bf61fb1175d4ea1048f8e4171e3be/?utm_source=claude_code) (P. Tripodi et al., 2019, Compendium of Plant Genomes, 74 citations)
 
-[3] [Capsicum annuum (hot pepper): An ancient Latin-American crop with outstanding bioactive compounds and nutraceutical potential. A review.](https://consensus.app/papers/details/2765f0d34e845824b56a595ca3fb430e/?utm_source=claude_code) (T. Hernández-Pérez et al., 2020, Comprehensive Reviews in Food Science and Food Safety, 234 citations)
+[3] [Capsicum frutescens (hot pepper): An ancient Latin-American crop with outstanding bioactive compounds and nutraceutical potential. A review.](https://consensus.app/papers/details/2765f0d34e845824b56a595ca3fb430e/?utm_source=claude_code) (T. Hernández-Pérez et al., 2020, Comprehensive Reviews in Food Science and Food Safety, 234 citations)
 
 [4] [Comparative Effectiveness of Some Novel Fungicides Against Soil-Borne Pathogens of Chili](https://consensus.app/papers/details/825286a207e2504085673ebed5aaee2b/?utm_source=claude_code) (Nabeel Akhtar et al., 2024, Sarhad Journal of Agriculture, 2 citations)
 
@@ -113,7 +113,7 @@
 
 [6] [First Report on the Prevalence of Colletotrichum scovillei Associated with Anthracnose on Chili Pepper in Bali, Indonesia](https://consensus.app/papers/details/580c5b49400f5ab4bba4b852bfe91e87/?utm_source=claude_code) (K. Khalimi et al., 2025, International Journal of Agriculture and Biology, 19 citations)
 
-[7] [Identification, prevalence and pathogenicity of Colletotrichum species causing anthracnose of Capsicum annuum in Asia](https://consensus.app/papers/details/6efe826337315d41a3171e9e336a9abf/?utm_source=claude_code) (D. D. de Silva et al., 2019, IMA Fungus, 143 citations)
+[7] [Identification, prevalence and pathogenicity of Colletotrichum species causing anthracnose of Capsicum frutescens in Asia](https://consensus.app/papers/details/6efe826337315d41a3171e9e336a9abf/?utm_source=claude_code) (D. D. de Silva et al., 2019, IMA Fungus, 143 citations)
 
 [8] [Chilli leaf curl virus disease: a serious threat for chilli cultivation](https://consensus.app/papers/details/76e903276553504ca7b14d1d3363a1bc/?utm_source=claude_code) (Hament Thakur et al., 2018, Journal of Plant Diseases and Protection, 67 citations)
 

@@ -1,4 +1,4 @@
-# 📘 VitroVision — โครงรูปเล่มโครงงาน (Report Outline)
+﻿# 📘 VitroVision — โครงรูปเล่มโครงงาน (Report Outline)
 
 > **ใบนี้คืออะไร:** แผนที่เดียวของรูปเล่มทั้งเล่ม — ทุกหัวข้อบอก **[มาจาก: ไฟล์ไหน]** + **[สถานะ]** เปิดดูไฟล์นี้แล้วรู้ว่าจะหยิบอะไรมาเขียนเมื่อไหร่
 > สร้าง 2026-06-17 · อิง `_narrative_spine.md` + research 01–14 + `10_methods_draft.md`
@@ -7,8 +7,8 @@
 **สถานะ:** ✍️ = เขียนได้เลย (ไม่ต้องรอ data) · ⏳ = รอ data จาก lab · 🔶 = ต้องเก็บกวาด/เช็คก่อน final
 
 **ชื่อโครงงาน Final (ล็อก 2026-06-18)**
-- **ไทย:** VitroVision: นวัตกรรมการวิเคราะห์ฟีโนไทป์เชิงคำนวณจากภาพของ *Capsicum annuum* L. ในการเพาะเลี้ยงเนื้อเยื่อด้วย Vision-Language Models
-- **EN:** VitroVision: Image-Based Computational Phenotyping of *Capsicum annuum* L. in Vitro via Vision-Language Models
+- **ไทย:** VitroVision: นวัตกรรมการวิเคราะห์ฟีโนไทป์เชิงคำนวณจากภาพของ *Capsicum frutescens* Mill. ในการเพาะเลี้ยงเนื้อเยื่อด้วย Vision-Language Models
+- **EN:** VitroVision: Image-Based Computational Phenotyping of *Capsicum frutescens* Mill. in Vitro via Vision-Language Models
 
 **One-liner (ท่องให้ขึ้นใจ):** *"CV ที่วัดสุขภาพ+การเจริญของพริก TC จากภาพผ่านขวด โดยไม่เปิดฝา — แทนสายตา subjective — แล้วพิสูจน์ว่าตรงกับผู้เชี่ยวชาญ + ทำนายการรอดจริงได้ โดยใช้ 5 สูตรอาหารเป็นบทพิสูจน์"*
 

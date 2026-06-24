@@ -1,4 +1,4 @@
-# Citation Audit — VitroVision Research Files
+﻿# Citation Audit — VitroVision Research Files
 
 > **สร้างโดย:** Citation-audit sub-agent (claude-sonnet-4-6)  
 > **วันที่:** 2026-06-12  
@@ -292,7 +292,7 @@ Ahmed 2026 และ Kongbangkerd 2026 มี DOI format `10.1186/s12870-026-082
 | **Yadav et al. 2010** — RGB chlorophyll micropropagated potato, *PCTOC* | ✅ Known | DOI: 10.1007/s11240-009-9668-4; 100(3):311–317; 153 citations | ยืนยัน G/R ใน micropropagated plants |
 | **Cavallaro et al. 2022** — Light + PGR on In Vitro Proliferation, *Plants* | ✅ Known | DOI: 10.3390/plants11121671; 11(12):1671; 108 citations | justify PGR → image metrics |
 | **Martínez-López et al. 2021** — Capsicum Regeneration BAP 5 mg/L, *Horticulturae* | ✅ Known | DOI: 10.3390/horticulturae7110490; 7(11):490; 11 citations | justify สูตร C (BAP 5 mg/L) = positive control |
-| **Sanatombi & Sharma 2007** — Micropropagation *Capsicum annuum*, *Not. Bot. Horti Agrobot.* | ✅ Known | 35(1):57–66; 23 citations | justify concentration สูตร C และ E |
+| **Sanatombi & Sharma 2007** — Micropropagation *Capsicum frutescens*, *Not. Bot. Horti Agrobot.* | ✅ Known | 35(1):57–66; 23 citations | justify concentration สูตร C และ E |
 | **Egi et al. 2025** — Callus necrosis YOLO TC, *Plants* | ✅ Known | 14; 0 citations (ใหม่) | ยืนยัน brown/necrosis class detect ด้วย DL ได้ |
 | **Liu et al. 2026** — Swin Fusion contamination TC, *Sensors* | ✅ Known | 26; 0 citations | competitor — multispectral single-species; VitroVision ต่างตรงนี้ |
 
@@ -308,7 +308,66 @@ Ahmed 2026 และ Kongbangkerd 2026 มี DOI format `10.1186/s12870-026-082
 
 ---
 
+---
+
+## หมวด 11: Inter-Rater Agreement & Gold Standard Paradox (R5C — 2026-06-21)
+
+**ที่มา:** R5-C research sub-agent, Consensus search tool (5 queries)  
+**ไฟล์ที่ใช้:** `R5C_inter_rater.md`
+
+| Citation | สถานะ | Consensus URL | หมายเหตุ |
+|---|---|---|---|
+| **Koo & Mae 2016** — ICC Guideline, *J Chiropr Med* | ✅ Consensus URL | https://consensus.app/papers/details/9e40afb2fe3c5d48b30188f4667b5efd/ | 24,359 citations — ยืนยันซ้ำจากหมวด 1 (Koo & Li 2016 DOI เดียวกัน) |
+| **Andrade 2026** — ICC Primer, *Indian J Psychiatry* | ✅ Consensus URL | https://consensus.app/papers/details/9f77e141e416577d93700393c7459cdb/ | 1 citation (ใหม่มาก); ยืนยัน two-way mixed model single measure |
+| **Benchoufi et al. 2020** — Interobserver agreement radiology, *Diagn Interv Imaging* | ✅ Consensus URL | https://consensus.app/papers/details/f8c96df426f856c98931cd9a04f821c0/ | 288 citations |
+| **Umemneku et al. 2019** — Diagnostic test without gold standard (SR), *PLoS ONE* | ✅ Consensus URL | https://consensus.app/papers/details/85fbe8d0e23f54469735ff8d4cd9dd07/ | 161 citations — systematic review 51 methods |
+| **Zhao et al. 2022** — Interrater reliability estimators vs true reliabilities, *BMC Med Res Methodol* | ✅ Consensus URL | https://consensus.app/papers/details/c0e5ba15fc835263bb3a3beee686af28/ | 56 citations |
+| **Patel et al. 2022** — Clinically adjudicated reference standards, *Clin Infect Dis* | ✅ Consensus URL | https://consensus.app/papers/details/20bbe817a6b15c759e804dd750762ca6/ | 23 citations |
+| **Marasini et al. 2016** — Ordinal inter-rater agreement weighted indexes, *Stat Methods Med Res* | ✅ Consensus URL | https://consensus.app/papers/details/8dd4e4cbacf65cc7ade8c010a377f5c8/ | 97 citations |
+| **Uebersax & Grove 1990** — Latent class analysis diagnostic agreement, *Stat Med* | ✅ Consensus URL | https://consensus.app/papers/details/e149a11bb52158a188e2f0c427cde64a/ | 144 citations |
+| **Albert & Dodd 2008** — Multiple raters partial gold standard, *J Am Stat Assoc* | ✅ Consensus URL | https://consensus.app/papers/details/a3f230d3a5a75fbf99dcbecd467bab14/ | 47 citations |
+| **Saito et al. 2006** — Effective number of raters ICC, *Stat Med* | ✅ Consensus URL | https://consensus.app/papers/details/f6982131d55b51d7aefe45cbac5e6955/ | 78 citations |
+| **Vanbelle et al. 2024** — Guide multi-observer ordinal data, *BMC Med Res Methodol* | ✅ Consensus URL | https://consensus.app/papers/details/bda06793b9915d6ea4783677845b42a6/ | 17 citations |
+| **Liljequist et al. 2019** — ICC discussion and demonstration, *PLoS ONE* | ✅ Consensus URL | https://consensus.app/papers/details/4e405215b70a567caffa4271ad95cc90/ | 796 citations |
+| **Bock et al. 2010** — Plant Disease Severity visual + image analysis, *Crit Rev Plant Sci* | ✅ Verified (ซ้ำหมวด 1+6) | https://consensus.app/papers/details/0eed3dce2a225af296ce79274426cc95/ | 823 citations — DOI: 10.1080/07352681003617285 ยืนยันแล้ว |
+| **Aynalem et al. 2006** — In vitro stored plant visual vs image analysis, *In Vitro Cell Dev Biol Plant* | ✅ Consensus URL | https://consensus.app/papers/details/33f703b3d5ba5ee985dffa052c1a81e7/ | 19 citations — pear TC precedent |
+| **Ghosal et al. 2018** — Explainable deep learning plant stress, *PNAS* | ✅ Consensus URL | https://consensus.app/papers/details/8842eb126cb35b4abc4b67f33c8fa781/ | 468 citations |
+| **Singh et al. 2020** — Machine-augmented plant stress phenotyping, *Trends Plant Sci* | ✅ Consensus URL | https://consensus.app/papers/details/8df18446a70553b3bdb60943116d7b87/ | 187 citations |
+
+---
+
+---
+
+## หมวด 12: Re-Validation Framework Papers — R5E (2026-06-21)
+
+> verify ผ่าน **Consensus search tool** ทุกตัว (URL จริงกดได้) — สร้างโดย R5-E sub-agent  
+> ใช้อ้างอิงใน `research/R5E_revalidation_framework.md` (Q11 — pipeline re-validation หลัง segmenter เปลี่ยน HSV→SAM/YOLO)
+
+| Citation | สถานะ | Consensus URL | หมายเหตุ |
+|---|---|---|---|
+| **Bland & Altman 1986** — Statistical methods for assessing agreement between two methods of clinical measurement, *Lancet* | ✅ Consensus | https://consensus.app/papers/details/6563c591338851ab9fc0a0d2ff81528a/?utm_source=claude_code | 50,446 citations; gold standard method comparison — bridge study section |
+| **Mansournia et al. 2020** — Bland-Altman methods for comparing methods of measurement, *Global Epidemiology* | ✅ Consensus | https://consensus.app/papers/details/fc97194657b2519e9391e16c49163136/?utm_source=claude_code | 121 citations; ยืนยัน Bland-Altman = correct method สำหรับ method comparison (ไม่ใช่ correlation) |
+| **Weir 2005** — Quantifying test-retest reliability using the ICC and SEM, *J. Strength Cond. Res.* | ✅ Consensus | https://consensus.app/papers/details/72e1091b8a0f547a8a113daf1b4cc428/?utm_source=claude_code | 5,107 citations; ICC(2,1) vs ICC(3,1); MDC formula; systematic error detection |
+| **Turner et al. 2009** — Minimal detectable change cannot replace minimal important difference, *J. Clin. Epidemiol.* | ✅ Consensus | https://consensus.app/papers/details/7ee1068b4ea05614a68ead8fbb8e06e6/?utm_source=claude_code | 330 citations; MDC ≠ MID — ต้องใช้ทั้งคู่ |
+| **Riemann & Lininger 2018** — Reliability and Minimal Important Change, *J. Athletic Training* | ✅ Consensus | https://consensus.app/papers/details/9ac18b017d975831982180b43bc8046d/?utm_source=claude_code | 39 citations; workflow ICC → SEM → MDC₉₅ |
+| **Bauer et al. 2022** — Deep Learning Automated Minirhizotron Image Analysis Pipeline, *Plant Phenomics* | ✅ Consensus | https://consensus.app/papers/details/40adfa3eb17a5757ac1f8c43b6462d68/?utm_source=claude_code | 40 citations; ตัวอย่าง plant pipeline re-validate (correlation = 0.9 manual vs DL) |
+| **Okyere et al. 2023** — Machine Learning Segmentation HTP Phenotyping, *Plants* | ✅ Consensus | https://consensus.app/papers/details/70d93f4bc85e50d6806aede5c472ec38/?utm_source=claude_code | 15 citations; compare MLP vs HSV-segmentation; downstream feature เปลี่ยนตาม segmenter |
+| **Du et al. 2026** — Plant-to-Camera 3D Morphological Reconstruction, *ISPRS J. Photogramm.* | ✅ Consensus | https://consensus.app/papers/details/314eec9539bd5093a83071a5bacf4ecd/?utm_source=claude_code | 3 citations; validate phenotypic params (MAE/RMSE/R²) vs ground truth manual |
+| **Cibulka et al. 2021** — Kappa Paradox and Gwet's AC1, *Physical Therapy* | ✅ Consensus | https://consensus.app/papers/details/441b6816ce0d543694552e9f2ddb70c7/?utm_source=claude_code | 22 citations; class imbalanced → κ ต่ำแม้ agreement สูง; ใช้ Gwet's AC1 ควบคู่ |
+| **Keogh et al. 2014** — Toolkit for measurement error correction, *Statistics in Medicine* | ✅ Consensus | https://consensus.app/papers/details/525cb5a088995c08ab705c64e8b7795a/?utm_source=claude_code | 120 citations; regression calibration สำหรับ systematic + proportional bias correction |
+
+---
+
+## ✅ Resolution Log (2026-06-21, claude-sonnet-4-6) — R5-E
+
+- **เพิ่มหมวด 12:** 10 re-validation framework papers (Bridge study, ICC/MDC, Plant HTP pipeline, Kappa paradox) verify ผ่าน Consensus URL ทุกตัว
+- **สร้างไฟล์ใหม่:** `research/R5E_revalidation_framework.md` — step-by-step 5-phase re-validation protocol หลัง segmenter เปลี่ยน HSV→SAM/YOLO (Q11)
+
+---
+
 *ไฟล์นี้สร้างโดย citation-audit sub-agent (claude-sonnet-4-6) — 2026-06-12*  
 *ใช้เครื่องมือ: WebSearch (Springer, Nature, PubMed, Wiley, MDPI, ACM DL, PLOS, Semantic Scholar, ResearchGate)*  
 *อัปเดต: 2026-06-18 — เพิ่มหมวด 8 (Consensus 6-query search session)*  
-*อัปเดต: 2026-06-19 — เพิ่มหมวด 9-10 (Architecture + Support papers), ลบ Thomas 2026 ครบทุกที่*
+*อัปเดต: 2026-06-19 — เพิ่มหมวด 9-10 (Architecture + Support papers), ลบ Thomas 2026 ครบทุกที่*  
+*อัปเดต: 2026-06-21 — เพิ่มหมวด 11 (Inter-rater agreement + Gold Standard Paradox, R5-C, 16 papers)*  
+*อัปเดต: 2026-06-21 — เพิ่มหมวด 12 (Re-Validation Framework after Method Change, R5-E, 10 papers)*

@@ -1,7 +1,7 @@
-# VitroVision Research Docs Auto-Sync Prompt
+﻿# VitroVision Research Docs Auto-Sync Prompt
 
 คุณคือ Claude ทำงานใน GitHub Actions CI ตี 4 ICT
-โปรเจกต์: VitroVision — Computer Vision สำหรับ Capsicum annuum in vitro tissue culture
+โปรเจกต์: VitroVision — Computer Vision สำหรับ Capsicum frutescens in vitro tissue culture
 
 ## Step 1 — อ่าน source of truth จากโค้ดจริงก่อน
 

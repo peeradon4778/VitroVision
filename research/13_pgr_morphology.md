@@ -1,4 +1,4 @@
-# 13 — ผลของ Plant Growth Regulator (PGR) ต่อ Morphology ของพริกในหลอดทดลอง
+﻿# 13 — ผลของ Plant Growth Regulator (PGR) ต่อ Morphology ของพริกในหลอดทดลอง
 > **วัตถุประสงค์:** คาดการณ์ phenotype ที่แตกต่างกันใน 5 สูตร MS (A–E) เพื่อเป็น ground truth ให้ระบบ CV ของ VitroVision จับความแตกต่างได้
 
 ---
@@ -23,9 +23,9 @@
 ## 2. Cytokinin Effects — BAP ต่อ Morphology ของ Capsicum in vitro
 
 ### 2.1 Multiple Shoot Induction
-BAP เป็น cytokinin สังเคราะห์ที่นิยมใช้มากที่สุดใน Capsicum tissue culture [3] การศึกษาของ Ebida & Hu (1993) พบว่าใน *Capsicum annuum* cv. Early California Wonder — BAP 5.0 mg/L ± NAA 0.1 mg/L ให้ multiple shoot-buds จาก cotyledon, shoot-tip และ hypocotyl explants ได้ดีที่สุด และ 70% ของ shoot-buds สามารถออกรากได้เมื่อย้ายไปสูตรที่มี IAA หรือ NAA [3]
+BAP เป็น cytokinin สังเคราะห์ที่นิยมใช้มากที่สุดใน Capsicum tissue culture [3] การศึกษาของ Ebida & Hu (1993) พบว่าใน *Capsicum frutescens* cv. Early California Wonder — BAP 5.0 mg/L ± NAA 0.1 mg/L ให้ multiple shoot-buds จาก cotyledon, shoot-tip และ hypocotyl explants ได้ดีที่สุด และ 70% ของ shoot-buds สามารถออกรากได้เมื่อย้ายไปสูตรที่มี IAA หรือ NAA [3]
 
-งานของ Martínez-López et al. (2021) ยืนยันว่า BAP 5 mg/L (สูตร Pep1) ให้ผล shoot regeneration ดีที่สุดใน *C. annuum* และ *C. baccatum* ในลักษณะ direct organogenesis [2] และ Renfiyeni et al. (2026) พบว่าใน *Capsicum frutescens* สูตร MS + 2 mg/L BAP + 1 mg/L NAA ให้ค่าเฉลี่ย 5.29 shoots/explant [1]
+งานของ Martínez-López et al. (2021) ยืนยันว่า BAP 5 mg/L (สูตร Pep1) ให้ผล shoot regeneration ดีที่สุดใน *C. frutescens* และ *C. baccatum* ในลักษณะ direct organogenesis [2] และ Renfiyeni et al. (2026) พบว่าใน *Capsicum frutescens* สูตร MS + 2 mg/L BAP + 1 mg/L NAA ให้ค่าเฉลี่ย 5.29 shoots/explant [1]
 
 ### 2.2 Shoot Elongation และ Internode Length
 cytokinin สูง (BAP ≥ 3 mg/L) มีแนวโน้มลด shoot elongation และทำให้ปล้องสั้นลง (stunted internodes) งานกับ *Humulus lupulus* แสดงว่า BAP ≥ 1 mg/L ลดการเจริญเติบโตโดยรวมและเพิ่ม callus formation และ hyperhydricity [C1] ใน *Quercus robur*, BAP ทำให้เกิด underdeveloped leaf anatomy, shoot-tip necrosis และลดปริมาณ phenolic compounds [C2] — ผลนี้น่าจะเกิดขึ้นใน Capsicum ด้วย โดยเฉพาะสูตร C (BAP 5 mg/L)
@@ -51,7 +51,7 @@ auxin เป็นตัวกระตุ้นหลักสำหรับ r
 สูตร **E (IBA 1 mg/L):** คาดว่าจะเห็น root system ที่ชัดเจน รากยาว อาจมีหลายราก — phenotype ที่โดดเด่นมากเมื่อดูผ่านขวด
 
 ### 3.2 Callus Formation
-auxin สูง (NAA ≥ 0.5–1 mg/L) หรือ 2,4-D กระตุ้น callus มากกว่า shoot Rakshit et al. (2008) รายงานว่า NAA 2.0 mg/L + 2,4-D ให้ callus ดีที่สุดใน *C. annuum* [R2] สำหรับสูตร **D (BAP 5 + NAA 0.05)** — NAA ต่ำมาก (0.05 mg/L) ไม่น่าทำให้เกิด callus มาก แต่ช่วย balance auxin:cytokinin ratio ให้ shoot regeneration ดีขึ้นและลดความเสี่ยง hyperhydricity เมื่อเทียบกับสูตร C
+auxin สูง (NAA ≥ 0.5–1 mg/L) หรือ 2,4-D กระตุ้น callus มากกว่า shoot Rakshit et al. (2008) รายงานว่า NAA 2.0 mg/L + 2,4-D ให้ callus ดีที่สุดใน *C. frutescens* [R2] สำหรับสูตร **D (BAP 5 + NAA 0.05)** — NAA ต่ำมาก (0.05 mg/L) ไม่น่าทำให้เกิด callus มาก แต่ช่วย balance auxin:cytokinin ratio ให้ shoot regeneration ดีขึ้นและลดความเสี่ยง hyperhydricity เมื่อเทียบกับสูตร C
 
 ### 3.3 Shoot-Root Balance
 | auxin level | cytokinin level | ผลที่คาด |
@@ -123,11 +123,11 @@ Bethge et al. (2023) พิสูจน์ว่า ML สามารถ classi
 
 [2] [Screening of Suitable Plant Regeneration Protocols for Several Capsicum spp. through Direct Organogenesis](https://consensus.app/papers/details/d61b54c194a75d598fb47ee91e8d1dcf/?utm_source=claude_code) (Marina Martínez-López et al., 2021, 11 citations, Horticulturae)
 
-[3] [In vitro morphogenetic responses and plant regeneration from pepper (Capsicum annuum L. cv. Early California Wonder) seedling explants](https://consensus.app/papers/details/7780cdc7cf725fafb4701cf189f9ee4e/?utm_source=claude_code) (Aly I. A. Ebida & Hu, 1993, 68 citations, Plant Cell Reports)
+[3] [In vitro morphogenetic responses and plant regeneration from pepper (Capsicum frutescens Mill. cv. Early California Wonder) seedling explants](https://consensus.app/papers/details/7780cdc7cf725fafb4701cf189f9ee4e/?utm_source=claude_code) (Aly I. A. Ebida & Hu, 1993, 68 citations, Plant Cell Reports)
 
 [R1] [In vitro plant regeneration from hypocotyl and cotyledon explants of red pepper (capsicum)](https://consensus.app/papers/details/3079f5835e6e5f5c819637558dcd475b/?utm_source=claude_code) (A. Gunay & Rao, 1978, 133 citations, Plant Science Letters)
 
-[R2] [Effect of different explant and hormones on in vitro callus induction and regeneration of pepper (Capsicum annuum L.)](https://consensus.app/papers/details/82097077f26c5c4cb0365138aaf4ca45/?utm_source=claude_code) (A. Rakshit et al., 2008, AGRIS)
+[R2] [Effect of different explant and hormones on in vitro callus induction and regeneration of pepper (Capsicum frutescens Mill.)](https://consensus.app/papers/details/82097077f26c5c4cb0365138aaf4ca45/?utm_source=claude_code) (A. Rakshit et al., 2008, AGRIS)
 
 ### Cytokinin Effects (General — ใช้กับ Capsicum โดย analogy)
 [C1] [Effect of different cytokinin concentrations on establishing an in vitro micropropagation system for hop (Humulus lupulus L.)](https://consensus.app/papers/details/195ba156a74c51648fae63a8643e5569/?utm_source=claude_code) (E. Carloni et al., 2025, 2 citations, New Zealand Journal of Crop and Horticultural Science)

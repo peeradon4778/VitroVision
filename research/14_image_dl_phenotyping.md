@@ -1,7 +1,7 @@
-# 14 — Image-Based & Deep Learning Morphological Phenotyping สำหรับต้นกล้าพืช
+﻿# 14 — Image-Based & Deep Learning Morphological Phenotyping สำหรับต้นกล้าพืช
 
 **วันที่:** 2026-06-11
-**บริบท:** VitroVision — Capsicum annuum in vitro tissue culture, ถ่ายภาพ RGB ผ่านขวด (2D single-view), ส่ง YSC 2027 สาขา CSBI
+**บริบท:** VitroVision — Capsicum frutescens in vitro tissue culture, ถ่ายภาพ RGB ผ่านขวด (2D single-view), ส่ง YSC 2027 สาขา CSBI
 **วัตถุประสงค์:** สำรวจว่า DL morphological phenotyping ของต้นกล้าควรวัด/segment โครงสร้างอะไร และ map กับ pipeline ปัจจุบัน
 
 ---

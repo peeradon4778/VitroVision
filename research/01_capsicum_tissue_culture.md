@@ -1,6 +1,6 @@
-# 01 — Capsicum Tissue Culture: งานวิจัยอ้างอิงสำหรับ VitroVision
+﻿# 01 — Capsicum Tissue Culture: งานวิจัยอ้างอิงสำหรับ VitroVision
 
-> แหล่งหลัก: Consensus AI (peer-reviewed papers). คัดเฉพาะที่ apply กับ VitroVision (CV phenotyping ของ *Capsicum annuum* in vitro) ได้จริง
+> แหล่งหลัก: Consensus AI (peer-reviewed papers). คัดเฉพาะที่ apply กับ VitroVision (CV phenotyping ของ *Capsicum frutescens* in vitro) ได้จริง
 > วันที่รวบรวม: 2026-06-11 | ใช้กับ: YSC 2027 (CSBI) → ISEF | โครงงาน VitroVision
 
 ---
@@ -9,7 +9,7 @@
 
 1. **พริก (Capsicum) เป็นพืช recalcitrant อย่างชัดเจน** — งานวิจัย 50 ปีตอกย้ำว่า in vitro response ต่ำ, ไม่ reproducible ข้าม genotype, และมักได้ shoot ที่ผิดรูป (SAM deformation) [7]. นี่คือ "ความยาก" ที่ทำให้การ monitor ด้วย CV มีคุณค่า — เพราะต้องคัดแยก response ที่ดี/เสียจำนวนมาก
 2. **Explant ที่นิยมและได้ผลดีสุด** = cotyledonary node และ cotyledon-with-petiole (มากกว่า cotyledon leaf เปล่าๆ); nodal segment จาก in vitro seedling ก็ใช้ได้ดีกับ multiple shoot [1][3][6][8]. ตัวเลขอ้างอิง: cotyledonary node ตอบสนอง ~80% ใน 11–12 วัน [1]
-3. **ความแปรปรวนสูงมากระหว่าง genotype/species** — C. annuum ได้ ~1.44 shoot/explant แต่ C. chinense ได้เกือบ 0 ในเงื่อนไขเดียวกัน [2]. นี่ support การออกแบบงานเราที่วัด 100 ขวด × 5 สูตร MS (ต้องการ throughput สูงเพื่อเห็น variance)
+3. **ความแปรปรวนสูงมากระหว่าง genotype/species** — C. frutescens ได้ ~1.44 shoot/explant แต่ C. chinense ได้เกือบ 0 ในเงื่อนไขเดียวกัน [2]. นี่ support การออกแบบงานเราที่วัด 100 ขวด × 5 สูตร MS (ต้องการ throughput สูงเพื่อเห็น variance)
 4. **ปัญหาหลักที่ CV จับได้:** browning/phenolic (วัดด้วย `brown_coverage_pct`), hyperhydricity (จับด้วย texture/color), shoot ต่ำ (`shoot_count_cv`), media contamination/เปลี่ยนสี (`media_color_cv`) — ทั้งหมดมี literature รองรับว่าเป็นตัวชี้วัดความสำเร็จมาตรฐาน [9][10][12]
 5. **Gap ที่งานเราเติม:** มีระบบ CV/sensor สำหรับ in vitro แล้ว (เช่น "Phenomenon" multi-sensor [14]) แต่ **ยังไม่มีใครทำ image-based phenotyping เฉพาะ Capsicum TC** ที่เชื่อม 7 phenotype กับ recalcitrance scoring — นี่คือ novelty ของ VitroVision
 6. **RGB color → chlorophyll/vigor เป็นวิธี non-destructive ที่ validated แล้ว** (R² 0.67–0.90) [11][13][15] → รองรับ `green_coverage_pct`, `leaf_color_index`, `vigor_score` ของเราโดยตรง
@@ -38,7 +38,7 @@
 ## 2. ปัญหาที่พบบ่อยใน Capsicum TC (recalcitrance & disorders)
 
 - **Recalcitrance เป็นปัญหาเชิงระบบ:** Pijeira-Fernández et al. (2024) review 50 ปี — response เป็น genotype-dependent สูง, มักได้โครงสร้างที่มี **SAM deformation** (shoot apical meristem ผิดรูป), protocol ที่มีอยู่ "inefficient และ little reproducible" ข้าม genotype [7]. → เหตุผลเชิงชีววิทยาที่ต้อง monitor จำนวนมาก
-- **Shoot induction ต่ำ & แปรปรวน:** C. annuum 1.44 shoot/cotyledon, 0.28 shoot/hypocotyl; C. chinense ~0.08/0.00 (เกือบไม่ตอบสนอง) [2].
+- **Shoot induction ต่ำ & แปรปรวน:** C. frutescens 1.44 shoot/cotyledon, 0.28 shoot/hypocotyl; C. chinense ~0.08/0.00 (เกือบไม่ตอบสนอง) [2].
 - **Rooting ยาก & acclimatization survival ผันผวน:** survival 40–86.7% ขึ้นกับ cultivar [3]; งานหลายชิ้นระบุว่า rooting/acclimatization เป็น bottleneck สุดท้ายที่ "ต้องปรับปรุง" [2].
 - **Browning / phenolic oxidation:** เป็นปัญหารุนแรงในพืชหลายชนิด; วิธีคุม = presoak antioxidant (PVP, ascorbic acid 15–250 mg/L), เติม activated charcoal, เลี้ยงในที่มืด, subculture บ่อย [10]. → ตรงกับ `brown_coverage_pct`
 - **Hyperhydricity:** physiological disorder ที่พบบ่อยสุดใน in vitro → จับได้ด้วย `texture_entropy` + `leaf_color_index` (ใบ glassy/translucent). **รายละเอียด biology + visual features + กลไก PGR เต็ม = source of truth ที่ `13_pgr_morphology.md` §4** [4][9]
@@ -114,7 +114,7 @@
 
 ## References
 
-[1] [Development of In Vitro Regeneration Protocol for Sweet Pepper (Capsicum annuum L.) using Cotyledon as Explant](https://consensus.app/papers/details/3e2de8ef6ed052939014617cc97d1519/?utm_source=claude_code) (M. Nadim et al., 2024, J Bangladesh Agril Univ, 2 citations)
+[1] [Development of In Vitro Regeneration Protocol for Sweet Pepper (Capsicum frutescens Mill.) using Cotyledon as Explant](https://consensus.app/papers/details/3e2de8ef6ed052939014617cc97d1519/?utm_source=claude_code) (M. Nadim et al., 2024, J Bangladesh Agril Univ, 2 citations)
 
 [2] [Screening of Suitable Plant Regeneration Protocols for Several Capsicum spp. through Direct Organogenesis](https://consensus.app/papers/details/d61b54c194a75d598fb47ee91e8d1dcf/?utm_source=claude_code) (Marina Martínez-López et al., 2021, Horticulturae, 11 citations)
 
@@ -124,11 +124,11 @@
 
 [5] [Molecular identification and elimination of endophytic contamination using antibiotics from in vitro culture of Vitex peduncularis](https://consensus.app/papers/details/197c41d4c2a059ce8768f6d15d477abe/?utm_source=claude_code) (Runam Kumari et al., 2025, PCTOC, 2 citations)
 
-[6] [Efficient In Vitro Regeneration System and Comparative Transcriptome Analysis ... Cotyledon with Partial Petiole in Small-Fruited Pepper (Capsicum annuum)](https://consensus.app/papers/details/4aa88f2330885ad2846eabd9e505909f/?utm_source=claude_code) (Xiaoqi Li et al., 2024, Int J Mol Sci, 4 citations)
+[6] [Efficient In Vitro Regeneration System and Comparative Transcriptome Analysis ... Cotyledon with Partial Petiole in Small-Fruited Pepper (Capsicum frutescens)](https://consensus.app/papers/details/4aa88f2330885ad2846eabd9e505909f/?utm_source=claude_code) (Xiaoqi Li et al., 2024, Int J Mol Sci, 4 citations)
 
 [7] [Capsicum recalcitrance: physiological and molecular challenges of pepper tissue culture](https://consensus.app/papers/details/9148546138eb532ea79c0f839bfd670e/?utm_source=claude_code) (Gema Pijeira-Fernández et al., 2024, In Vitro Cell Dev Biol-Plant, 2 citations)
 
-[8] [High Efficiency Organogenesis in Sweet Pepper (Capsicum annuum L.) Tissues from Different Seedling Explants](https://consensus.app/papers/details/1c95e7a9ab8b510dbfced77081413d78/?utm_source=claude_code) (M. Dabauza et al., 2001, Plant Growth Regulation, 62 citations)
+[8] [High Efficiency Organogenesis in Sweet Pepper (Capsicum frutescens Mill.) Tissues from Different Seedling Explants](https://consensus.app/papers/details/1c95e7a9ab8b510dbfced77081413d78/?utm_source=claude_code) (M. Dabauza et al., 2001, Plant Growth Regulation, 62 citations)
 
 [9] [Hyperhydricity in Plant Tissue Culture](https://consensus.app/papers/details/7ba487e729365e3bb751a4a7cb57b0e1/?utm_source=claude_code) (O. Polivanova et al., 2022, Plants, 102 citations)
 

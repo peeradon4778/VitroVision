@@ -106,6 +106,49 @@ body { background:#000; overflow:hidden; font-family:'Segoe UI',sans-serif; touc
   border-radius:14px; padding:20px 24px; text-align:center;
   color:#94a3b8; font-size:13px; max-width:280px; z-index:30;
 }
+
+/* ── lock banner ── */
+#lock-banner {
+  display:none; position:fixed; top:0; left:0; right:0; z-index:25;
+  padding-top: calc(58px + env(safe-area-inset-top));
+}
+#lock-banner.show { display:block; }
+#lock-card {
+  margin:8px 12px 0;
+  background:rgba(234,179,8,.15); border:1px solid rgba(234,179,8,.5);
+  border-radius:12px; padding:10px 14px;
+  display:flex; align-items:center; gap:10px;
+}
+#lock-id {
+  flex:1; font-weight:700; font-size:14px; color:#fde047;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+#lock-hint { color:#d4d4d4; font-size:11px; }
+#lock-cancel {
+  width:30px; height:30px; border-radius:50%;
+  background:rgba(255,255,255,.1); border:none; color:#94a3b8;
+  font-size:16px; cursor:pointer; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+}
+
+/* ── capture button ── */
+#capture-btn {
+  display:none; position:fixed; z-index:25;
+  bottom: calc(70px + env(safe-area-inset-bottom));
+  left:50%; transform:translateX(-50%);
+  width:80px; height:80px; border-radius:50%;
+  background:linear-gradient(135deg,#16a34a,#22c55e);
+  border:4px solid rgba(255,255,255,.3);
+  box-shadow:0 0 0 8px rgba(34,197,94,.2);
+  cursor:pointer; font-size:32px;
+  align-items:center; justify-content:center;
+  color:#fff; animation:pulse 1.5s infinite;
+}
+#capture-btn.show { display:flex; }
+@keyframes pulse {
+  0%,100% { box-shadow:0 0 0 8px rgba(34,197,94,.2); }
+  50%      { box-shadow:0 0 0 16px rgba(34,197,94,.05); }
+}
 </style>
 </head>
 <body>
@@ -128,6 +171,17 @@ body { background:#000; overflow:hidden; font-family:'Segoe UI',sans-serif; touc
     <span class="dot"></span>
     <span id="day-label">ตั้ง Day Point</span>
   </button>
+  <button id="stage-btn" onclick="cycleStage()"
+    style="background:rgba(0,0,0,.45);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.2);color:#94a3b8;font-size:12px;font-weight:600;padding:5px 10px;border-radius:99px;cursor:pointer;white-space:nowrap;flex-shrink:0">
+    ระยะ: —
+  </button>
+  <button id="hyper-btn" onclick="toggleHyper()"
+    style="background:rgba(0,0,0,.45);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.2);color:#94a3b8;font-size:12px;font-weight:600;padding:5px 10px;border-radius:99px;cursor:pointer;white-space:nowrap;flex-shrink:0">
+    HH —
+  </button>
+  <button id="focus-btn" onclick="toggleFocusLock()" style="display:none;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.2);color:#94a3b8;font-size:12px;font-weight:600;padding:5px 10px;border-radius:99px;cursor:pointer;white-space:nowrap;flex-shrink:0">
+    🔓 AF
+  </button>
   <span id="hint">เปิดกล้อง...</span>
   <span id="count"></span>
 </div>
@@ -142,6 +196,20 @@ body { background:#000; overflow:hidden; font-family:'Segoe UI',sans-serif; touc
     <button id="day-ok" onclick="confirmDay()">ยืนยัน</button>
   </div>
 </div>
+
+<!-- lock banner (แสดงเมื่อ detect ArUco แล้ว รอถ่ายหน้าขวด) -->
+<div id="lock-banner">
+  <div id="lock-card">
+    <div>
+      <div id="lock-id">—</div>
+      <div id="lock-hint">ย้ายกล้องมาด้านหน้าขวด แล้วกดปุ่มเขียว</div>
+    </div>
+    <button id="lock-cancel" onclick="clearLock()" title="ยกเลิก">✕</button>
+  </div>
+</div>
+
+<!-- capture button (กดเพื่อบันทึกภาพหน้าขวด) -->
+<button id="capture-btn" onclick="captureNow()">📷</button>
 
 <!-- session log -->
 <div id="session-bar"></div>
@@ -161,6 +229,16 @@ let dayPoint    = null;
 let savedMap    = new Map();   // bottle_id → timestamp ที่ save ล่าสุด
 let sessionLog  = new Map();   // bottle_id → {status, ai_status, savedAt}
 let clearTimer  = null;
+let devStage    = '';
+let hyperHydric = 0;
+
+// ── 2-step capture state ──────────────────────────────────────
+// ขั้น 1: ส่องด้านข้าง → detect ArUco → lock (ไม่ save ทันที)
+// ขั้น 2: ย้ายกล้องมาด้านหน้า → กดปุ่มเขียว → save ภาพต้น
+let lockedBottle  = null;  // {bottle_id, corners, frame_w, frame_h, ai_status, ai_confidence, status}
+let latestBlob    = null;  // frame ล่าสุดจาก scan loop (ใช้ตอน captureNow)
+const STAGES   = ['','radicle','hypocotyl','cotyledon','true_leaf'];
+const STAGE_TH = {'':'—','radicle':'ราก','hypocotyl':'ลำต้น','cotyledon':'ใบเลี้ยง','true_leaf':'ใบจริง'};
 
 const video    = document.getElementById('video');
 const overlay  = document.getElementById('overlay');
@@ -172,18 +250,95 @@ const countEl  = document.getElementById('count');
 const dayBtn   = document.getElementById('day-btn');
 const dayLabel = document.getElementById('day-label');
 
+function cycleStage() {
+  devStage = STAGES[(STAGES.indexOf(devStage) + 1) % STAGES.length];
+  document.getElementById('stage-btn').textContent = 'ระยะ: ' + STAGE_TH[devStage];
+}
+function toggleHyper() {
+  hyperHydric ^= 1;
+  const btn = document.getElementById('hyper-btn');
+  btn.textContent = hyperHydric ? 'HH ✓' : 'HH —';
+  btn.style.color = hyperHydric ? '#fbbf24' : '#94a3b8';
+}
+
 // ── กล้อง ────────────────────────────────────────────────────
+let camTrack = null;
+let focusCaps = {};
+let focusLocked = false;
+
+function updateFocusBtn() {
+  const btn = document.getElementById('focus-btn');
+  if (!btn) return;
+  if (!focusCaps.focusMode || focusCaps.focusMode.length === 0) {
+    btn.style.display = 'none'; return;
+  }
+  btn.style.display = '';
+  if (focusLocked) {
+    btn.textContent = '🔒 AF ล็อก';
+    btn.style.color = '#4ade80';
+    btn.style.borderColor = 'rgba(74,222,128,.4)';
+  } else {
+    btn.textContent = '🔓 AF';
+    btn.style.color = '#94a3b8';
+    btn.style.borderColor = 'rgba(255,255,255,.2)';
+  }
+}
+
+function toggleFocusLock() {
+  if (!camTrack) return;
+  if (focusLocked) {
+    // ปลด lock → กลับ continuous
+    camTrack.applyConstraints({ advanced: [{ focusMode: 'continuous' }] })
+      .then(() => { focusLocked = false; updateFocusBtn(); })
+      .catch(() => {});
+  } else {
+    // lock → single-shot ณ จุดกลาง แล้วค้างไว้ที่ manual
+    camTrack.applyConstraints({ advanced: [{ focusMode: 'single-shot' }] })
+      .then(() => {
+        setTimeout(() => {
+          camTrack.applyConstraints({ advanced: [{ focusMode: 'manual' }] })
+            .then(() => { focusLocked = true; updateFocusBtn(); })
+            .catch(() => { focusLocked = true; updateFocusBtn(); });
+        }, 600);
+      })
+      .catch(() => {});
+  }
+}
+
+// tap-to-focus: แตะบน video → focus ณ จุดนั้น
+video.addEventListener('click', e => {
+  if (!camTrack || focusLocked) return;
+  if (!focusCaps.focusMode) return;
+  const rect = video.getBoundingClientRect();
+  const x = (e.clientX - rect.left) / rect.width;
+  const y = (e.clientY - rect.top) / rect.height;
+  const constraints = { advanced: [{ focusMode: 'single-shot', pointsOfInterest: [{ x, y }] }] };
+  camTrack.applyConstraints(constraints).catch(() => {});
+});
+
 navigator.mediaDevices.getUserMedia({
   video:{ facingMode:'environment', width:{ideal:1280}, height:{ideal:720} }
 }).then(s => {
   video.srcObject = s;
-  hint.textContent = 'ส่องขวดที่มี ArUco marker';
+  camTrack = s.getVideoTracks()[0];
+  // อ่าน capabilities แล้วตั้ง continuous AF ถ้าทำได้
+  if (camTrack.getCapabilities) {
+    focusCaps = camTrack.getCapabilities();
+    if (focusCaps.focusMode && focusCaps.focusMode.includes('continuous')) {
+      camTrack.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }).catch(() => {});
+    }
+  }
+  updateFocusBtn();
+  hint.textContent = dayPoint !== null ? 'ส่องด้านข้างขวด (ด้านที่มี ArUco)' : 'กด "ตั้ง Day Point" ก่อน →';
 }).catch(() => { hint.textContent = 'เปิดกล้องไม่ได้'; });
 
 // ── day picker ────────────────────────────────────────────────
 function showDayModal() {
   document.getElementById('day-modal').classList.add('show');
-  setTimeout(() => document.getElementById('day-input').focus(), 100);
+  setTimeout(() => {
+    document.getElementById('day-input').focus();
+    autoFillDay();
+  }, 100);
 }
 function confirmDay() {
   const v = parseInt(document.getElementById('day-input').value);
@@ -324,22 +479,18 @@ function drawOverlay(data, captureBlob) {
     const arcX = Math.max(...sc.map(([x])=>x)) + arcR + 8;
     drawArc(ovCtx, arcX, cy, arcR, Math.min(clarity,100), color, recentlySaved);
 
-    // auto-save
-    if (clarity >= THRESHOLD && dayPoint !== null && !recentlySaved && captureBlob) {
-      savedMap.set(d.bottle_id, now);
-      const fd = new FormData();
-      fd.append('bottle_id', d.bottle_id);
-      fd.append('day_point', dayPoint);
-      fd.append('ai_status', d.ai_status || 'unknown');
-      fd.append('ai_confidence', d.ai_confidence || 0);
-      fd.append('clarity', clarity);
-      fd.append('bottle_count', dets.length);
-      fd.append('photo', captureBlob, 'scan.jpg');
-      fetch('/api/scan_save', { method:'POST', body:fd })
-        .then(r => r.json())
-        .then(res => {
-          if (res.ok) addChip(d.bottle_id, status, d.ai_status);
-        }).catch(()=>{});
+    // ขั้น 1: detect → lock (ไม่ save ทันที)
+    if (clarity >= THRESHOLD && dayPoint !== null && !recentlySaved && !lockedBottle) {
+      lockedBottle = {
+        bottle_id:     d.bottle_id,
+        corners:       d.corners,
+        frame_w:       d.frame_w,
+        frame_h:       d.frame_h,
+        ai_status:     d.ai_status || 'unknown',
+        ai_confidence: d.ai_confidence || 0,
+        status,
+      };
+      showLock(d.bottle_id);
     }
   }
 }
@@ -370,6 +521,48 @@ function addChip(bottleId, status, aiStatus) {
   bar.scrollLeft = bar.scrollWidth;
 }
 
+// ── lock / unlock helpers ─────────────────────────────────────
+function showLock(bottleId) {
+  document.getElementById('lock-id').textContent = '🔒 ' + bottleId;
+  document.getElementById('lock-banner').classList.add('show');
+  document.getElementById('capture-btn').classList.add('show');
+  hint.textContent = 'ย้ายกล้องมาด้านหน้าขวด แล้วกดปุ่มเขียว';
+}
+
+function clearLock() {
+  lockedBottle = null;
+  document.getElementById('lock-banner').classList.remove('show');
+  document.getElementById('capture-btn').classList.remove('show');
+  hint.textContent = 'ส่องด้านข้างขวด (ด้านที่มี ArUco)';
+}
+
+function captureNow() {
+  if (!lockedBottle || !latestBlob) return;
+  const b = lockedBottle;
+  const now = Date.now();
+  savedMap.set(b.bottle_id, now);
+  clearLock();
+
+  const fd = new FormData();
+  fd.append('bottle_id',      b.bottle_id);
+  fd.append('day_point',      dayPoint);
+  fd.append('ai_status',      b.ai_status);
+  fd.append('ai_confidence',  b.ai_confidence);
+  fd.append('clarity',        100);
+  fd.append('bottle_count',   1);
+  fd.append('dev_stage',      devStage);
+  fd.append('hyperhydricity', hyperHydric);
+  fd.append('aruco_corners',  JSON.stringify(b.corners));
+  fd.append('aruco_frame_w',  b.frame_w);
+  fd.append('aruco_frame_h',  b.frame_h);
+  fd.append('photo', latestBlob, 'scan.jpg');
+  fetch('/api/scan_save', { method:'POST', body:fd })
+    .then(r => r.json())
+    .then(res => {
+      if (res.ok) addChip(b.bottle_id, b.status, b.ai_status);
+    }).catch(()=>{});
+}
+
 // ── scan loop ─────────────────────────────────────────────────
 function scan() {
   if (!video.videoWidth) return;
@@ -377,6 +570,8 @@ function scan() {
   cap.width = W; cap.height = H;
   capCtx.drawImage(video, 0, 0, W, H);
   cap.toBlob(blob => {
+    latestBlob = blob;   // เก็บ frame ล่าสุดไว้เสมอ (ใช้ตอนกดปุ่ม captureNow)
+    if (lockedBottle) return;  // ถ้า lock แล้ว ไม่ต้อง detect ซ้ำ
     const fd = new FormData();
     fd.append('photo', blob, 'f.jpg');
     fetch('/api/scan_aruco', { method:'POST', body:fd })

@@ -2,41 +2,60 @@
 {% block title %}Analytics — VitroShelf{% endblock %}
 
 {% block content %}
-<div class="flex items-center justify-between mb-6 flex-wrap gap-3">
-  <h1 class="text-2xl font-bold text-green-400">📈 Phenotype Analytics</h1>
-  <span id="data-badge" class="text-xs px-2 py-1 rounded-full bg-gray-800 text-gray-400">กำลังโหลด...</span>
+<div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+  <div>
+    <h1 class="font-serif text-2xl text-ink">📈 Phenotype Analytics</h1>
+    <p class="text-xs text-muted mt-0.5">ข้อมูล L5 Feature Extraction (หลัง CCM)</p>
+  </div>
+  <span id="data-badge" class="text-xs px-3 py-1 rounded-full bg-line text-muted">กำลังโหลด...</span>
+</div>
+
+<!-- Treatment legend (architecture v2 — 5 สูตร) -->
+<div class="flex flex-wrap gap-2 mb-4 text-xs">
+  <span class="text-muted font-medium mr-1">สูตร:</span>
+  <span class="px-2 py-0.5 rounded-full bg-line text-ink font-medium">A = MS (control)</span>
+  <span class="px-2 py-0.5 rounded-full bg-line text-ink font-medium">B = BAP 1 mg/L</span>
+  <span class="px-2 py-0.5 rounded-full bg-line text-ink font-medium">C = BAP 5 mg/L</span>
+  <span class="px-2 py-0.5 rounded-full bg-line text-ink font-medium">D = BAP5+NAA0.05</span>
+  <span class="px-2 py-0.5 rounded-full bg-line text-ink font-medium">E = IBA 1 mg/L</span>
 </div>
 
 <!-- Metric selector -->
-<div class="flex flex-wrap gap-2 mb-6" id="metric-tabs">
-  <button data-metric="vigor_score"        class="metric-tab active-tab">Vigor Score</button>
-  <button data-metric="green_coverage_pct" class="metric-tab">Green Coverage</button>
-  <button data-metric="leaf_color_index"   class="metric-tab">Leaf Color Index</button>
-  <button data-metric="brown_coverage_pct" class="metric-tab">Brown Coverage</button>
-  <button data-metric="texture_entropy"    class="metric-tab">Texture Entropy</button>
+<div class="flex flex-wrap gap-2 mb-5" id="metric-tabs">
+  <button data-metric="green_coverage_pct" class="metric-tab active-tab">Green Coverage %</button>
+  <button data-metric="ngrdi_mean"         class="metric-tab">NGRDI 🥇</button>
+  <button data-metric="cive_mean"          class="metric-tab">CIVE</button>
+  <button data-metric="vigor_score"        class="metric-tab">Vigor Score</button>
+  <button data-metric="leaf_color_index"   class="metric-tab">LCI (G/R)</button>
+  <button data-metric="brown_coverage_pct" class="metric-tab">Brown %</button>
+  <button data-metric="texture_entropy"    class="metric-tab">Entropy</button>
+  <button data-metric="specular_fraction"  class="metric-tab">Specular (glare)</button>
   <button data-metric="shoot_count_cv"     class="metric-tab">Shoot Count</button>
 </div>
 
 <!-- Growth curve chart -->
-<div class="bg-gray-900 border border-gray-800 rounded-2xl p-4 mb-6">
-  <h2 class="text-sm font-medium text-gray-400 mb-3" id="curve-title">Growth Curve</h2>
+<div class="bg-surface border border-line rounded-2xl shadow-soft p-5 mb-5">
+  <div class="flex items-center gap-3 mb-3">
+    <h2 class="text-sm font-medium text-ink flex-1" id="curve-title">Green Coverage (%)</h2>
+    <span id="threshold-badge" class="hidden text-xs px-2 py-0.5 rounded-full bg-st-healthy/15 text-st-healthy">threshold: 0</span>
+  </div>
   <div class="relative h-72">
     <canvas id="chart-growth"></canvas>
   </div>
 </div>
 
 <!-- Bottom row: heatmap + status -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
 
   <!-- Vigor heatmap table -->
-  <div class="bg-gray-900 border border-gray-800 rounded-2xl p-4">
-    <h2 class="text-sm font-medium text-gray-400 mb-3">Mean Vigor Score (สูตร × วัน)</h2>
+  <div class="bg-surface border border-line rounded-2xl shadow-soft p-5">
+    <h2 class="text-sm font-medium text-ink mb-3">Mean Vigor Score (สูตร × วัน)</h2>
     <div id="vigor-heatmap" class="overflow-x-auto text-sm"></div>
   </div>
 
   <!-- Status distribution bar -->
-  <div class="bg-gray-900 border border-gray-800 rounded-2xl p-4">
-    <h2 class="text-sm font-medium text-gray-400 mb-3">Status Distribution (latest per bottle)</h2>
+  <div class="bg-surface border border-line rounded-2xl shadow-soft p-5">
+    <h2 class="text-sm font-medium text-ink mb-3">Status Distribution (latest per bottle)</h2>
     <div class="relative h-52">
       <canvas id="chart-status"></canvas>
     </div>
@@ -45,50 +64,56 @@
 </div>
 
 <!-- Scatter: green vs vigor -->
-<div class="bg-gray-900 border border-gray-800 rounded-2xl p-4 mb-6">
-  <h2 class="text-sm font-medium text-gray-400 mb-3">Green Coverage vs Vigor Score</h2>
+<div class="bg-surface border border-line rounded-2xl shadow-soft p-5 mb-5">
+  <h2 class="text-sm font-medium text-ink mb-3">Green Coverage vs Vigor Score</h2>
   <div class="relative h-72">
     <canvas id="chart-scatter"></canvas>
   </div>
 </div>
 
 <!-- Empty state -->
-<div id="empty-state" class="hidden text-center py-20 text-gray-500">
+<div id="empty-state" class="hidden text-center py-20 text-muted">
   <p class="text-4xl mb-4">📷</p>
-  <p class="text-lg font-medium text-gray-400">ยังไม่มีข้อมูล phenotyping</p>
-  <p class="text-sm mt-2">เริ่มสแกนขวดจาก <a href="/scan" class="text-cyan-400 hover:underline">Scanner</a> แล้วกลับมาดูที่นี่</p>
+  <p class="text-lg font-medium text-ink">ยังไม่มีข้อมูล phenotyping</p>
+  <p class="text-sm mt-2">เริ่มสแกนขวดจาก <a href="/scan" class="text-clay hover:underline">Scanner</a> แล้วกลับมาดูที่นี่</p>
 </div>
 
 <style>
 .metric-tab {
-  @apply text-xs px-3 py-1.5 rounded-lg bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white transition cursor-pointer border border-transparent;
+  font-size:12px; padding:5px 12px; border-radius:8px; cursor:pointer;
+  background:#EAE7DF; color:#908A7E; border:1px solid transparent; transition:.15s;
 }
-.active-tab {
-  @apply bg-green-900 text-green-300 border-green-700;
-}
+.metric-tab:hover { background:#d6d0c5; color:#2A2722; }
+.active-tab { background:#D97757; color:#fff; border-color:#C45D3E; }
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
 <script>
 const METRIC_LABEL = {
-  vigor_score:        'Vigor Score (0–10)',
   green_coverage_pct: 'Green Coverage (%)',
+  ngrdi_mean:         'NGRDI = (G−R)/(G+R)  [>0 = เขียวเด่น]',
+  cive_mean:          'CIVE (Color Index of Vegetation Extraction)',
+  vigor_score:        'Vigor Score (0–10)',
   leaf_color_index:   'Leaf Color Index (G/R)',
   brown_coverage_pct: 'Brown Coverage (%) — contamination',
   texture_entropy:    'Texture Entropy',
+  specular_fraction:  'Specular Fraction (glare %) — HH marker',
   shoot_count_cv:     'Shoot Count (CV)',
 };
 
-Chart.defaults.color = '#94a3b8';
-Chart.defaults.borderColor = '#1e293b';
+// NGRDI > 0 = green dominant threshold; specular_fraction > 0.15 = glare warning
+const METRIC_THRESHOLD = { ngrdi_mean: 0, specular_fraction: 0.15 };
+
+Chart.defaults.color = '#908A7E';
+Chart.defaults.borderColor = '#EAE7DF';
 Chart.defaults.font.family = 'ui-sans-serif, system-ui, sans-serif';
 
 let growthChart = null;
 let statusChart = null;
 let scatterChart = null;
 let gData = null;
-let activeMetric = 'vigor_score';
+let activeMetric = 'green_coverage_pct';
 
 /* ── fetch & render ─────────────────────────────────────── */
 async function loadData() {
@@ -101,9 +126,9 @@ async function loadData() {
     badge.className = 'text-xs px-2 py-1 rounded-full bg-gray-800 text-gray-500';
     document.getElementById('empty-state').classList.remove('hidden');
     ['chart-growth','chart-status','chart-scatter'].forEach(id => {
-      document.getElementById(id).closest('.bg-gray-900').classList.add('hidden');
+      document.getElementById(id).closest('.bg-surface').classList.add('hidden');
     });
-    document.getElementById('vigor-heatmap').closest('.bg-gray-900').classList.add('hidden');
+    document.getElementById('vigor-heatmap').closest('.bg-surface').classList.add('hidden');
     document.getElementById('metric-tabs').classList.add('hidden');
     return;
   }
@@ -122,6 +147,16 @@ function renderGrowth(metric) {
   activeMetric = metric;
   document.getElementById('curve-title').textContent = METRIC_LABEL[metric] || metric;
 
+  // threshold badge
+  const badge = document.getElementById('threshold-badge');
+  const thr = METRIC_THRESHOLD[metric];
+  if (thr != null) {
+    badge.textContent = `threshold: ${thr}`;
+    badge.classList.remove('hidden');
+  } else {
+    badge.classList.add('hidden');
+  }
+
   const metricData = gData.metrics[metric];
   if (!metricData) return;
 
@@ -129,12 +164,24 @@ function renderGrowth(metric) {
     label:           ds.label,
     data:            ds.days.map((d, i) => ({ x: d, y: ds.means[i] })),
     borderColor:     ds.color,
-    backgroundColor: ds.color.replace('rgb', 'rgba').replace(')', ',0.15)'),
-    tension:         0.3,
+    backgroundColor: ds.color.replace('rgb', 'rgba').replace(')', ',0.12)'),
+    tension:         0.35,
     pointRadius:     4,
     pointHoverRadius: 6,
     fill:            false,
   }));
+
+  // threshold reference line
+  if (thr != null) {
+    const allDays = metricData.datasets.flatMap(ds => ds.days);
+    const minDay  = Math.min(...allDays), maxDay = Math.max(...allDays);
+    datasets.push({
+      label:       `threshold=${thr}`,
+      data:        [{ x: minDay, y: thr }, { x: maxDay, y: thr }],
+      borderColor: '#D97757', borderDash: [6, 4], borderWidth: 1.5,
+      pointRadius: 0, fill: false,
+    });
+  }
 
   if (growthChart) growthChart.destroy();
   growthChart = new Chart(document.getElementById('chart-growth'), {
@@ -145,8 +192,8 @@ function renderGrowth(metric) {
       interaction: { mode: 'index', intersect: false },
       plugins: { legend: { position: 'top', labels: { boxWidth: 12, padding: 16 } } },
       scales: {
-        x: { type: 'linear', title: { display: true, text: 'Day' } },
-        y: { title: { display: true, text: METRIC_LABEL[metric] } },
+        x: { type: 'linear', title: { display: true, text: 'Day' }, grid: { color: '#EAE7DF' } },
+        y: { title: { display: true, text: METRIC_LABEL[metric] }, grid: { color: '#EAE7DF' } },
       },
     },
   });

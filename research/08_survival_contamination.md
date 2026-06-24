@@ -1,6 +1,6 @@
-# 08 — Survival Analysis: Contamination & Criterion Validity (Acclimatization)
+﻿# 08 — Survival Analysis: Contamination & Criterion Validity (Acclimatization)
 
-**โปรเจกต์:** VitroVision — Computational Phenotyping สำหรับ *Capsicum annuum* in vitro TC  
+**โปรเจกต์:** VitroVision — Computational Phenotyping สำหรับ *Capsicum frutescens* in vitro TC  
 **วันที่เขียน:** 2026-06-11  
 **Research sub-agent:** Claude Sonnet 4.6 (ภายใต้ Orchestrator Fable 5)  
 **Sources:** Consensus (Semantic Scholar/Scopus/PubMed), PubMed MCP

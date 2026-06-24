@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VitroVision — Architecture v2</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  :root {
+    --bg:       #0a0f1e;
+    --surface:  #111827;
+    --surface2: #1e2d45;
+    --border:   #1e3a5f;
+    --text:     #e2e8f0;
+    --muted:    #64748b;
+    --sky:      #38bdf8;
+    --green:    #22c55e;
+    --amber:    #f59e0b;
+    --red:      #ef4444;
+    --blue:     #3b82f6;
+    --purple:   #a78bfa;
+    --teal:     #2dd4bf;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(10,15,30,0.92); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 24px; padding: 12px 28px;
+  }
+  .topbar-logo { font-size: 1rem; font-weight: 700; color: var(--sky); white-space: nowrap; }
+  .topbar-logo span { color: var(--muted); font-weight: 400; font-size: 0.8rem; margin-left: 8px; }
+  .topbar-nav { display: flex; gap: 4px; flex-wrap: wrap; }
+  .topbar-nav a {
+    padding: 4px 10px; border-radius: 6px; font-size: 0.78rem; color: var(--muted);
+    text-decoration: none; transition: all .15s;
+  }
+  .topbar-nav a:hover { background: var(--surface2); color: var(--text); }
+  .badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 2px 8px; border-radius: 20px; font-size: 0.72rem; font-weight: 600;
+  }
+  .badge-green  { background: #14532d; color: var(--green); }
+  .badge-amber  { background: #451a03; color: var(--amber); }
+  .badge-red    { background: #450a0a; color: var(--red);   }
+  .badge-blue   { background: #1e3a5f; color: var(--sky);   }
+  .badge-purple { background: #2e1065; color: var(--purple);}
+
+  /* ── HERO ── */
+  .hero {
+    padding: 40px 28px 32px;
+    background: linear-gradient(135deg, #0a0f1e 0%, #0f1e3d 50%, #0a0f1e 100%);
+    border-bottom: 1px solid var(--border);
+  }
+  .hero h1 { font-size: 1.8rem; font-weight: 800; color: var(--sky); margin-bottom: 6px; }
+  .hero .species { font-size: 0.95rem; color: var(--muted); margin-bottom: 20px; }
+  .hero .species em { color: var(--teal); font-style: italic; }
+  .stats-row { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 20px; }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 20px; min-width: 140px;
+  }
+  .stat-card .label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+  .stat-card .value { font-size: 1.5rem; font-weight: 700; margin-top: 2px; }
+  .stat-done   .value { color: var(--green); }
+  .stat-todo   .value { color: var(--amber); }
+  .stat-urgent .value { color: var(--red);   }
+  .stat-info   .value { color: var(--sky);   }
+
+  /* ── PROGRESS BAR ── */
+  .progress-section { padding: 24px 28px; border-bottom: 1px solid var(--border); }
+  .progress-section h2 { font-size: 0.85rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 16px; }
+  .progress-bar-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .progress-bar-row .plabel { font-size: 0.82rem; color: var(--text); min-width: 80px; }
+  .progress-bar { flex: 1; height: 8px; background: var(--surface2); border-radius: 8px; overflow: hidden; }
+  .progress-bar .fill { height: 100%; border-radius: 8px; }
+  .fill-green  { background: linear-gradient(90deg, #16a34a, #22c55e); }
+  .fill-amber  { background: linear-gradient(90deg, #d97706, #f59e0b); }
+  .fill-red    { background: linear-gradient(90deg, #b91c1c, #ef4444); }
+  .progress-bar-row .pval { font-size: 0.78rem; color: var(--muted); min-width: 40px; text-align: right; }
+
+  /* ── MAIN LAYOUT ── */
+  .main { display: flex; }
+  .sidebar {
+    width: 180px; min-width: 180px; padding: 24px 12px;
+    position: sticky; top: 53px; height: calc(100vh - 53px); overflow-y: auto;
+    border-right: 1px solid var(--border);
+  }
+  .sidebar-section { margin-bottom: 20px; }
+  .sidebar-section .slabel { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; padding: 0 8px; margin-bottom: 6px; }
+  .sidebar-link {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 8px; border-radius: 6px; cursor: pointer;
+    font-size: 0.8rem; color: var(--muted); text-decoration: none;
+    transition: all .15s;
+  }
+  .sidebar-link:hover { background: var(--surface2); color: var(--text); }
+  .sidebar-link .sicon { font-size: 1rem; }
+  .sidebar-dot { width: 7px; height: 7px; border-radius: 50%; margin-left: auto; }
+  .sdot-green  { background: var(--green); }
+  .sdot-amber  { background: var(--amber); }
+  .sdot-red    { background: var(--red); }
+
+  /* ── CONTENT ── */
+  .content { flex: 1; padding: 28px; overflow-x: hidden; }
+
+  /* ── SECTION HEADER ── */
+  .section-header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 16px; padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-header .layer-badge {
+    background: var(--surface2); border: 1px solid var(--border);
+    padding: 4px 10px; border-radius: 6px;
+    font-size: 0.72rem; font-weight: 700; color: var(--sky); letter-spacing: .08em;
+  }
+  .section-header h2 { font-size: 1.05rem; font-weight: 700; color: var(--text); }
+  .section-header .section-status { margin-left: auto; }
+
+  /* ── LAYER CARD ── */
+  .layer-section { margin-bottom: 36px; scroll-margin-top: 70px; }
+  .layer-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .layer-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 16px;
+  }
+  .layer-card.done  { border-left: 3px solid var(--green); }
+  .layer-card.todo  { border-left: 3px solid var(--amber); }
+  .layer-card.new   { border-left: 3px solid var(--blue); }
+  .layer-card.warn  { border-left: 3px solid var(--red); }
+  .layer-card h3 { font-size: 0.85rem; font-weight: 600; color: var(--text); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .layer-card ul { list-style: none; padding: 0; }
+  .layer-card ul li { font-size: 0.78rem; color: var(--muted); padding: 2px 0; display: flex; align-items: flex-start; gap: 6px; }
+  .layer-card ul li::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--muted); margin-top: 6px; flex-shrink: 0; }
+  .li-done  { color: var(--green) !important; }
+  .li-done::before  { background: var(--green) !important; }
+  .li-todo  { color: var(--amber) !important; }
+  .li-todo::before  { background: var(--amber) !important; }
+  .li-new   { color: var(--blue) !important; }
+  .li-new::before   { background: var(--blue) !important; }
+  .li-warn  { color: var(--red) !important; }
+  .li-warn::before  { background: var(--red) !important; }
+
+  /* ── FILES ROW ── */
+  .files-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+  code {
+    background: var(--surface2); padding: 2px 7px; border-radius: 4px;
+    font-size: 0.75rem; color: var(--teal); font-family: 'Consolas', monospace;
+  }
+
+  /* ── TASK LIST ── */
+  .task-section { margin-bottom: 36px; scroll-margin-top: 70px; }
+  .task-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  .task-table th { background: var(--surface2); color: var(--muted); text-align: left; padding: 8px 12px; font-weight: 600; font-size: 0.72rem; text-transform: uppercase; letter-spacing: .06em; }
+  .task-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .task-table tr:hover td { background: var(--surface); }
+  .task-id { font-weight: 700; color: var(--sky); white-space: nowrap; }
+  .task-desc { color: var(--text); }
+  .task-file { color: var(--teal); font-family: monospace; font-size: 0.75rem; }
+  .comp-S  { background: #1c3154; color: #93c5fd; padding: 1px 7px; border-radius: 4px; font-size: 0.72rem; white-space: nowrap; }
+  .comp-M  { background: #1c3b2e; color: #6ee7b7; padding: 1px 7px; border-radius: 4px; font-size: 0.72rem; white-space: nowrap; }
+  .comp-L  { background: #3b2a1c; color: #fcd34d; padding: 1px 7px; border-radius: 4px; font-size: 0.72rem; white-space: nowrap; }
+  .comp-XL { background: #3b1c1c; color: #fca5a5; padding: 1px 7px; border-radius: 4px; font-size: 0.72rem; white-space: nowrap; }
+
+  /* ── DIAGRAM ── */
+  .diagram-section { margin-bottom: 36px; scroll-margin-top: 70px; }
+  .diagram-wrap {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 24px; overflow-x: auto;
+  }
+  .mermaid { display: flex; justify-content: center; }
+
+  /* ── DECISION LOG ── */
+  .decision-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+  .decision-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 14px;
+  }
+  .decision-card .qid { font-size: 0.72rem; color: var(--sky); font-weight: 700; margin-bottom: 4px; }
+  .decision-card .qtext { font-size: 0.78rem; color: var(--text); margin-bottom: 6px; }
+  .decision-card .qstatus { font-size: 0.72rem; }
+
+  /* ── DIVIDER ── */
+  .section-divider { height: 1px; background: var(--border); margin: 32px 0; }
+
+  /* ── GUARDRAILS ── */
+  .guardrail-box {
+    background: #2d1515; border: 1px solid #7f1d1d; border-radius: 10px;
+    padding: 16px 20px; margin-bottom: 28px;
+  }
+  .guardrail-box h3 { color: var(--red); font-size: 0.85rem; margin-bottom: 10px; }
+  .guardrail-box ul { list-style: none; padding: 0; }
+  .guardrail-box ul li { font-size: 0.8rem; color: #fca5a5; padding: 3px 0; }
+  .guardrail-box ul li::before { content: '⛔ '; }
+
+  @media (max-width: 768px) {
+    .sidebar { display: none; }
+    .stats-row { gap: 10px; }
+    .stat-card { min-width: 120px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-logo">🌱 VitroVision <span>Architecture v2 · 2026-06-22</span></div>
+  <nav class="topbar-nav">
+    <a href="#layers">Layers</a>
+    <a href="#flow">Flow</a>
+    <a href="#tasks">Tasks</a>
+    <a href="#decisions">Decisions</a>
+    <a href="#guardrails">Guardrails</a>
+  </nav>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <h1>🌱 VitroVision Architecture v2</h1>
+  <p class="species">
+    <em>Capsicum frutescens</em> Mill. cv.'พริกจินดา' · In Vitro Tissue Culture · YSC 2027 → ISEF CSBI
+  </p>
+  <p style="font-size:0.82rem; color:var(--muted);">Synthesize จาก Grill Q1–Q11 + Research R1–R5 (10+10 sub-files) · อิง <code>_architecture_v2_final.md</code></p>
+
+  <div class="stats-row">
+    <div class="stat-card stat-done">
+      <div class="label">Tasks Done</div>
+      <div class="value">8</div>
+    </div>
+    <div class="stat-card stat-todo">
+      <div class="label">Pending</div>
+      <div class="value">14</div>
+    </div>
+    <div class="stat-card stat-urgent">
+      <div class="label">Urgent (P1)</div>
+      <div class="value">4</div>
+    </div>
+    <div class="stat-card stat-info">
+      <div class="label">Layers</div>
+      <div class="value">L0–L7</div>
+    </div>
+    <div class="stat-card stat-info">
+      <div class="label">Decisions Locked</div>
+      <div class="value">11/12</div>
+    </div>
+    <div class="stat-card stat-info">
+      <div class="label">Batch 1</div>
+      <div class="value" style="font-size:1rem; padding-top:4px;">20 มิ.ย. ✅</div>
+    </div>
+  </div>
+</div>
+
+<!-- PROGRESS BARS -->
+<div class="progress-section" id="progress">
+  <h2>Implementation Progress</h2>
+  <div class="progress-bar-row">
+    <span class="plabel">L0 Physical</span>
+    <div class="progress-bar"><div class="fill fill-green" style="width:80%"></div></div>
+    <span class="pval">80%</span>
+  </div>
+  <div class="progress-bar-row">
+    <span class="plabel">L1 Capture</span>
+    <div class="progress-bar"><div class="fill fill-amber" style="width:60%"></div></div>
+    <span class="pval">60%</span>
+  </div>
+  <div class="progress-bar-row">
+    <span class="plabel">L2 Storage</span>
+    <div class="progress-bar"><div class="fill fill-amber" style="width:75%"></div></div>
+    <span class="pval">75%</span>
+  </div>
+  <div class="progress-bar-row">
+    <span class="plabel">L3 Color</span>
+    <div class="progress-bar"><div class="fill fill-amber" style="width:33%"></div></div>
+    <span class="pval">33%</span>
+  </div>
+  <div class="progress-bar-row">
+    <span class="plabel">L4 Segment</span>
+    <div class="progress-bar"><div class="fill fill-red" style="width:10%"></div></div>
+    <span class="pval">10%</span>
+  </div>
+  <div class="progress-bar-row">
+    <span class="plabel">L5 Features</span>
+    <div class="progress-bar"><div class="fill fill-green" style="width:70%"></div></div>
+    <span class="pval">70%</span>
+  </div>
+  <div class="progress-bar-row">
+    <span class="plabel">L6 AI</span>
+    <div class="progress-bar"><div class="fill fill-amber" style="width:40%"></div></div>
+    <span class="pval">40%</span>
+  </div>
+  <div class="progress-bar-row">
+    <span class="plabel">L7 Stats</span>
+    <div class="progress-bar"><div class="fill fill-red" style="width:0%"></div></div>
+    <span class="pval">0%</span>
+  </div>
+</div>
+
+<!-- MAIN LAYOUT -->
+<div class="main">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="slabel">Layers</div>
+      <a class="sidebar-link" href="#l0"><span class="sicon">⚗️</span> L0 Physical <span class="sidebar-dot sdot-green"></span></a>
+      <a class="sidebar-link" href="#l1"><span class="sicon">📱</span> L1 Capture <span class="sidebar-dot sdot-amber"></span></a>
+      <a class="sidebar-link" href="#l2"><span class="sicon">🗄️</span> L2 Storage <span class="sidebar-dot sdot-amber"></span></a>
+      <a class="sidebar-link" href="#l3"><span class="sicon">🎨</span> L3 Color <span class="sidebar-dot sdot-amber"></span></a>
+      <a class="sidebar-link" href="#l4"><span class="sicon">✂️</span> L4 Segment <span class="sidebar-dot sdot-red"></span></a>
+      <a class="sidebar-link" href="#l5"><span class="sicon">📊</span> L5 Features <span class="sidebar-dot sdot-green"></span></a>
+      <a class="sidebar-link" href="#l6"><span class="sicon">🤖</span> L6 AI <span class="sidebar-dot sdot-amber"></span></a>
+      <a class="sidebar-link" href="#l7"><span class="sicon">📈</span> L7 Stats <span class="sidebar-dot sdot-red"></span></a>
+    </div>
+    <div class="sidebar-section">
+      <div class="slabel">Sections</div>
+      <a class="sidebar-link" href="#flow"><span class="sicon">🔄</span> Flow Diagram</a>
+      <a class="sidebar-link" href="#tasks"><span class="sicon">📋</span> Task List</a>
+      <a class="sidebar-link" href="#decisions"><span class="sicon">🔒</span> Decisions</a>
+      <a class="sidebar-link" href="#guardrails"><span class="sicon">⛔</span> Guardrails</a>
+    </div>
+  </aside>
+
+  <!-- CONTENT -->
+  <main class="content">
+
+    <!-- ── LAYERS ── -->
+    <div id="layers">
+
+      <!-- L0 -->
+      <div class="layer-section" id="l0">
+        <div class="section-header">
+          <span class="layer-badge">L0</span>
+          <h2>⚗️ PHYSICAL — rig + protocol</h2>
+          <div class="section-status"><span class="badge badge-green">mostly done</span></div>
+        </div>
+        <div class="layer-grid">
+          <div class="layer-card done">
+            <h3>🧪 Experimental Setup</h3>
+            <ul>
+              <li class="li-done"><em>Capsicum frutescens</em> Mill. cv.'พริกจินดา'</li>
+              <li class="li-done">100 ขวดแยมแก้วใส × 5 สูตร × 20 ขวด</li>
+              <li class="li-warn">ขนาดขวด — ⚠️ รอวัดขนาดจริง (ไม่ใช่ 240 mL)</li>
+              <li class="li-done">~30 mL อาหาร/ขวด · 1 เมล็ด/ขวด</li>
+              <li class="li-done">5 สูตร: A=MS · B=BAP1 · C=BAP5 · D=BAP5+NAA0.05 · E=IBA1</li>
+            </ul>
+          </div>
+          <div class="layer-card done">
+            <h3>📷 Imaging</h3>
+            <ul>
+              <li class="li-done">Samsung Galaxy S24 FE · 12MP ล็อกตลอด</li>
+              <li class="li-done">Pro mode: WB ~4000K / ISO 50 / SS lock</li>
+              <li class="li-done">ระยะ ~18 cm · 17:00 น. ทุกวัน</li>
+              <li class="li-done">ArUco DICT_4X4_100 ~3 cm ติดครบทุกขวด ✅</li>
+            </ul>
+          </div>
+          <div class="layer-card todo">
+            <h3>🎨 Color Target (v2 ใหม่)</h3>
+            <ul>
+              <li class="li-todo">DIY 6-patch: White · Gray18% · R · G · B · Black</li>
+              <li class="li-todo">characterize ค่าจริงก่อนใช้ (Cugmas 2025: ΔE ~4.28)</li>
+              <li class="li-todo">เปลี่ยนจาก white card เดี่ยว (v1)</li>
+            </ul>
+          </div>
+          <div class="layer-card todo">
+            <h3>💡 Lighting (รอเคาะ A5.1)</h3>
+            <ul>
+              <li class="li-todo">Option A: Cross-pol + LED high-CRI + diffuser → ตัด specular ได้ดีสุด แต่เสียแสง 1.5–2 stops</li>
+              <li class="li-todo">Option B: Diffuse light-tent → ง่ายกว่า เสียแสงน้อยกว่า</li>
+              <li class="li-warn">⚠️ เทสต์ day 0 ก่อนเคาะ</li>
+            </ul>
+          </div>
+        </div>
+        <div class="files-row"><code>aruco_stickers.pdf</code> <code>generate_aruco.py</code></div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <!-- L1 -->
+      <div class="layer-section" id="l1">
+        <div class="section-header">
+          <span class="layer-badge">L1</span>
+          <h2>📱 DATA CAPTURE — scan.html</h2>
+          <div class="section-status"><span class="badge badge-amber">partial</span></div>
+        </div>
+        <div class="layer-grid">
+          <div class="layer-card done">
+            <h3>✅ Camera Gates (มีแล้ว)</h3>
+            <ul>
+              <li class="li-done">ArUco clarity ≥ 75% → auto-capture</li>
+            </ul>
+          </div>
+          <div class="layer-card todo">
+            <h3>⬜ C3 Camera Gates (T10 — v2 เพิ่ม)</h3>
+            <ul>
+              <li class="li-todo">Laplacian sharpness (patch-based, threshold ~100–200)</li>
+              <li class="li-todo">Glare detection (HSV V-high + S-low %)</li>
+              <li class="li-todo">Torch auto-on (เปิดไฟมือถือ)</li>
+              <li class="li-todo">Grid overlay (center ขวด)</li>
+            </ul>
+          </div>
+          <div class="layer-card done">
+            <h3>✅ FormData ที่ส่ง (v2 เพิ่ม 2 fields)</h3>
+            <ul>
+              <li class="li-done">bottle_id · day_point · clarity · photo</li>
+              <li class="li-done">dev_stage — radicle/hypocotyl/cotyledon/true_leaf</li>
+              <li class="li-done">hyperhydricity — bool checkbox</li>
+            </ul>
+          </div>
+        </div>
+        <div class="files-row"><code>templates/scan.html</code> <code>aruco_map.py</code> <code>vitro_vision/detector.py</code></div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <!-- L2 -->
+      <div class="layer-section" id="l2">
+        <div class="section-header">
+          <span class="layer-badge">L2</span>
+          <h2>🗄️ STORAGE — vitroshelf.db</h2>
+          <div class="section-status"><span class="badge badge-amber">partial</span></div>
+        </div>
+        <div class="layer-grid">
+          <div class="layer-card done">
+            <h3>✅ Tables ที่มีแล้ว</h3>
+            <ul>
+              <li class="li-done">batches · bottles · images · growth_observations</li>
+              <li class="li-done">images: image_id, bottle_id, day_point, dev_stage + 14 features</li>
+              <li class="li-done">expert_scores: image_id, rater_id, vigor_grade 1–5, hyperhydric_flag, ts</li>
+            </ul>
+          </div>
+          <div class="layer-card todo">
+            <h3>⬜ GAP-2 Survival (T19)</h3>
+            <ul>
+              <li class="li-todo">bottles: +acclim_survival BOOL</li>
+              <li class="li-todo">+acclim_date DATE</li>
+              <li class="li-todo">+survival_check_date DATE</li>
+              <li class="li-todo">ใช้ตอนย้ายอนุบาล (ส.ค.–ก.ย.)</li>
+            </ul>
+          </div>
+          <div class="layer-card done">
+            <h3>☁️ Google Drive</h3>
+            <ul>
+              <li class="li-done">backup-only · non-blocking (Q3 locked)</li>
+              <li class="li-done">ตัด /glass · /api/glass_stream ออกแล้ว (Q4)</li>
+            </ul>
+          </div>
+        </div>
+        <div class="files-row"><code>shelf_manager/database.py</code> <code>shelf_manager/drive_uploader.py</code></div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <!-- L3 -->
+      <div class="layer-section" id="l3">
+        <div class="section-header">
+          <span class="layer-badge">L3</span>
+          <h2>🎨 COLOR CORRECTION — NEW explicit layer v2</h2>
+          <div class="section-status"><span class="badge badge-blue">new in v2</span></div>
+        </div>
+        <div class="layer-grid">
+          <div class="layer-card done">
+            <h3>① Glare Mask ✅</h3>
+            <ul>
+              <li class="li-done">HSV adaptive threshold (V สูง + S ต่ำ)</li>
+              <li class="li-done">MASK-OUT (ไม่ใช่ inpaint)</li>
+              <li class="li-done">เก็บ specular_fraction เป็น feature</li>
+            </ul>
+          </div>
+          <div class="layer-card todo">
+            <h3>② Flat-field Correction</h3>
+            <ul>
+              <li class="li-todo">ถ่าย flat frame ของ rig ครั้งเดียว</li>
+              <li class="li-todo">หารทุกภาพเพื่อแก้ non-uniform illumination</li>
+            </ul>
+          </div>
+          <div class="layer-card todo">
+            <h3>③ CCM Affine 3×3 (T4) ⚠️ บังคับก่อน index</h3>
+            <ul>
+              <li class="li-todo">PlantCV: detect_color_card → get_color_matrix</li>
+              <li class="li-todo">auto_correct_color() → ต้องมาก่อน ExG/NGRDI/VARI</li>
+              <li class="li-todo">ห้ามใช้ Polynomial CCM (ใช้ Linear/Affine หรือ RPCC)</li>
+            </ul>
+          </div>
+        </div>
+        <div class="files-row"><code>shelf_manager/phenotyper.py</code> <span style="color:var(--amber);font-size:0.78rem;">WB_CARD_CORNER: เปิดหลังถ่าย calibration set</span></div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <!-- L4 -->
+      <div class="layer-section" id="l4">
+        <div class="section-header">
+          <span class="layer-badge">L4</span>
+          <h2>✂️ SEGMENTATION — v2 engine change</h2>
+          <div class="section-status"><span class="badge badge-red">needs bridge study</span></div>
+        </div>
+        <div class="layer-grid">
+          <div class="layer-card todo">
+            <h3>🏭 Production: YOLOv8n → MobileSAM</h3>
+            <ul>
+              <li class="li-todo">YOLOv8n detects bbox → MobileSAM box-prompt</li>
+              <li class="li-todo">3-class instance seg: leaf / shoot / stem</li>
+              <li class="li-done">CPU-capable (R2: SAM2-tiny หนักเกิน 8GB RAM)</li>
+            </ul>
+          </div>
+          <div class="layer-card todo">
+            <h3>🔬 Pre-annotation: GroundingDINO</h3>
+            <ul>
+              <li class="li-todo">zero-shot bounding boxes</li>
+              <li class="li-todo">รัน offline ครั้งเดียว → training data YOLOv8n-seg</li>
+            </ul>
+          </div>
+          <div class="layer-card done">
+            <h3>🔄 Fallback: HSV green threshold</h3>
+            <ul>
+              <li class="li-done">classic CV — ใช้ได้ถ้าไม่มี model</li>
+            </ul>
+          </div>
+          <div class="layer-card warn">
+            <h3>⚠️ Bridge Study (T1 — เร่งด่วน)</h3>
+            <ul>
+              <li class="li-warn">run HSV + MobileSAM บน n≥30 ขวดเดียวกัน</li>
+              <li class="li-warn">Bland-Altman per feature → ตรวจ engine drift</li>
+              <li class="li-warn">freeze pipeline ก่อนเก็บ validation data</li>
+            </ul>
+          </div>
+        </div>
+        <div class="files-row"><code>vitro_vision/detector.py</code> <code>shelf_manager/phenotyper.py</code></div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <!-- L5 -->
+      <div class="layer-section" id="l5">
+        <div class="section-header">
+          <span class="layer-badge">L5</span>
+          <h2>📊 FEATURE EXTRACTION — 16+ features</h2>
+          <div class="section-status"><span class="badge badge-green">mostly done</span></div>
+        </div>
+        <div class="layer-grid">
+          <div class="layer-card done">
+            <h3>🌿 Color Indices (after CCM — บังคับ)</h3>
+            <ul>
+              <li class="li-done">green_coverage_pct ★ — primary endpoint</li>
+              <li class="li-done">NGRDI = (G-R)/(G+R) 🥇 sensitive กว่า ExG</li>
+              <li class="li-done">ExG = 2G-R-B · ExR = 1.4R-G</li>
+              <li class="li-done">CIVE · VARI · LCI · brown_coverage_pct</li>
+            </ul>
+          </div>
+          <div class="layer-card done">
+            <h3>🔲 Texture</h3>
+            <ul>
+              <li class="li-done">GLCM contrast / homogeneity / correlation</li>
+              <li class="li-done">LBP (Local Binary Patterns) 🆕 v2</li>
+            </ul>
+          </div>
+          <div class="layer-card todo">
+            <h3>🌱 Architecture</h3>
+            <ul>
+              <li class="li-todo">shoot_count/explant 🆕 — ต้องมี L4 instance seg</li>
+              <li class="li-todo">plant_area_cm² ← ArUco px→cm (T9)</li>
+              <li class="li-done">convex_hull_ratio</li>
+              <li class="li-warn">❌ perimeter ตัดออก (ICC=0.27)</li>
+            </ul>
+          </div>
+          <div class="layer-card done">
+            <h3>✨ Quality</h3>
+            <ul>
+              <li class="li-done">specular_fraction 🆕 — glare area / total</li>
+            </ul>
+          </div>
+        </div>
+        <div class="files-row"><code>shelf_manager/phenotyper.py</code> <span style="color:var(--red);font-size:0.78rem;">⚠️ ทุก index ต้องคำนวณหลัง CCM เสมอ</span></div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <!-- L6 -->
+      <div class="layer-section" id="l6">
+        <div class="section-header">
+          <span class="layer-badge">L6</span>
+          <h2>🤖 AI CLASSIFICATION — async</h2>
+          <div class="section-status"><span class="badge badge-amber">partial</span></div>
+        </div>
+        <div class="layer-grid">
+          <div class="layer-card done">
+            <h3>🖥️ Local DL Classifier</h3>
+            <ul>
+              <li class="li-done">EfficientNet-B0 baseline (timm)</li>
+              <li class="li-todo">→ upgrade DINOv2 เมื่อมี labeled data</li>
+              <li class="li-done">3-class: healthy / contaminated / dead</li>
+            </ul>
+          </div>
+          <div class="layer-card todo">
+            <h3>☁️ Gemini VLM async (T12)</h3>
+            <ul>
+              <li class="li-todo">vision_analyzer.py async background call</li>
+              <li class="li-todo">JSON: status · vigor_description · dev_stage · HH_flag</li>
+              <li class="li-warn">⚠️ ห้าม VLM ออกตัวเลข vigor (Q9 locked)</li>
+              <li class="li-done">GOOGLE_API_KEY ใน .env พร้อมแล้ว</li>
+            </ul>
+          </div>
+          <div class="layer-card todo">
+            <h3>🔄 Pseudo-label Loop</h3>
+            <ul>
+              <li class="li-todo">Gemini teacher → pseudo-label</li>
+              <li class="li-todo">human review → commit → train DINOv2</li>
+              <li class="li-done">pseudo_labeler.py พร้อมแล้ว</li>
+            </ul>
+          </div>
+        </div>
+        <div class="files-row"><code>shelf_manager/inference.py</code> <code>shelf_manager/vision_analyzer.py</code> <code>vitro_vision/pseudo_labeler.py</code></div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <!-- L7 -->
+      <div class="layer-section" id="l7">
+        <div class="section-header">
+          <span class="layer-badge">L7</span>
+          <h2>📈 ANALYSIS & VALIDATION — NEW v2</h2>
+          <div class="section-status"><span class="badge badge-red">not started</span></div>
+        </div>
+        <div class="layer-grid">
+          <div class="layer-card todo">
+            <h3>M1 — Inter-rater Reliability</h3>
+            <ul>
+              <li class="li-todo">ICC(2,1) absolute agreement ≥ 0.75</li>
+              <li class="li-todo">Quadratic-weighted κ vigor-rubric ≥ 0.61</li>
+              <li class="li-todo">Cohen's κ binary (hyperhydric)</li>
+              <li class="li-todo">Krippendorff α (rater ≥ 3)</li>
+            </ul>
+          </div>
+          <div class="layer-card todo">
+            <h3>M2 — CV vs Expert</h3>
+            <ul>
+              <li class="li-todo">Spearman ρ ≥ 0.80 + 95% CI bootstrap</li>
+              <li class="li-todo">Bland-Altman bias + LoA</li>
+            </ul>
+          </div>
+          <div class="layer-card todo">
+            <h3>M3 — Treatment Comparison</h3>
+            <ul>
+              <li class="li-todo">ART-ANOVA + ART-C post-hoc (ไม่ใช่ Dunn)</li>
+              <li class="li-todo">ε²p effect size (ไม่ใช่ η²)</li>
+              <li class="li-todo">3 planned contrasts: A/B/C · C/D · A/E</li>
+            </ul>
+          </div>
+          <div class="layer-card todo">
+            <h3>M4 — Growth Curve</h3>
+            <ul>
+              <li class="li-todo">Gompertz/ขวด: K · k · tm · AUC</li>
+              <li class="li-todo">LMM treatment comparison on K/k/tm</li>
+            </ul>
+          </div>
+          <div class="layer-card todo">
+            <h3>M5 — Survival/Contamination</h3>
+            <ul>
+              <li class="li-todo">KM + permutation log-rank</li>
+              <li class="li-todo">CIF ถ้า competing events</li>
+            </ul>
+          </div>
+        </div>
+        <div class="files-row"><code>vitro_vision/validation_stats.py</code> <span style="color:var(--red);font-size:0.78rem;">⬜ เขียนใหม่ทั้งหมด (T13/T16/T17/T18)</span></div>
+      </div>
+
+    </div><!-- end #layers -->
+
+    <div class="section-divider"></div>
+
+    <!-- ── FLOW DIAGRAM ── -->
+    <div class="diagram-section" id="flow">
+      <div class="section-header">
+        <h2>🔄 Data Flow — L0 → L7</h2>
+      </div>
+      <div class="diagram-wrap">
+        <div class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': {'primaryColor': '#1e3a5f', 'primaryTextColor': '#f1f5f9', 'primaryBorderColor': '#3b82f6', 'lineColor': '#475569', 'secondaryColor': '#0f2035', 'fontFamily': 'Segoe UI'}}}%%
+flowchart TD
+    subgraph L0["⚗️ L0 PHYSICAL"]
+        P1["🧪 100 ขวด · 5 สูตร\nC. frutescens cv.พริกจินดา"]
+        P2["📷 S24 FE Pro mode 18cm 17:00น."]
+        P3["🏷️ ArUco 4X4_100 → px/cm scale"]
+        P4["🎨 DIY 6-patch color target"]
+    end
+    subgraph L1["📱 L1 CAPTURE"]
+        C1["C3 Gates: clarity·sharpness·glare"]
+        C2["POST /api/scan_save\n+dev_stage +hyperhydricity"]
+    end
+    subgraph L2["🗄️ L2 STORAGE"]
+        S1["SQLite: batches·bottles·images\nexpert_scores · survival⬜"]
+        S2["☁️ Drive backup-only"]
+    end
+    subgraph L3["🎨 L3 COLOR CORR"]
+        CC["Glare mask → Flat-field → CCM 3×3\n⚠️ ก่อน index ทุกครั้ง"]
+    end
+    subgraph L4["✂️ L4 SEG"]
+        E1["YOLOv8n bbox → MobileSAM\n3-class CPU-ok"]
+        E2["Fallback: HSV threshold"]
+    end
+    subgraph L5["📊 L5 FEATURES"]
+        F["16+ features\nNGRDI·ExG·CIVE·VARI·GLCM·LBP\ngreen_coverage_pct ★"]
+    end
+    subgraph L6["🤖 L6 AI"]
+        G1["EfficientNet→DINOv2\n3-class healthy/contam/dead"]
+        G2["Gemini async BG\nvigor_description (text)"]
+    end
+    subgraph L7["📈 L7 STATS"]
+        V["ICC·QWK·Spearman\nGompertz·ART-C·KM"]
+    end
+
+    L0-->L1-->L2
+    L2-->|image path|L3-->L4-->L5
+    L5-->|features|L2
+    L5-->L6
+    L5-->L7
+    L6-.->|async|L2
+    L2-->|DB query|L7
+        </div>
+      </div>
+
+      <div style="margin-top:24px;">
+        <div class="section-header">
+          <h2>🖼️ Single Image Sequence</h2>
+        </div>
+        <div class="diagram-wrap">
+          <div class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': {'primaryColor': '#1e3a5f', 'primaryTextColor': '#f1f5f9', 'lineColor': '#475569', 'fontFamily': 'Segoe UI'}}}%%
+sequenceDiagram
+    actor U as 📱 scan.html
+    participant G as C3 Gates
+    participant A as Flask API
+    participant P as phenotyper.py
+    participant D as SQLite DB
+    participant AI as inference.py
+    participant V as Gemini BG
+
+    U->>G: ชี้กล้องที่ขวด
+    G->>G: ① ArUco clarity ≥75%?
+    G->>G: ② Laplacian sharpness?
+    G->>G: ③ Glare % ≤ threshold?
+    G-->>U: ❌ แจ้งเหตุ (ถ้าไม่ผ่าน)
+    G->>A: ✅ POST photo+metadata
+    A->>D: INSERT image row
+    A->>P: phenotype(path)
+    P->>P: L3: glare mask → CCM
+    P->>P: L4: YOLOv8n → MobileSAM
+    P->>P: L5: 16+ features
+    P-->>A: features dict
+    A->>D: UPDATE 16 features
+    A->>AI: predict() 3-class
+    AI-->>D: UPDATE ai_status
+    A-->>U: ✅ scan saved (fast)
+    A-)V: POST async
+    V-)D: UPDATE vigor_desc + HH_flag
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- ── TASK LIST ── -->
+    <div class="task-section" id="tasks">
+      <div class="section-header">
+        <h2>📋 Implementation Tasks</h2>
+      </div>
+
+      <p style="font-size:0.82rem; color:var(--muted); margin-bottom:16px;">🔴 P1 = ก่อน/ระหว่าง batch 1 · 🟡 P2 = ก.ค. · 🟢 P3 = ส.ค.–ต.ค.</p>
+
+      <table class="task-table">
+        <tr><th>Task</th><th>Description</th><th>ไฟล์</th><th>Size</th><th>Status</th></tr>
+        <!-- P1 -->
+        <tr>
+          <td class="task-id">🔴 T1</td>
+          <td class="task-desc">Bridge study: HSV vs MobileSAM → Bland-Altman</td>
+          <td class="task-file">validation_stats.py</td>
+          <td><span class="comp-M">M</span></td>
+          <td><span class="badge badge-red">urgent</span></td>
+        </tr>
+        <tr>
+          <td class="task-id">✅ T2</td>
+          <td class="task-desc">GAP-1 expert_scores table + routes POST/GET</td>
+          <td class="task-file">database.py · main.py</td>
+          <td><span class="comp-M">M</span></td>
+          <td><span class="badge badge-green">done 06-21</span></td>
+        </tr>
+        <tr>
+          <td class="task-id">✅ T3</td>
+          <td class="task-desc">GAP-4 dev_stage + GAP-5 hyperhydricity ใน scan.html</td>
+          <td class="task-file">scan.html</td>
+          <td><span class="comp-S">S</span></td>
+          <td><span class="badge badge-green">done 06-21</span></td>
+        </tr>
+        <tr>
+          <td class="task-id">🔴 T4</td>
+          <td class="task-desc">6-patch color target + เปิด WB_CARD_CORNER + test CCM</td>
+          <td class="task-file">phenotyper.py</td>
+          <td><span class="comp-S">S</span></td>
+          <td><span class="badge badge-amber">pending</span></td>
+        </tr>
+        <tr>
+          <td class="task-id">✅ T5</td>
+          <td class="task-desc">Glare mask + specular_fraction feature</td>
+          <td class="task-file">phenotyper.py</td>
+          <td><span class="comp-S">S</span></td>
+          <td><span class="badge badge-green">done 06-21</span></td>
+        </tr>
+        <tr>
+          <td class="task-id">🔴 T6</td>
+          <td class="task-desc">ทักครู ≥2 คน เป็น rater (lead time นาน)</td>
+          <td class="task-file">—</td>
+          <td>—</td>
+          <td><span class="badge badge-red">urgent</span></td>
+        </tr>
+        <!-- P2 -->
+        <tr>
+          <td class="task-id">✅ T7</td>
+          <td class="task-desc">NGRDI + CIVE เพิ่มใน feature set + DB</td>
+          <td class="task-file">phenotyper.py</td>
+          <td><span class="comp-S">S</span></td>
+          <td><span class="badge badge-green">done 06-21</span></td>
+        </tr>
+        <tr>
+          <td class="task-id">🟡 T8</td>
+          <td class="task-desc">shoot_count จาก instance seg (ต้องมี YOLOv8n-seg)</td>
+          <td class="task-file">phenotyper.py</td>
+          <td><span class="comp-L">L</span></td>
+          <td><span class="badge badge-amber">blocked (T20)</span></td>
+        </tr>
+        <tr>
+          <td class="task-id">🟡 T9</td>
+          <td class="task-desc">ArUco scale px→cm → area_cm²/height_mm</td>
+          <td class="task-file">aruco_map.py · phenotyper.py</td>
+          <td><span class="comp-M">M</span></td>
+          <td><span class="badge badge-amber">pending</span></td>
+        </tr>
+        <tr>
+          <td class="task-id">🟡 T10</td>
+          <td class="task-desc">C3 camera gates: Laplacian, glare, torch, grid</td>
+          <td class="task-file">scan.html</td>
+          <td><span class="comp-M">M</span></td>
+          <td><span class="badge badge-amber">pending</span></td>
+        </tr>
+        <tr>
+          <td class="task-id">🟡 T11</td>
+          <td class="task-desc">Flat-field correction (ถ่าย flat frame rig)</td>
+          <td class="task-file">phenotyper.py</td>
+          <td><span class="comp-S">S</span></td>
+          <td><span class="badge badge-amber">pending</span></td>
+        </tr>
+        <tr>
+          <td class="task-id">🟡 T12</td>
+          <td class="task-desc">Gemini async flow (background job, ไม่ block scan)</td>
+          <td class="task-file">main.py · vision_analyzer.py</td>
+          <td><span class="comp-M">M</span></td>
+          <td><span class="badge badge-amber">pending</span></td>
+        </tr>
+        <tr>
+          <td class="task-id">🟡 T13</td>
+          <td class="task-desc">validation_stats.py Module 1+2 (ICC/QWK/Spearman/B-A)</td>
+          <td class="task-file">validation_stats.py</td>
+          <td><span class="comp-M">M</span></td>
+          <td><span class="badge badge-amber">pending</span></td>
+        </tr>
+        <tr>
+          <td class="task-id">🟡 T14</td>
+          <td class="task-desc">PWA manifest.json + rate-of-change column dashboard</td>
+          <td class="task-file">main.py · templates/</td>
+          <td><span class="comp-S">S</span></td>
+          <td><span class="badge badge-amber">pending</span></td>
+        </tr>
+        <tr>
+          <td class="task-id">✅ T15</td>
+          <td class="task-desc">ตัด glass routes ออกจาก main.py</td>
+          <td class="task-file">main.py</td>
+          <td><span class="comp-S">S</span></td>
+          <td><span class="badge badge-green">done 06-21</span></td>
+        </tr>
+        <!-- P3 -->
+        <tr>
+          <td class="task-id">🟢 T16</td>
+          <td class="task-desc">validation_stats.py M3: ART-ANOVA + ART-C + ε²p</td>
+          <td class="task-file">validation_stats.py</td>
+          <td><span class="comp-L">L</span></td>
+          <td><span class="badge badge-blue">later</span></td>
+        </tr>
+        <tr>
+          <td class="task-id">🟢 T17</td>
+          <td class="task-desc">validation_stats.py M4: Gompertz NLS + LMM</td>
+          <td class="task-file">validation_stats.py</td>
+          <td><span class="comp-L">L</span></td>
+          <td><span class="badge badge-blue">later</span></td>
+        </tr>
+        <tr>
+          <td class="task-id">🟢 T18</td>
+          <td class="task-desc">validation_stats.py M5: KM + permutation log-rank + CIF</td>
+          <td class="task-file">validation_stats.py</td>
+          <td><span class="comp-M">M</span></td>
+          <td><span class="badge badge-blue">later</span></td>
+        </tr>
+        <tr>
+          <td class="task-id">🟢 T19</td>
+          <td class="task-desc">GAP-2 survival field ใน bottles</td>
+          <td class="task-file">database.py · main.py</td>
+          <td><span class="comp-S">S</span></td>
+          <td><span class="badge badge-blue">later</span></td>
+        </tr>
+        <tr>
+          <td class="task-id">🟢 T20</td>
+          <td class="task-desc">MobileSAM + YOLOv8n-seg fine-tune บน batch 1</td>
+          <td class="task-file">vitro_vision/</td>
+          <td><span class="comp-XL">XL</span></td>
+          <td><span class="badge badge-blue">later</span></td>
+        </tr>
+        <tr>
+          <td class="task-id">🟢 T21</td>
+          <td class="task-desc">DINOv2 upgrade หลัง pseudo-label + human review</td>
+          <td class="task-file">vitro_vision/trainer.py</td>
+          <td><span class="comp-L">L</span></td>
+          <td><span class="badge badge-blue">later</span></td>
+        </tr>
+        <tr>
+          <td class="task-id">🟢 T22</td>
+          <td class="task-desc">sync narrative + report_outline §3 ให้ตรง v2</td>
+          <td class="task-file">_narrative_spine.md · report_outline.md</td>
+          <td><span class="comp-M">M</span></td>
+          <td><span class="badge badge-blue">later</span></td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- ── DECISIONS ── -->
+    <div class="layer-section" id="decisions">
+      <div class="section-header">
+        <h2>🔒 Decision Log (Q1–Q11 + pending)</h2>
+      </div>
+      <div class="decision-grid">
+        <div class="decision-card">
+          <div class="qid">Q1</div>
+          <div class="qtext">API = qualitative · classical = quantitative</div>
+          <div class="qstatus"><span class="badge badge-green">locked</span></div>
+        </div>
+        <div class="decision-card">
+          <div class="qid">Q2</div>
+          <div class="qtext">ตัด CLI scanner</div>
+          <div class="qstatus"><span class="badge badge-green">locked</span></div>
+        </div>
+        <div class="decision-card">
+          <div class="qid">Q3</div>
+          <div class="qtext">Drive backup-only (ไม่ block scan)</div>
+          <div class="qstatus"><span class="badge badge-green">locked</span></div>
+        </div>
+        <div class="decision-card">
+          <div class="qid">Q4</div>
+          <div class="qtext">ตัด glass detection</div>
+          <div class="qstatus"><span class="badge badge-green">locked</span></div>
+        </div>
+        <div class="decision-card">
+          <div class="qid">Q5</div>
+          <div class="qtext">Pro mode manual Samsung Camera</div>
+          <div class="qstatus"><span class="badge badge-green">locked</span></div>
+        </div>
+        <div class="decision-card">
+          <div class="qid">Q6</div>
+          <div class="qtext">ArUco → scale cm (เพิ่ม)</div>
+          <div class="qstatus"><span class="badge badge-green">locked</span></div>
+        </div>
+        <div class="decision-card">
+          <div class="qid">Q7</div>
+          <div class="qtext">Gemini API async (ไม่ block scan)</div>
+          <div class="qstatus"><span class="badge badge-green">locked</span></div>
+        </div>
+        <div class="decision-card">
+          <div class="qid">Q8</div>
+          <div class="qtext">SAM = local seg · API = cloud classify</div>
+          <div class="qstatus"><span class="badge badge-green">locked</span></div>
+        </div>
+        <div class="decision-card">
+          <div class="qid">Q9</div>
+          <div class="qtext">VLM = qualitative description (ห้ามเลข)</div>
+          <div class="qstatus"><span class="badge badge-green">locked</span></div>
+        </div>
+        <div class="decision-card">
+          <div class="qid">Q10</div>
+          <div class="qtext">WB: 2-layer + 6-patch (R4 ยืนยัน)</div>
+          <div class="qstatus"><span class="badge badge-green">locked</span></div>
+        </div>
+        <div class="decision-card">
+          <div class="qid">Q11</div>
+          <div class="qtext">L7 stats: ART + Gompertz + KM/CIF</div>
+          <div class="qstatus"><span class="badge badge-green">locked</span></div>
+        </div>
+        <div class="decision-card">
+          <div class="qid">A5.1</div>
+          <div class="qtext">Cross-pol+LED vs diffuse light-tent</div>
+          <div class="qstatus"><span class="badge badge-red">⏳ รอเทสต์ day 0</span></div>
+        </div>
+        <div class="decision-card">
+          <div class="qid">A3</div>
+          <div class="qtext">HSV threshold calibration</div>
+          <div class="qstatus"><span class="badge badge-amber">⏳ รอภาพ rig จริง</span></div>
+        </div>
+        <div class="decision-card">
+          <div class="qid">species</div>
+          <div class="qtext"><em>C. frutescens</em> Mill. (ไม่ใช่ C. annuum)</div>
+          <div class="qstatus"><span class="badge badge-green">locked 06-22</span></div>
+        </div>
+        <div class="decision-card">
+          <div class="qid">ขนาดขวด</div>
+          <div class="qtext">ไม่ใช่ 240 mL — รอวัดขวดจริง</div>
+          <div class="qstatus"><span class="badge badge-amber">⏳ pending</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- ── GUARDRAILS ── -->
+    <div class="layer-section" id="guardrails">
+      <div class="section-header">
+        <h2>⛔ Guardrails — ข้อเท็จจริงที่ห้ามพลาด</h2>
+      </div>
+      <div class="guardrail-box">
+        <h3>ห้ามอ้างผิด / ห้ามทำผิด</h3>
+        <ul>
+          <li>κ=0.6274 ใน metrics.json = smoke-test บนภาพมั่ว — ห้ามอ้างเป็น metric จริง</li>
+          <li>classical CV (green%/HSV/ExG) ≠ AI — เป็นคณิตศาสตร์ภาพ; AI จริง = EfficientNet/DINOv2</li>
+          <li>VLM ห้ามออกตัวเลข vigor — qualitative description เท่านั้น (Q9)</li>
+          <li>post-hoc = ART-C เท่านั้น — ห้ามใช้ Dunn</li>
+          <li>ห้าม pool data engine เก่า (HSV) กับ engine ใหม่ (MobileSAM) — ต้อง bridge study ก่อน</li>
+          <li>ขวด = experimental unit — ห้ามนับภาพ 20–25 ภาพ/ขวดเป็น n (pseudoreplication)</li>
+          <li>แยก κ vigor-rubric ≠ κ classifier-3class ทุกที่</li>
+          <li>สปีชีส์: <em>Capsicum frutescens</em> Mill. — ไม่ใช่ C. annuum</li>
+        </ul>
+      </div>
+    </div>
+
+  </main>
+</div><!-- end .main -->
+
+<script>
+  mermaid.initialize({ startOnLoad: true, securityLevel: 'loose', flowchart: { curve: 'basis' } });
+</script>
+</body>
+</html>

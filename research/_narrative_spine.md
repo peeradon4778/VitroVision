@@ -1,4 +1,4 @@
-# 🎬 Narrative Spine — VitroVision (เส้นเรื่องโครงงานสำหรับนำเสนอ)
+﻿# 🎬 Narrative Spine — VitroVision (เส้นเรื่องโครงงานสำหรับนำเสนอ)
 
 > **ใบนี้คืออะไร:** ร้อย research ทั้งหมดเป็น "เรื่องเดียว" ที่เล่าต่อเนื่องตั้งแต่ปัญหา → วิธี → ผล → impact + แปลแนวคิดยากให้กรรมการ/คนทั่วไปเข้าใจ ใช้เป็นโครงพูดพรีเซนต์ + โครงเขียน proposal/abstract
 > สร้าง 2026-06-12 · อิง research 01–14 (audit แล้ว) + Methods draft + citation ที่ verify แล้ว
@@ -6,8 +6,8 @@
 
 ## 🏷️ ชื่อโครงงาน Final (ล็อก 2026-06-18)
 
-- **ไทย:** VitroVision: นวัตกรรมการวิเคราะห์ฟีโนไทป์เชิงคำนวณจากภาพของ *Capsicum annuum* L. ในการเพาะเลี้ยงเนื้อเยื่อด้วย Vision-Language Models
-- **EN:** VitroVision: Image-Based Computational Phenotyping of *Capsicum annuum* L. in Vitro via Vision-Language Models
+- **ไทย:** VitroVision: นวัตกรรมการวิเคราะห์ฟีโนไทป์เชิงคำนวณจากภาพของ *Capsicum frutescens* Mill. ในการเพาะเลี้ยงเนื้อเยื่อด้วย Vision-Language Models
+- **EN:** VitroVision: Image-Based Computational Phenotyping of *Capsicum frutescens* Mill. in Vitro via Vision-Language Models
 - **สาขา:** CS → CSBI (YSC 2027 → ISEF)
 
 ---

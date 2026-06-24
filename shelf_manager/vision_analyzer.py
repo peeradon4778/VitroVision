@@ -1,4 +1,4 @@
-import io
+﻿import io
 import json
 import os
 from pathlib import Path
@@ -34,7 +34,7 @@ def _get_client():
 
 
 PROMPT = """\
-วิเคราะห์สภาพพืช Capsicum annuum (พริก) ในขวดแยมแก้ว 240mL บนอาหาร MS ถ่ายผ่านกระจกปิดผนึก
+วิเคราะห์สภาพพืช Capsicum frutescens (พริก) ในขวดแยมแก้ว 240mL บนอาหาร MS ถ่ายผ่านกระจกปิดผนึก
 
 ตอบ JSON เท่านั้น ห้ามมี ``` ห้ามมีคำอธิบายอื่น:
 {"status":"","vigor":0,"dev_stage":"","contamination_signs":"","notes":""}

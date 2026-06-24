@@ -1,7 +1,7 @@
-# 10 — Methods (v2)
+﻿# 10 — Methods (v2)
 
 > **สถานะ:** **v2** | สร้าง 2026-06-11 · อัปเดต 2026-06-12 (fold decisions + 19 audit fixes)
-> **โปรเจกต์:** VitroVision — Computational phenotyping ของ *Capsicum annuum* in vitro tissue culture (YSC 2027 / CSBI)
+> **โปรเจกต์:** VitroVision — Computational phenotyping ของ *Capsicum frutescens* in vitro tissue culture (YSC 2027 / CSBI)
 > **อ้างอิงฐาน:** Research Design v1 (locked 2026-06-11) + research files `06`–`09` (citation verified ผ่าน Consensus/PubMed)
 > **Decisions ที่ fold เข้า v2:**
 > - Reference standard = **consensus (median) ของครู ≥2 คน** (รายงาน inter-rater แยก)
@@ -18,7 +18,7 @@
 
 **A. ค่าแล็บที่ผมไม่รู้ (peeradon กรอก):**
 - [x] §1.1 — whole-fruit Clorox 15%→10% ฟอก 2 รอบ **รอบละ 15 นาที, Clorox อย่างเดียว (ไม่ Tween/EtOH)** → คีบเมล็ดจากผล (เกษตรกร อ.สตึก บุรีรัมย์), ไม่ใช้ GA₃, นับ day จาก emergence ✅ **ครบ 2026-06-12**
-- [x] §1.2 อาหาร — MS full / Glucose 20 / Kelcogel 3 g/L / pH 5.6–5.8 / PGR ก่อน autoclave / 121°C 15–20 min / ~30 mL/ขวด, **ขวดแยมแก้ว 240 mL** ✅ **ครบ 2026-06-12**
+- [x] §1.2 อาหาร — MS full / Glucose 20 / Kelcogel 3 g/L / pH 5.6–5.8 / PGR ก่อน autoclave / 121°C 15–20 min / ~30 mL/ขวด, **ขวดแยมแก้ว 125 mL** ✅ **ครบ 2026-06-12 · ยืนยันขนาด 2026-06-24**
 - [x] §1.3 สถานะ — A/C/D ทำอาหารแล้วยังไม่หยอด, B/E พรุ่งนี้ → หยอด 1 เมล็ด/ขวดพร้อมกันทุกสูตร
 - [x] §1.7 อุณหภูมิ/photoperiod/light = **ค่าจริงตรง default** 25±2°C / 16/8 h / LED 40–50 µmol (2026-06-12)
 - [x] §2.1 **รุ่นกล้อง/มือถือ** = **Samsung Galaxy S24 FE** (main 50 MP ISOCELL GN3, f/1.8 OIS) — เหลือ: ระยะถ่าย + lightbox spec + ยืนยัน Pro mode/ความละเอียด
@@ -47,7 +47,7 @@
 
 ### 1.1 Plant material และ explant source
 
-ใช้ *Capsicum annuum* L. cv. **'พริกจินดา'** พันธุ์เดียวตลอดการทดลอง เพื่อตัด genotype effect ออก — ผลเป็น cultivar-specific (genotype-dependent regeneration response เป็นที่ทราบในพริก — Kothari et al. 2009) ระบุเป็น scope/limitation ชัดเจน
+ใช้ *Capsicum frutescens* Mill. cv. **'พริกจินดา'** พันธุ์เดียวตลอดการทดลอง เพื่อตัด genotype effect ออก — ผลเป็น cultivar-specific (genotype-dependent regeneration response เป็นที่ทราบในพริก — Kothari et al. 2009) ระบุเป็น scope/limitation ชัดเจน
 
 **Starting material = เมล็ดที่คีบจากผลพริก** → seed-derived seedlings (NOT clonal) ผลคือแต่ละต้นมี **genetic variation** ระหว่าง individual → within-treatment variance สูงกว่าระบบ clonal = เหตุผลเชิงสถิติที่ design ต้องใช้ ≥2 batch + n สูง (§1.4)
 
@@ -81,10 +81,10 @@ basal = **MS medium** (Murashige & Skoog 1962) ปรับเฉพาะ plant
 - PGR: ใส่**ก่อน autoclave** (autoclavable, ไม่ filter-sterilize)
 - Autoclave: **121°C, 15–20 นาที**
 - ปริมาตร: **~30 mL/ขวด** (อาหาร 1 L ทำได้ ~40 ขวด)
-- ภาชนะ: **ขวดแยมแก้วใส 240 mL** (ยืนยัน 2026-06-12) — แก้วใส → through-bottle imaging คมชัด (เข้าทาง CV) · อาหาร ~30 mL ก้น headspace เหลือเยอะ (~210 mL) สำหรับต้นโต
+- ภาชนะ: **ขวดแยมแก้วใส 125 mL** (ยืนยัน 2026-06-24) — แก้วใส → through-bottle imaging คมชัด (เข้าทาง CV) · อาหาร ~30 mL ก้น headspace ~95 mL สำหรับต้นโต
 
 > **⚑ หมายเหตุ deviation (defend ได้แล้ว — ดู `11_carbon_source_glucose.md`):**
-> (1) **Glucose แทน sucrose** — **มี Capsicum-specific evidence โดยตรง: Phillips & Hubstenberger (1985) ระบุ "Glucose was superior to sucrose as the carbon source" ใน *Capsicum annuum* บน MS medium**. กลไก: glucose เป็น monosaccharide ดูดซึมเข้า glycolysis ตรง ไม่ต้อง invertase hydrolysis (Wan 2017; Ruan 2012) — สำคัญใน explant ที่ตัดขาดจาก phloem. โบนัส: glucose ส่งเสริมการสะสม chlorophyll (Arafa 2023) = ดีต่อ green_coverage phenotype. + ทุกสูตร A–E ใช้ glucose เหมือนกัน → คงที่ข้าม treatment ไม่ใช่ confound. การเลือก carbon source ตาม genotype/explant = established practice (Yaseen 2013 review).
+> (1) **Glucose แทน sucrose** — **มี Capsicum-specific evidence โดยตรง: Phillips & Hubstenberger (1985) ระบุ "Glucose was superior to sucrose as the carbon source" ใน *Capsicum frutescens* บน MS medium**. กลไก: glucose เป็น monosaccharide ดูดซึมเข้า glycolysis ตรง ไม่ต้อง invertase hydrolysis (Wan 2017; Ruan 2012) — สำคัญใน explant ที่ตัดขาดจาก phloem. โบนัส: glucose ส่งเสริมการสะสม chlorophyll (Arafa 2023) = ดีต่อ green_coverage phenotype. + ทุกสูตร A–E ใช้ glucose เหมือนกัน → คงที่ข้าม treatment ไม่ใช่ confound. การเลือก carbon source ตาม genotype/explant = established practice (Yaseen 2013 review).
 > (2) **Gellan gum (Kelcogel 3 g/L)** — จุดแข็ง: medium ใส → through-bottle imaging คุณภาพสูงกว่า agar ขุ่น = สนับสนุน CV approach โดยตรง
 
 ### 1.3 Experimental unit และ sowing

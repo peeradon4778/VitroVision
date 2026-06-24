@@ -1,8 +1,8 @@
-# 06 — Validation Methodology สำหรับ VitroVision
+﻿# 06 — Validation Methodology สำหรับ VitroVision
 
 > **สถานะ:** Draft v1 | วันที่สร้าง: 2026-06-11
 > **วัตถุประสงค์:** รวบรวม evidence base สำหรับการเลือก validation metrics เมื่อ validate ระบบ CV เทียบกับ expert ordinal score (gold standard)
-> **โปรเจกต์:** VitroVision — Computational Phenotyping ของ *Capsicum annuum* in vitro tissue culture (YSC 2027 / CSBI)
+> **โปรเจกต์:** VitroVision — Computational Phenotyping ของ *Capsicum frutescens* in vitro tissue culture (YSC 2027 / CSBI)
 
 ---
 

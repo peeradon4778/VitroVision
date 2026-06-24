@@ -1,4 +1,4 @@
-# 02 — Media Formulations Review: PGR สำหรับ Capsicum annuum Tissue Culture
+﻿# 02 — Media Formulations Review: PGR สำหรับ Capsicum frutescens Tissue Culture
 
 **โครงงาน:** VitroVision — Computational Phenotyping ของพริกเพาะเลี้ยงเนื้อเยื่อ
 **เป้าหมาย:** YSC 2027 (CSBI) → ISEF
@@ -23,7 +23,7 @@
 1. **BAP คือ cytokinin หลักสำหรับ shoot multiplication ในพริก** — literature ส่วนใหญ่ใช้ BAP 5 mg/L ขึ้นไป (บางสูตรถึง 8 mg/L) ในขั้น shoot induction [1][3][6][7][8][9].
 2. **BAP สูง (5 mg/L) เพิ่ม "จำนวน" ยอด แต่ "ไม่ทำให้ยอดยืด" (elongation)** — ที่ 5 mg/L BAP ใน cv. mathania ยอดเพิ่มจำนวนแต่ไม่ elongate ต้องย้ายไป auxin ต่ำเพื่อยืด [3]. นี่คือ diminishing return รูปแบบหนึ่ง: ได้ปริมาณแต่เสียคุณภาพ.
 3. **BAP ทำให้เกิด morphophysiological disorder เมื่อความเข้มข้นสูง** — underdeveloped leaves, shoot-tip necrosis, hyperhydricity, pigment ลด [13][14][15]. ในพริก/พืชใกล้เคียง topolin (mT) ให้ proliferation สูงกว่าและ hyperhydricity ต่ำกว่า BAP [10][11].
-4. **C:A ratio (BAP:NAA) กำหนดทิศทาง**: BAP สูง + NAA ต่ำมาก → shoot; BAP กลาง + NAA → callus; auxin เด่น → root. ใน C. annuum, 2 mg/L BAP + 0.1 mg/L NAA เหมาะกับ **callus**, ส่วน BAP + IAA ต่ำเหมาะกับ shoot bud [6].
+4. **C:A ratio (BAP:NAA) กำหนดทิศทาง**: BAP สูง + NAA ต่ำมาก → shoot; BAP กลาง + NAA → callus; auxin เด่น → root. ใน C. frutescens, 2 mg/L BAP + 0.1 mg/L NAA เหมาะกับ **callus**, ส่วน BAP + IAA ต่ำเหมาะกับ shoot bud [6].
 5. **IBA คือ auxin มาตรฐานสำหรับ rooting ในพริก** (0.5–1 mg/L) [1][6][7]; NAA/IBA สูงเร่ง root initiation แต่เสี่ยง callus ที่โคน [4][5].
 6. **การออกแบบ 5 สูตรของเรา: โครงดี แต่มี confound ที่ต้องระวัง** — E (auxin เดี่ยว) เป็นคนละ stage กับ A–D (multiplication) ทำให้เปรียบเทียบตรงๆ ใน Kruskal-Wallis เดียวกันได้ไม่สะอาด และ dose-response ของ BAP มีแค่ 2 จุด (1 → 5 mg/L) ขาดจุดกลาง.
 7. **n=20/สูตร เพียงพอสำหรับ Kruskal-Wallis** ในระดับ effect ปานกลาง-ใหญ่ที่ TC ทั่วไปเห็น แต่ contamination/missing จะลด effective n — ควรวางแผนเผื่อ.
@@ -33,7 +33,7 @@
 ## ส่วนที่ 1 — สูตร/PGR แบบไหนเร่งอะไรได้ดี (Capsicum + พืชใกล้เคียง)
 
 ### 1.1 BAP กับ shoot multiplication
-ในพริก BAP เป็น cytokinin ที่ใช้บ่อยที่สุดสำหรับชักนำ multiple shoot. งานคลาสสิกใน *C. annuum* cv. mathania พบว่า **BAP 5.0 mg/L เป็นตัวที่ดีที่สุดสำหรับ shoot bud differentiation** [3]. ใน cv. Meiteimorok/Haomorok จำนวน shoot bud สูงสุดที่ BAP 22.2 µM (~5 mg/L) หรือ 44.4 µM (~10 mg/L) [2]. โปรโตคอลล่าสุดของ sweet pepper หลายงานดันไปถึง **BAP 8 mg/L + NAA 0.02 + IAA** สำหรับ shoot induction [1][8]. โปรโตคอล transformation ของ chili 7 พันธุ์ก็ optimize ที่ **BAP 5 mg/L (+ AgNO₃)** สำหรับ shoot formation [7].
+ในพริก BAP เป็น cytokinin ที่ใช้บ่อยที่สุดสำหรับชักนำ multiple shoot. งานคลาสสิกใน *C. frutescens* cv. mathania พบว่า **BAP 5.0 mg/L เป็นตัวที่ดีที่สุดสำหรับ shoot bud differentiation** [3]. ใน cv. Meiteimorok/Haomorok จำนวน shoot bud สูงสุดที่ BAP 22.2 µM (~5 mg/L) หรือ 44.4 µM (~10 mg/L) [2]. โปรโตคอลล่าสุดของ sweet pepper หลายงานดันไปถึง **BAP 8 mg/L + NAA 0.02 + IAA** สำหรับ shoot induction [1][8]. โปรโตคอล transformation ของ chili 7 พันธุ์ก็ optimize ที่ **BAP 5 mg/L (+ AgNO₃)** สำหรับ shoot formation [7].
 
 > สรุป: **ช่วง optimal ของ BAP สำหรับ multiplication ในพริก = ~3–8 mg/L** ขึ้นกับพันธุ์และ explant. 5 mg/L เป็นจุดที่ literature ใช้บ่อยและสมเหตุสมผล.
 
@@ -47,7 +47,7 @@
 ### 1.3 BAP:NAA ratio → shoot vs callus vs root
 ทิศทางการเจริญถูกกำหนดโดย cytokinin:auxin ratio:
 - **Cytokinin เด่นมาก (BAP สูง, auxin ต่ำมาก ~0.02–0.1):** ไป shoot/bud [1][6].
-- **Cytokinin:auxin ใกล้กันขึ้น (BAP 2 + NAA 0.1):** เริ่มไป **callus** ใน *C. annuum* [6]; ในแซฟฟรอน BAP 1 + NAA 1 ให้ shoot regeneration และ rooting สูงสุด ส่วน BAP สูงขึ้นกด callus [9].
+- **Cytokinin:auxin ใกล้กันขึ้น (BAP 2 + NAA 0.1):** เริ่มไป **callus** ใน *C. frutescens* [6]; ในแซฟฟรอน BAP 1 + NAA 1 ให้ shoot regeneration และ rooting สูงสุด ส่วน BAP สูงขึ้นกด callus [9].
 - **Auxin เด่น:** ไป root [4][5].
 
 > สูตร D ของเรา (BAP 5 + NAA 0.05) คือ cytokinin เด่นมาก + auxin แตะเบาๆ — ตาม literature น่าจะยังเป็น regime **shoot-dominant** แต่ NAA จะช่วยลด apical dominance/กระตุ้น basal callus เล็กน้อย เทียบกับ C (BAP 5 เดี่ยว) ได้ผล ratio ที่สะอาด.
@@ -119,14 +119,14 @@
 
 | # | Paper | พืช | สาระสำคัญต่อเรา | น้ำหนัก |
 |---|-------|-----|------------------|---------|
-| 1 | Nadim 2024 [1] | C. annuum (sweet) | BAP 8 + NAA 0.02 + IAA = shoot ดีที่สุด; IBA 1 = rooting | สูง |
-| 2 | Sanatombi 2006 [2] | C. annuum | shoot bud สูงสุด BAP 22.2/44.4 µM; IBA/IAA rooting | สูง |
-| 3 | Agrawal 1989 [3] | C. annuum mathania | **BAP 5 ดีสุดสำหรับ bud แต่ไม่ elongate**; IBA/NAA 0.1 ทำ plantlet | สูงมาก |
+| 1 | Nadim 2024 [1] | C. frutescens (sweet) | BAP 8 + NAA 0.02 + IAA = shoot ดีที่สุด; IBA 1 = rooting | สูง |
+| 2 | Sanatombi 2006 [2] | C. frutescens | shoot bud สูงสุด BAP 22.2/44.4 µM; IBA/IAA rooting | สูง |
+| 3 | Agrawal 1989 [3] | C. frutescens mathania | **BAP 5 ดีสุดสำหรับ bud แต่ไม่ elongate**; IBA/NAA 0.1 ทำ plantlet | สูงมาก |
 | 4 | Indrachapa 2025 [4] | coconut | IBA เด่น root elongation; NAA เด่น root number/girth | กลาง |
 | 5 | Song 2024 [5] | pear | IBA+NAA สูงเร่ง root induction; control rooting ต่ำ | กลาง |
-| 6 | Swamy 2014 [6] | C. annuum (5 พันธุ์) | **BAP 2 + NAA 0.1 → callus; BAP+IAA → shoot** (ratio) | สูงมาก |
+| 6 | Swamy 2014 [6] | C. frutescens (5 พันธุ์) | **BAP 2 + NAA 0.1 → callus; BAP+IAA → shoot** (ratio) | สูงมาก |
 | 7 | Shams 2024 [7] | chili (7 พันธุ์) | optimal BAP 5 + AgNO₃ shoot; IBA 1 rooting; GA3 elongation | สูง |
-| 8 | Akther 2020 [8] | C. annuum (bell) | BAP 8 + NAA shoot; IBA 0.5 rooting | กลาง |
+| 8 | Akther 2020 [8] | C. frutescens (bell) | BAP 8 + NAA shoot; IBA 0.5 rooting | กลาง |
 | 9 | Ahmed 2025 [9] | saffron | BAP 1 + NAA 1 = shoot+root สูงสุด; BAP สูงกด callus | กลาง |
 | 10 | Abdouli 2022 [10] | Pistacia | **topolin > BAP**: proliferation 6×, hyperhydricity ต่ำ | สูง |
 | 11 | Ersali 2024 [11] | Pistacia | ลด BAP/ปรับ NH₄NO₃-CaCl₂ ลด hyperhydricity | กลาง |
@@ -142,14 +142,14 @@
 
 ## References
 
-[1] [Development of In Vitro Regeneration Protocol for Sweet Pepper (Capsicum annuum L.) using Cotyledon as Explant](https://consensus.app/papers/details/3e2de8ef6ed052939014617cc97d1519/?utm_source=claude_code) (M. Nadim et al., 2024, J Bangladesh Agril Univ, 2 citations)
-[2] [In vitro regeneration and mass multiplication of Capsicum annuum L](https://consensus.app/papers/details/3b9553e240fc5408a3bd185d45d46ac5/?utm_source=claude_code) (K. Sanatombi et al., 2006, Int. J. Food Agric. Environ., 27 citations)
-[3] [Plant regeneration in tissue cultures of pepper (Capsicum annuum L. cv. mathania)](https://consensus.app/papers/details/9b63b169ea505a37a68d867af2c04f60/?utm_source=claude_code) (S. Agrawal et al., 1989, Plant Cell Tissue Organ Cult., 102 citations)
+[1] [Development of In Vitro Regeneration Protocol for Sweet Pepper (Capsicum frutescens Mill.) using Cotyledon as Explant](https://consensus.app/papers/details/3e2de8ef6ed052939014617cc97d1519/?utm_source=claude_code) (M. Nadim et al., 2024, J Bangladesh Agril Univ, 2 citations)
+[2] [In vitro regeneration and mass multiplication of Capsicum frutescens L](https://consensus.app/papers/details/3b9553e240fc5408a3bd185d45d46ac5/?utm_source=claude_code) (K. Sanatombi et al., 2006, Int. J. Food Agric. Environ., 27 citations)
+[3] [Plant regeneration in tissue cultures of pepper (Capsicum frutescens Mill. cv. mathania)](https://consensus.app/papers/details/9b63b169ea505a37a68d867af2c04f60/?utm_source=claude_code) (S. Agrawal et al., 1989, Plant Cell Tissue Organ Cult., 102 citations)
 [4] [Optimizing pulse treatments for enhanced in vitro rooting in coconut micropropagation](https://consensus.app/papers/details/cf5d54982e9750e1890bdbf19bb36a36/?utm_source=claude_code) (M. Indrachapa et al., 2025, Technology in Horticulture, 0 citations)
 [5] [High-Efficiency In Vitro Root Induction in Pear Microshoots (Pyrus spp.)](https://consensus.app/papers/details/638b0677babe5bbfa50652ad4623e324/?utm_source=claude_code) (Jae-Young Song et al., 2024, Plants, 5 citations)
-[6] [Direct regeneration protocols of five Capsicum annuum L. varieties](https://consensus.app/papers/details/bd7de73261db528b8ef2000e2f801826/?utm_source=claude_code) (S. Swamy et al., 2014, African Journal of Biotechnology, 10 citations)
+[6] [Direct regeneration protocols of five Capsicum frutescens Mill. varieties](https://consensus.app/papers/details/bd7de73261db528b8ef2000e2f801826/?utm_source=claude_code) (S. Swamy et al., 2014, African Journal of Biotechnology, 10 citations)
 [7] [Developing an Optimized Protocol for Regeneration and Transformation in Pepper](https://consensus.app/papers/details/29feb87f470151a2b49fec839a03e40e/?utm_source=claude_code) (Shamsullah Shams et al., 2024, Genes, 6 citations)
-[8] [Micropropagation of Two Varieties of Bell pepper (Capsicum annuum L.)](https://consensus.app/papers/details/92c4e6e4e78a55a8a444793368fd87a6/?utm_source=claude_code) (Shilpi Akther et al., 2020, Plant Tissue Culture and Biotechnology, 3 citations)
+[8] [Micropropagation of Two Varieties of Bell pepper (Capsicum frutescens Mill.)](https://consensus.app/papers/details/92c4e6e4e78a55a8a444793368fd87a6/?utm_source=claude_code) (Shilpi Akther et al., 2020, Plant Tissue Culture and Biotechnology, 3 citations)
 [9] [Optimizing micropropagation and microcorm induction in saffron (Crocus sativus L.) using PGRs (NAA and BAP) and elicitor salicylic acid](https://consensus.app/papers/details/1ddfb2f610835f76ada8c30bf6d6ca85/?utm_source=claude_code) (Z. Ahmed et al., 2025, BMC Plant Biology, 5 citations)
 [10] [Topolin cytokinins enhanced shoot proliferation, reduced hyperhydricity and altered cytokinin metabolism in Pistacia vera L. seedling explants.](https://consensus.app/papers/details/6ab7f6a493d0560f9b9d96b991fb35f0/?utm_source=claude_code) (Dhekra Abdouli et al., 2022, Plant Science, 27 citations)
 [11] [Control of hyperhydricity of Pistacia khinjuk stocks in vitro shoots](https://consensus.app/papers/details/38637b29cfc75e1b898f89da24f17880/?utm_source=claude_code) (Yusuf Ersali, 2024, BMC Biotechnology, 1 citation)

@@ -1,6 +1,6 @@
-# VitroVision
+﻿# VitroVision
 
-> Computational Phenotyping สำหรับ *Capsicum annuum* เพาะเลี้ยงเนื้อเยื่อในขวด
+> Computational Phenotyping สำหรับ *Capsicum frutescens* เพาะเลี้ยงเนื้อเยื่อในขวด
 
 ระบบ Computer Vision วิเคราะห์ภาพขวดเพาะเลี้ยงเนื้อเยื่อ ตรวจสถานะพืช (healthy / contaminated / dead) และวัดค่า phenotype เชิงปริมาณ เพื่อเปรียบเทียบประสิทธิภาพสูตร MS 5 สูตรในการทดลองชีววิทยา
 
@@ -21,7 +21,7 @@
 
 ## Biological Experiment
 
-**Plant:** *Capsicum annuum* L. | **Design:** 5 สูตร MS × 20 ขวด = 100 ขวด
+**Plant:** *Capsicum frutescens* Mill. | **Design:** 5 สูตร MS × 20 ขวด = 100 ขวด
 
 | สูตร | Treatment |
 |------|-----------|
@@ -159,7 +159,7 @@ python generate_aruco.py
 
 ## References
 
-Wang, X. et al. (2024). Optimized tissue culture protocol for *Capsicum annuum*
+Wang, X. et al. (2024). Optimized tissue culture protocol for *Capsicum frutescens*
 
 Depetris, M. et al. (2025). Image-based phenotyping under aseptic conditions
 

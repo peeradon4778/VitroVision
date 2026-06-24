@@ -1,7 +1,7 @@
-# 07 — Growth-Curve Modeling & Repeated-Measures Statistics สำหรับ VitroVision
+﻿# 07 — Growth-Curve Modeling & Repeated-Measures Statistics สำหรับ VitroVision
 
 **วันที่:** 2026-06-11  
-**ขอบเขต:** Statistical pipeline สำหรับ green_coverage_pct time-series จากขวดเพาะเลี้ยง Capsicum annuum in vitro  
+**ขอบเขต:** Statistical pipeline สำหรับ green_coverage_pct time-series จากขวดเพาะเลี้ยง Capsicum frutescens in vitro  
 **Design:** 5 สูตร MS × ~24–25 ขวด/สูตร/batch (over-sow; pool ≥2 batch → n≈40/สูตร), ~20–25 timepoints/ขวด ตลอด 28 วัน  
 
 ---
