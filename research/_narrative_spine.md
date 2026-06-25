@@ -32,12 +32,20 @@
 - ⚠️ **ระวังตอนเล่า (จาก audit C-05):** อย่าปนคำว่า κ ของ "classifier 3-class (healthy/contam/dead)" กับ κ ของ "vigor rubric 1–5" — เป็นคนละการวัด ต้องพูดแยกชัดว่ากำลังพูดถึงตัวไหน
 
 ### องก์ 3 — วิธี (ออกแบบยังไงให้เชื่อถือได้)
-**เล่าว่า:** 5 สูตร MS (A=control, B/C=BAP, D=BAP+NAA, E=IBA) × ≥2 batch, เพาะจากเมล็ด 1 เมล็ด/ขวดปิดผนึก, ถ่ายภาพผ่านขวดเกือบทุกวัน 28 วัน, ติด ArUco อ่านรหัสขวดอัตโนมัติ, สกัด 12 phenotype features + จำแนกสถานะด้วย EfficientNet
+**เล่าว่า:** 5 สูตร MS (A=control, B/C=BAP, D=BAP+NAA, E=IBA) × ≥2 batch, เพาะจากเมล็ด 1 เมล็ด/ขวดปิดผนึก, ถ่ายภาพผ่านขวดเกือบทุกวัน 28 วัน, ติด ArUco อ่านรหัสขวดอัตโนมัติ, สกัด 16 phenotype features ด้วย **TEMPO pipeline** + วิเคราะห์ growth trajectory
 - **ใช้:** `02` (สูตร PGR), `11` (glucose), `12` (germination), `13` (PGR→morphology), `14` (image phenotyping), `09` (ArUco)
+- **ใช้เพิ่ม V3:** `_architecture_v3_TEMPO.md` (L4–L7 spec)
 - **จุดแข็งที่ต้องชู:**
   - **Kelcogel (วุ้นใส) แทน agar** → ถ่ายภาพผ่านขวดคมกว่า = ออกแบบมาเพื่อ CV โดยตรง
   - **Glucose แทน sucrose** → มีหลักฐานเฉพาะพริก (Phillips & **Hubstenberger** 1985, DOI 10.1007/BF00040200 — *แก้จาก "Collins" ที่เคยพิมพ์ผิด*)
   - **ArUco** → tracking ขวดอัตโนมัติ ไม่ต้องจดมือ
+  - **TEMPO V3 pipeline** (อธิบายตาม gap):
+    - L4 MobileSAM (zero-shot foundation model) → fills gap "AutoML/foundation" ที่มีแค่ 1 paper in vitro (Bethge 2024: fluorescence เท่านั้น)
+    - L5 feature time-series → L6 Gompertz growth kinetics → fills gap "Temporal Modeling" ที่เป็น GAP ในตาราง
+    - L6 Formula Response Fingerprint → fills gap "Functional Integration" (Alsanie 2025, Pasternak 2024)
+  - **ไม่ classify 3-class อีกต่อไป** → profiling ทั้ง trajectory = scientifically richer สำหรับ CSBI
+
+⚠️ **ระวังเวลา present (V3 update):** ไม่พูดว่า "EfficientNet classify healthy/contam/dead" อีกแล้ว — พูดว่า "TEMPO profiling engine สกัด growth kinetics + formula response fingerprint" แทน
 
 ### องก์ 4 — การวิเคราะห์ + ผลที่คาด (พิสูจน์ยังไง)
 **เล่าว่า:** 2 แกนคู่กัน

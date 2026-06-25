@@ -114,6 +114,23 @@ def push_batch(batch_row: dict):
         print(f'[Supabase] push_batch failed: {e}')
 
 
+def push_phenotype_series(record: dict):
+    """Push phenotype_series record ไปยัง Supabase — fails silently"""
+    sb = _sb()
+    if not sb:
+        return
+    try:
+        sb.table('phenotype_series').upsert(record, on_conflict='id').execute()
+    except Exception as e:
+        print(f'[Supabase] push_phenotype_series failed: {e}')
+
+
+def push_phenotype_series_async(record: dict):
+    """Push ใน background thread"""
+    t = threading.Thread(target=push_phenotype_series, args=(record,), daemon=True)
+    t.start()
+
+
 def status() -> dict:
     """เช็ค connectivity พร้อม URL"""
     if not _URL or not _KEY:

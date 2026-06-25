@@ -365,9 +365,34 @@ Ahmed 2026 และ Kongbangkerd 2026 มี DOI format `10.1186/s12870-026-082
 
 ---
 
+---
+
+## หมวด 13: TEMPO V3 Architecture Citations (2026-06-25)
+
+> ค้นผ่าน Consensus MCP + สรุปผล session 2026-06-25
+> ใช้อ้างใน `_architecture_v3_TEMPO.md` + report บทที่ 3 ส่วน pipeline
+
+| Citation | สถานะ | Consensus URL | หมายเหตุ |
+|---|---|---|---|
+| **Zhao et al. 2025** — SAM+YOLOv8 automated leaf framework, *Agronomy* | ✅ Verified via Consensus | https://consensus.app/papers/details/6d461adc454054c19162a51270d3987f/?utm_source=claude_code | 5 citations; SAM→pixel mask→YOLOv8 box; 87% accuracy, 0.03s/img, 100% reduction annotation labor; ใช้อ้าง L4 label-efficient gap |
+| **Taghavi Namin et al. 2018** — Deep phenotyping CNN-LSTM, *Plant Methods* 14:66 | ✅ Verified via PubMed | PMID: 30087695 · PMC: PMC6076396 · [DOI: 10.1186/s13007-018-0333-4](https://doi.org/10.1186/s13007-018-0333-4) | ⚠️ **ปีจริง = 2018 ไม่ใช่ 2017** (Consensus metadata ผิด); CNN-LSTM Arabidopsis growth trajectory; ใช้อ้าง L5 temporal gap baseline |
+| **Bethge et al. 2024** — Automated in vitro phenotyping fluorescence, *Unknown Journal* | ✅ Verified via Consensus | https://consensus.app/papers/details/a23e4b5beef8553db45a8ca28ef90955/?utm_source=claude_code | 0 citations; fluorescence-based in situ TC phenotyping; ใช้อ้าง RGB gap (VitroVision = RGB แตกต่าง) |
+| **Alsanie 2025** — BAP phenotype response TC, *BMC Plant Biology* | ✅ Verified via Consensus | https://consensus.app/papers/details/46cccc6af4a15dd2977f4c08b6efc115/?utm_source=claude_code | 5 citations; BAP เปลี่ยน shoot area/root morphology วัดได้จากภาพ; ใช้อ้าง L6 Formula Response Fingerprint |
+| **Pasternak et al. 2024** — Plant growth regulation TC review, *Plants* | ✅ Verified via Consensus | https://consensus.app/papers/details/67827f74801d51638561536b9a15e452/?utm_source=claude_code | 176 citations; data-driven TC models = ของใหม่ส่วนใหญ่ยัง empirical; ใช้อ้าง L6 functional integration gap |
+| **Yasrab et al. 2021** — Predictive growth DL time-series, *Remote Sensing* | ✅ Verified via Consensus | https://consensus.app/papers/details/4ead95289f5054f09d0f4fb397381088/?utm_source=claude_code | 79 citations; GAN ทำนาย future mask บน Arabidopsis/Brassica ex vitro; VitroVision = baseline beat ใน glass vessel in vitro |
+
+⚠️ **DOI ที่ต้องหาเพิ่ม (ยังไม่มี DOI ตรง):**
+- Zhao 2025 (Agronomy): ค้นหา DOI จาก journal เพื่อ final citation format
+- Namin 2017 (Plant Methods): DOI ที่ Consensus ไม่แสดง → ค้นผ่าน PubMed/Springer ก่อน submit
+
+---
+
+*อัปเดต: 2026-06-25 — เพิ่มหมวด 13 (TEMPO V3 Architecture citations, 6 papers, Consensus MCP verified)*
+
 *ไฟล์นี้สร้างโดย citation-audit sub-agent (claude-sonnet-4-6) — 2026-06-12*  
 *ใช้เครื่องมือ: WebSearch (Springer, Nature, PubMed, Wiley, MDPI, ACM DL, PLOS, Semantic Scholar, ResearchGate)*  
 *อัปเดต: 2026-06-18 — เพิ่มหมวด 8 (Consensus 6-query search session)*  
 *อัปเดต: 2026-06-19 — เพิ่มหมวด 9-10 (Architecture + Support papers), ลบ Thomas 2026 ครบทุกที่*  
 *อัปเดต: 2026-06-21 — เพิ่มหมวด 11 (Inter-rater agreement + Gold Standard Paradox, R5-C, 16 papers)*  
-*อัปเดต: 2026-06-21 — เพิ่มหมวด 12 (Re-Validation Framework after Method Change, R5-E, 10 papers)*
+*อัปเดต: 2026-06-21 — เพิ่มหมวด 12 (Re-Validation Framework after Method Change, R5-E, 10 papers)*  
+*อัปเดต: 2026-06-25 — เพิ่มหมวด 13 (TEMPO V3 Architecture citations, 6 papers)*

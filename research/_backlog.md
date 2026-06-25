@@ -10,11 +10,13 @@
 
 ## 🧭 DIRECTION ตอนนี้ (next move ที่แนะนำ)
 
-> **deadline:** เอกสาร ~กลาง ก.ย. · ตัวโครงงาน ถึง ต.ค. · **batch 1 day 0 = 22 มิ.ย. 2026 · ตอนนี้ day 2 (24 มิ.ย.) · เก็บภาพ day 1 แล้ว 1 รอบ**
+> **deadline:** เอกสาร ~กลาง ก.ย. · ตัวโครงงาน ถึง ต.ค. · **batch 1 day 0 = 22 มิ.ย. 2026 · ตอนนี้ day 3 (25 มิ.ย.)**
+> **V3 TEMPO spec เสร็จแล้ว** (`research/_architecture_v3_TEMPO.md`) — 2026-06-25
 
 1. **ถัดไปทันที:** implement **T1 Bridge study** + ทักครู **T6** (≥2 rater, lead time นาน)
-2. **ระหว่างต้นโต (ก.ค.):** T9 ArUco px→cm · T10 C3 camera gates · T13 validation_stats.py · T14 PWA manifest.json
-3. **ก่อนส่ง เค้าโครง:** T22 sync `_narrative_spine.md` + `report_outline.md` §3.8 + T16–T18 ART/Gompertz/KM modules
+2. **TEMPO Phase A (ทำคู่ขนาน):** TP-1 phenotype_series table · TP-2 Gompertz fit module · TP-3 sync narrative ให้อ้าง TEMPO
+3. **ระหว่างต้นโต (ก.ค.):** T9 ArUco px→cm · T10 C3 camera gates · T13 validation_stats.py · T14 PWA manifest.json · TEMPO Phase B (CNN-LSTM)
+4. **ก่อนส่ง เค้าโครง:** T22 sync `_narrative_spine.md` + `report_outline.md` §3.8 + T16–T18 ART/Gompertz/KM modules
 
 ✅ **เสร็จ 2026-06-21 (session นี้):**
 - T2 GAP-1: `expert_scores` table + `add_expert_score()` + `get_expert_scores_by_image()` + routes POST/GET
@@ -28,6 +30,43 @@
 ## 📌 INBOX (จดเร็ว ยังไม่ triage — โยนอะไรลงตรงนี้ได้เลย)
 
 *(ว่าง)*
+
+---
+
+## 🏗️ TEMPO V3 — Phase Tasks (2026-06-25)
+
+> **Spec:** `research/_architecture_v3_TEMPO.md` · ชื่อ: TEMPO = Temporal-phenomics Engine for Multi-trait Profiling in vitrO
+> Research gaps: foundation/zero-shot (L4) + temporal (L5) + functional integration (L6) + predictive validity (L7)
+
+### Phase A — ทำได้เลย (batch 1 กำลังโต)
+- [x] **TP-1** สร้าง `phenotype_series` table ใน SQLite+Supabase ✅ 2026-06-25
+  - `database.py`: table + `add_phenotype_series_record()` + `get_temporal_series()` + `get_batch_temporal_series()`
+  - `supabase_sync.py`: `push_phenotype_series()` + async version
+- [x] **TP-2** เขียน `validation_stats.py` ✅ 2026-06-25
+  - Module 4: `gompertz_fit()` + `fit_batch_gompertz()` (NLS, K/k/tm/AGRmax/AUC_28/lag/R²adj)
+  - Module 1 skeleton: `icc_21()` + `quadratic_weighted_kappa()`
+  - Module 2 skeleton: `spearman_ci()` + `bland_altman()`
+- [x] **TP-3** sync `_narrative_spine.md` §3 ให้อ้าง TEMPO ✅ 2026-06-25
+- [x] **TP-4** verify Zhao 2025 + Namin 2017 ผ่าน Consensus ✅ 2026-06-25 → เพิ่มหมวด 13 ใน `_citation_audit.md`
+  - Zhao 2025: Agronomy, 5 citations (SAM+YOLOv8, 87% accuracy, 100% annotation reduction) ✅
+  - Namin 2017: Plant Methods, 182 citations (CNN-LSTM Arabidopsis) ✅
+
+### Phase B — ก.ค.+ (เมื่อมีข้อมูล ≥7 day-points)
+- [ ] **TP-5** CNN-LSTM temporal module — `vitro_vision/temporal_model.py`
+- [ ] **TP-6** Formula Response Fingerprint — Mahalanobis distance จาก formula-mean trajectory
+- [ ] **TP-7** Developmental trajectory velocity calculation
+
+### Phase C — ส.ค.–ต.ค. (validation)
+- [ ] **TP-8** PERMANOVA formula discrimination (L7 V2)
+- [ ] **TP-9** Predictive validity day 3–7 vs day 21 (L7 V3)
+
+### vitrovision.io (TEMPO showcase website) 💤 รอเคาะ
+- [ ] **WEB-1** เริ่ม 5 sub-agents สร้าง static GitHub Pages showcase
+  - Agent 1: V3 spec + JSON export schema
+  - Agent 2: Design system (bioluminescent scanner aesthetic)
+  - Agent 3: Hero animation — MobileSAM mask scan viz (hologram)
+  - Agent 4: Data viz — growth timeline + formula compare
+  - Agent 5: Static build + gh-pages deploy
 
 ---
 

@@ -164,6 +164,25 @@ def _migrate_db():
         conn.execute("""
             CREATE INDEX IF NOT EXISTS idx_expert_image ON expert_scores(image_id)
         """)
+
+        # TEMPO V3 — L5 temporal feature store
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS phenotype_series (
+                id              INTEGER PRIMARY KEY AUTOINCREMENT,
+                bottle_id       TEXT    NOT NULL,
+                batch_id        INTEGER DEFAULT NULL,
+                day_point       INTEGER NOT NULL,
+                feature_vector  TEXT    NOT NULL,
+                mask_url        TEXT    DEFAULT '',
+                prompt_method   TEXT    DEFAULT 'hsv_fallback',
+                ts              TEXT    NOT NULL,
+                FOREIGN KEY (bottle_id) REFERENCES bottles(bottle_id)
+            )
+        """)
+        conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_series_bottle
+                ON phenotype_series(bottle_id, day_point)
+        """)
         conn.commit()
 
 
@@ -614,6 +633,65 @@ def suggest_day_point(batch_id=None):
         return (date.today() - sow_d).days
     except ValueError:
         return None
+
+
+# --- TEMPO V3 — phenotype_series (L5 temporal store) ---
+
+def add_phenotype_series_record(bottle_id, day_point, feature_vector: dict,
+                                 batch_id=None, mask_url='', prompt_method='hsv_fallback'):
+    """บันทึก feature vector 1 time-point สำหรับ CNN-LSTM temporal model"""
+    import json
+    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    with get_conn() as conn:
+        cur = conn.execute(
+            """INSERT INTO phenotype_series
+               (bottle_id, batch_id, day_point, feature_vector, mask_url, prompt_method, ts)
+               VALUES (?,?,?,?,?,?,?)""",
+            (bottle_id, batch_id, day_point, json.dumps(feature_vector),
+             mask_url, prompt_method, ts)
+        )
+        conn.commit()
+        return cur.lastrowid
+
+
+def get_temporal_series(bottle_id):
+    """คืน feature vector time-series ต่อขวด สำหรับ CNN-LSTM — ordered by day_point"""
+    import json
+    with get_conn() as conn:
+        rows = conn.execute(
+            """SELECT day_point, feature_vector, mask_url, prompt_method, ts
+               FROM phenotype_series
+               WHERE bottle_id=?
+               ORDER BY day_point""",
+            (bottle_id,)
+        ).fetchall()
+    result = []
+    for r in rows:
+        d = dict(r)
+        d['feature_vector'] = json.loads(d['feature_vector'])
+        result.append(d)
+    return result
+
+
+def get_batch_temporal_series(batch_id):
+    """คืน feature vector time-series ทุกขวดใน batch — ใช้ train CNN-LSTM"""
+    import json
+    with get_conn() as conn:
+        rows = conn.execute(
+            """SELECT ps.bottle_id, b.media_formula, ps.day_point,
+                      ps.feature_vector, ps.mask_url, ps.prompt_method
+               FROM phenotype_series ps
+               JOIN bottles b ON ps.bottle_id = b.bottle_id
+               WHERE ps.batch_id=?
+               ORDER BY ps.bottle_id, ps.day_point""",
+            (batch_id,)
+        ).fetchall()
+    result = []
+    for r in rows:
+        d = dict(r)
+        d['feature_vector'] = json.loads(d['feature_vector'])
+        result.append(d)
+    return result
 
 
 def get_unlabeled_bottles():
