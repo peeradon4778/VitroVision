@@ -8,7 +8,7 @@
 
 - **คำถามชีววิทยา (CSBI):** 3D-derived traits วัดการเจริญ/vigor ได้ดีกว่า 2D projected area ไหม (เทียบ 3D vs 2D vs manual)
 - **ด่านตายที่ต้องเทสต์ก่อน:** การหักเหแสงผ่านขวดแก้วโค้ง (refraction) ทำให้ SfM มาตรฐานพัง
-- รายละเอียด keyword ศึกษา: [`research/_v2_study_keywords.md`](research/_v2_study_keywords.md)
+- รายละเอียด keyword ศึกษา: [`research/keywords.md`](research/keywords.md)
 
 ## v1 (archived — ปิดผนึกไว้)
 งานเดิม (Capsicum tissue culture + VitroShelf web app) หยุดเพราะเมล็ดงอกไม่พอสำหรับ design เทียบ 5 สูตร (n ไม่พอ)
