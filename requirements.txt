@@ -1,0 +1,14 @@
+# VitroVision SAM3 pipeline — รันบน Colab (T4 GPU)
+# อัปเดตเวอร์ชันจริงหลังรันสำเร็จครั้งแรก (pip freeze) แล้วเก็บเป็น requirements.lock.txt
+torch>=2.1
+transformers>=4.50        # ต้องมี Sam3Processor/Sam3Model (facebook/sam3 = gated)
+accelerate
+huggingface_hub
+numpy
+opencv-python-headless
+pillow
+matplotlib
+pandas
+seaborn
+tabulate
+openpyxl
