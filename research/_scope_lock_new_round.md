@@ -15,7 +15,7 @@
 | **ผลที่มีแล้ว** | [RESULT] spike test 05/07/2569 พิสูจน์ feasibility; รอบ 1 (51 ภาพ) ได้ correlation สมเหตุผล (shoot↔height r=0.853, green↔yellow r=−0.597) — ยังไม่ใช่ผล validation จริง |
 | **สิ่งที่ยังไม่มี** | [OPEN] ชุดภาพใหม่ · ground truth annotation · PIXEL_TO_CM calibration · เปรียบเทียบกับ manual measurement |
 | **ข้อจำกัด** | SAM3 = gated + GPU เท่านั้น (Colab T4) · threshold 0.35/0.80 เป็นค่า literature ข้ามชนิด ยังไม่ calibrate · ชนิดนอกตารางใช้ค่ากลาง |
-| **รูปแบบยื่น** | รายงานภาษาไทย + สไลด์นำเสนอ + บรรณานุกรม APA7 (citation ต้อง verify + DOI กดได้) |
+| **รูปแบบยื่น** | รายงานภาษาไทย + การนำเสนอผลงาน + บรรณานุกรม APA7 (citation ต้อง verify + DOI กดได้) |
 
 ## สถานะภายใน (ตามคู่มือ)
 
@@ -32,4 +32,3 @@
 - [ ] PIXEL_TO_CM calibration (ขวดจริง)
 - [ ] ground_truth.csv + validation metrics เมื่อวัดมือได้
 - [ ] เขียนรายงานฉบับเต็ม (ยังไม่มี — งานหลักรอบนี้)
-- [ ] สไลด์ชุดใหม่
