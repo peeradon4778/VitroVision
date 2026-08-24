@@ -29,3 +29,26 @@ image,species
 
 - เปิด `USE_SPECIES_THRESHOLDS=True` ใน config เมื่ออยากให้ verdict ใช้ threshold ต่อชนิด
 - ชนิดที่รองรับในตาราง threshold: กล้วย, กล้วยไม้, มันฝรั่ง (เพิ่มเองได้ใน cell config)
+
+## 3) ground_truth_masks/ — masks กำกับด้วยมือ (ใช้ benchmark คำนวณ mIoU/Dice)
+
+โฟลเดอร์ `ground_truth_masks/` (วางข้าง data/) มีไฟล์ `<ชื่อภาพ>.png` (binary: ขาว = ต้นพืช):
+
+```
+ground_truth_masks/
+├── 001.png   ← ตรงกับ 001.jpg (ขาว = plant, ดำ = พื้นหลัง)
+├── 002.png
+└── ...
+```
+
+**วิธี annotate (แนะนำ):**
+- เปิดภาพในโปรแกรมระบาย mask เช่น Label Studio / CVAT / GIMP / Photoshop (หรือแม้แต่ Paint)
+- ระบายพื้นที่ "ต้นพืช" ทั้งหมด (ใบ + ลำต้น ที่มองเห็นผ่านขวด) เป็นสีขาว พื้นหลังสีดำ
+- บันทึกเป็น PNG ขนาดเท่าภาพต้นฉบับ (หรือสัดส่วนเดียวกัน — script resize ให้อัตโนมัติ)
+- จำนวนแนะนำ: ≥ 30 ภาพ ครอบคลุม 3 คลาส (wait / subculture / transplant-overdue)
+- ถ้าทำได้ ให้ annotate ≥ 2 คน แล้วรายงาน inter-rater agreement (เช่น Cohen's kappa)
+
+**รัน benchmark:**
+```
+python benchmark_colab.py --data <โฟลเดอร์ภาพ> --gt ground_truth_masks --out <ผลลัพธ์>
+```
