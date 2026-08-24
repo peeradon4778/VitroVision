@@ -1,0 +1,294 @@
+"""Distillation: SAM3 (teacher) → U-Net เล็ก (student) สำหรับ plant segmentation ในขวด TC
+
+3 เฟส:
+  1) generate-pseudo : รัน SAM3 PCS บนภาพ → save pseudo-GT masks (plant union) → <out>/pseudo_masks/
+  2) train            : เทรน U-Net (student) จาก pseudo masks (train/val split + augment + BCE+Dice)
+  3) eval             : ประเมิน student (mIoU/Dice/F1 + runtime) บน val
+
+รันบน Colab (GPU) — เฟส 1 ต้อง SAM3:
+  python train_unet_distill.py generate-pseudo --data <ภาพ> --out <out> --hf-token <TOKEN> [--limit 100]
+  python train_unet_distill.py train --data <ภาพ> --pseudo <out>/pseudo_masks --out <out> [--epochs 40] [--img-size 256]
+  python train_unet_distill.py eval --data <ภาพ> --pseudo <out>/pseudo_masks --model <out>/unet_model.pt --out <out>
+
+หลังมี GT จริง (annotate 30 ขวด) → validate student กับ GT จริง (--gt) เพื่อรายงานตัวเลขจริง
+"""
+
+import argparse
+import glob
+import os
+import time
+
+import cv2
+import numpy as np
+import pandas as pd
+import torch
+import torch.nn as nn
+from torch.utils.data import DataLoader, Dataset
+
+
+# ═══════════════════════ U-Net เล็ก (student) ═══════════════════════
+
+class DoubleConv(nn.Module):
+    def __init__(self, cin, cout):
+        super().__init__()
+        self.block = nn.Sequential(
+            nn.Conv2d(cin, cout, 3, padding=1), nn.BatchNorm2d(cout), nn.ReLU(inplace=True),
+            nn.Conv2d(cout, cout, 3, padding=1), nn.BatchNorm2d(cout), nn.ReLU(inplace=True))
+
+    def forward(self, x):
+        return self.block(x)
+
+
+class UNetSmall(nn.Module):
+    """U-Net ขนาดเล็ก: channels [16,32,64,128,256] ~2M params — รัน CPU ได้หลังเทรน"""
+
+    def __init__(self, in_ch=3, out_ch=1, base=16):
+        super().__init__()
+        c = [base * (2 ** i) for i in range(5)]  # [16,32,64,128,256]
+        self.enc = nn.ModuleList([DoubleConv(in_ch, c[0])] +
+                                 [DoubleConv(c[i], c[i + 1]) for i in range(4)])
+        self.pool = nn.MaxPool2d(2)
+        self.up = nn.ModuleList([
+            nn.ConvTranspose2d(c[i + 1], c[i], 2, stride=2) for i in range(4)])
+        self.dec = nn.ModuleList([DoubleConv(c[i] * 2, c[i]) for i in range(4)])
+        self.head = nn.Conv2d(c[0], out_ch, 1)
+
+    def forward(self, x):
+        skips = []
+        for i, block in enumerate(self.enc):
+            x = block(x)
+            if i < 4:
+                skips.append(x)
+                x = self.pool(x)
+        for i in range(4):
+            x = self.up[3 - i](x)
+            x = torch.cat([x, skips[3 - i]], dim=1)
+            x = self.dec[3 - i](x)
+        return torch.sigmoid(self.head(x))
+
+
+# ═══════════════════════ Dataset ═══════════════════════
+
+class SegDataset(Dataset):
+    def __init__(self, image_paths, mask_dir, img_size=256, augment=False):
+        self.items = []
+        self.img_size = img_size
+        self.augment = augment
+        for ip in image_paths:
+            name = os.path.splitext(os.path.basename(ip))[0]
+            mp = os.path.join(mask_dir, name + ".png")
+            if os.path.exists(mp):
+                self.items.append((ip, mp))
+
+    def __len__(self):
+        return len(self.items)
+
+    def __getitem__(self, i):
+        ip, mp = self.items[i]
+        img = cv2.imread(ip)
+        img = cv2.resize(img, (self.img_size, self.img_size), interpolation=cv2.INTER_AREA)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB).astype(np.float32) / 255.0
+        mask = cv2.imread(mp, cv2.IMREAD_GRAYSCALE)
+        mask = cv2.resize(mask, (self.img_size, self.img_size), interpolation=cv2.INTER_NEAREST)
+        mask = (mask > 127).astype(np.float32)
+        if self.augment:
+            if np.random.rand() > 0.5:
+                img, mask = cv2.flip(img, 1), cv2.flip(mask, 1)   # แนวนอน
+            if np.random.rand() > 0.5:
+                img, mask = cv2.flip(img, 0), cv2.flip(mask, 0)   # แนวตั้ง
+            img = img * (0.9 + 0.2 * np.random.rand())
+        return (torch.from_numpy(img.transpose(2, 0, 1)).float(),
+                torch.from_numpy(mask).unsqueeze(0).float())
+
+
+def dice_loss(pred, target, eps=1e-6):
+    inter = (pred * target).sum()
+    return 1 - (2 * inter + eps) / (pred.sum() + target.sum() + eps)
+
+
+# ═══════════════════════ เฟส 1: สร้าง pseudo-GT จาก SAM3 ═══════════════════════
+
+def cmd_generate_pseudo(args):
+    if args.hf_token:
+        from huggingface_hub import login
+        login(token=args.hf_token, add_to_git_credential=False)
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    print(f"[INFO] device: {device}")
+    if device == "cpu":
+        raise SystemExit("SAM3 ไม่รองรับ CPU — ต้อง Colab GPU")
+
+    from src.sam3_growth_pipeline import PROMPTS, load_images, segment_prompt  # reuse
+    from PIL import Image
+
+    os.makedirs(args.out, exist_ok=True)
+    mask_dir = os.path.join(args.out, "pseudo_masks")
+    os.makedirs(mask_dir, exist_ok=True)
+
+    from transformers import Sam3Processor, Sam3Model
+    print("[INFO] โหลด SAM3 (teacher) ...")
+    model = Sam3Model.from_pretrained("facebook/sam3").to(device)
+    processor = Sam3Processor.from_pretrained("facebook/sam3")
+
+    images = load_images(args.data)
+    if args.limit:
+        images = images[:args.limit]
+    print(f"[INFO] สร้าง pseudo masks {len(images)} ภาพ (prompt plant+leaf union)")
+
+    plant_prompts = [p for p in PROMPTS if p in ("plant", "leaf")]
+    for i, path in enumerate(images, 1):
+        name = os.path.splitext(os.path.basename(path))[0]
+        pil = Image.open(path).convert("RGB")
+        union = np.zeros((pil.size[1], pil.size[0]), dtype=bool)
+        for p in plant_prompts:
+            masks, _ = segment_prompt(model, processor, device, pil, p)
+            if masks is not None and len(masks) > 0:
+                union |= masks.any(axis=0)
+        cv2.imwrite(os.path.join(mask_dir, name + ".png"),
+                    (union * 255).astype(np.uint8))
+        if i % 20 == 0:
+            print(f"  ... {i}/{len(images)}")
+    print(f"[OK] pseudo masks → {mask_dir}")
+
+
+# ═══════════════════════ เฟส 2: เทรน U-Net ═══════════════════════
+
+def cmd_train(args):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"[INFO] device: {device}")
+
+    image_paths = sorted(glob.glob(os.path.join(args.data, "*.jpg")) +
+                         glob.glob(os.path.join(args.data, "*.JPG")) +
+                         glob.glob(os.path.join(args.data, "*.png")))
+    image_paths = sorted(set(image_paths))
+    n = len(image_paths)
+    if n == 0:
+        raise SystemExit(f"ไม่พบภาพใน {args.data}")
+    split = int(n * 0.85)
+    train_paths, val_paths = image_paths[:split], image_paths[split:]
+    print(f"[INFO] train {len(train_paths)} · val {len(val_paths)}")
+
+    train_ds = SegDataset(train_paths, args.pseudo, args.img_size, augment=True)
+    val_ds = SegDataset(val_paths, args.pseudo, args.img_size, augment=False)
+    if len(train_ds) == 0 or len(val_ds) == 0:
+        raise SystemExit("pseudo masks ไม่ตรงกับภาพ (เช็ค --pseudo)")
+    train_loader = DataLoader(train_ds, batch_size=args.batch, shuffle=True, num_workers=2)
+    val_loader = DataLoader(val_ds, batch_size=args.batch, shuffle=False, num_workers=2)
+
+    model = UNetSmall().to(device)
+    opt = torch.optim.Adam(model.parameters(), lr=args.lr)
+    bce = nn.BCELoss()
+
+    os.makedirs(args.out, exist_ok=True)
+    best_dice = 0.0
+    for epoch in range(1, args.epochs + 1):
+        model.train()
+        tl = 0.0
+        for img, mask in train_loader:
+            img, mask = img.to(device), mask.to(device)
+            pred = model(img)
+            loss = bce(pred, mask) + dice_loss(pred, mask)
+            opt.zero_grad()
+            loss.backward()
+            opt.step()
+            tl += loss.item() * len(img)
+        # val dice
+        model.eval()
+        vd, vi = 0.0, 0.0
+        with torch.no_grad():
+            for img, mask in val_loader:
+                img, mask = img.to(device), mask.to(device)
+                pred = model(img) > 0.5
+                inter = (pred & mask.bool()).sum().item()
+                union = (pred | mask.bool()).sum().item()
+                dice = 2 * inter / (pred.sum().item() + mask.sum().item() + 1e-6)
+                vd += dice * len(img)
+                vi += (inter / (union + 1e-6)) * len(img)
+        vd /= len(val_ds)
+        vi /= len(val_ds)
+        print(f"  epoch {epoch}/{args.epochs} · loss {tl / len(train_ds):.4f} · val_dice {vd:.4f} · val_iou {vi:.4f}")
+        if vd > best_dice:
+            best_dice = vd
+            torch.save(model.state_dict(), os.path.join(args.out, "unet_model.pt"))
+            print(f"    ✔ บันทึก best model (val_dice {vd:.4f})")
+
+
+# ═══════════════════════ เฟส 3: ประเมิน student ═══════════════════════
+
+def cmd_eval(args):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = UNetSmall()
+    model.load_state_dict(torch.load(args.model, map_location=device))
+    model.to(device).eval()
+
+    image_paths = sorted(set(glob.glob(os.path.join(args.data, "*.jpg")) +
+                             glob.glob(os.path.join(args.data, "*.JPG")) +
+                             glob.glob(os.path.join(args.data, "*.png"))))
+    ds = SegDataset(image_paths, args.pseudo or args.gt, args.img_size, augment=False)
+    if len(ds) == 0:
+        raise SystemExit("ไม่มี mask ให้ประเมิน (--pseudo หรือ --gt)")
+    loader = DataLoader(ds, batch_size=1, shuffle=False)
+
+    rows = []
+    t_total = 0.0
+    with torch.no_grad():
+        for img, mask in loader:
+            img = img.to(device)
+            t0 = time.time()
+            pred = model(img) > 0.5
+            t_total += time.time() - t0
+            p, m = pred[0, 0].cpu().numpy().astype(bool), mask[0, 0].numpy().astype(bool)
+            inter = (p & m).sum()
+            union = (p | m).sum()
+            rows.append({
+                "image": ds.items[len(rows)][0],
+                "iou": inter / (union + 1e-6),
+                "dice": 2 * inter / (p.sum() + m.sum() + 1e-6),
+                "precision": inter / (p.sum() + 1e-6),
+                "recall": inter / (m.sum() + 1e-6),
+            })
+    df = pd.DataFrame(rows)
+    df["runtime_s"] = t_total / max(len(rows), 1)
+    os.makedirs(args.out, exist_ok=True)
+    df.to_csv(os.path.join(args.out, "unet_eval.csv"), index=False, encoding="utf-8-sig")
+    print(f"[OK] unet_eval.csv ({len(df)} ภาพ) — avg runtime {df['runtime_s'].iloc[0]:.3f}s/ภาพ ({'GPU' if device.type=='cuda' else 'CPU'})")
+    print(df[["iou", "dice", "precision", "recall"]].mean().round(4).to_string())
+
+
+# ═══════════════════════ main ═══════════════════════
+
+def main():
+    ap = argparse.ArgumentParser(description="Distill SAM3 → U-Net (plant seg ในขวด TC)")
+    sub = ap.add_subparsers(dest="cmd", required=True)
+
+    p1 = sub.add_parser("generate-pseudo", help="เฟส 1: SAM3 → pseudo masks")
+    p1.add_argument("--data", required=True)
+    p1.add_argument("--out", default="distill")
+    p1.add_argument("--hf-token", default=None)
+    p1.add_argument("--limit", type=int, default=None)
+    p1.set_defaults(func=cmd_generate_pseudo)
+
+    p2 = sub.add_parser("train", help="เฟส 2: เทรน U-Net")
+    p2.add_argument("--data", required=True)
+    p2.add_argument("--pseudo", required=True, help="โฟลเดอร์ pseudo_masks")
+    p2.add_argument("--out", default="distill")
+    p2.add_argument("--img-size", type=int, default=256)
+    p2.add_argument("--epochs", type=int, default=40)
+    p2.add_argument("--batch", type=int, default=8)
+    p2.add_argument("--lr", type=float, default=1e-3)
+    p2.set_defaults(func=cmd_train)
+
+    p3 = sub.add_parser("eval", help="เฟส 3: ประเมิน student")
+    p3.add_argument("--data", required=True)
+    p3.add_argument("--pseudo", default=None, help="pseudo masks (val)")
+    p3.add_argument("--gt", default=None, help="GT masks จริง (เมื่อ annotate แล้ว)")
+    p3.add_argument("--model", required=True, help="unet_model.pt")
+    p3.add_argument("--out", default="distill")
+    p3.add_argument("--img-size", type=int, default=256)
+    p3.set_defaults(func=cmd_eval)
+
+    args = ap.parse_args()
+    args.func(args)
+
+
+if __name__ == "__main__":
+    main()
