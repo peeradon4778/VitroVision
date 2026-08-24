@@ -1,7 +1,10 @@
 """SAM 3 Plant Tissue Culture Growth Analysis Pipeline — Multi-Dimensional (headless batch).
 
 รันบน Google Colab แบบสคริปต์ (GPU + token) สำหรับภาพจำนวนมาก:
-    python sam3_growth_pipeline.py --data /content/data --out /content/results [--synthetic]
+    python sam3_growth_pipeline.py --data /content/data --out /content/results [--synthetic] [--config config.json]
+
+--config: ไฟล์ JSON ตั้งค่า (PIXEL_TO_CM, threshold, prompts, species thresholds) โดยไม่ต้องแก้โค้ด
+          ตัวอย่าง: pipeline_config.example.json (สร้างจาก config กลางของโปรเจกต์)
 
 ข้อกำหนด:
 - ต้องมี GPU (CUDA) — facebook/sam3 เป็น gated model ที่ไม่รองรับ CPU
@@ -9,6 +12,8 @@
 
 ผลลัพธ์:
 - plant_growth_summary.csv/.xlsx — feature หลายมิติทุกภาพ (โครงสร้าง/อวัยวะ/ความซับซ้อน/สี/คุณภาพภาพ/verdict)
+- _progress.csv — checkpoint รายภาพ (กัน Colab timeout)
+- species_summary.csv — สถิติสรุปแยกชนิดพืช
 - ใส่ --synthetic → สร้างภาพต้นจำลอง (รู้ค่าจริง) + รัน SAM3 เทียบ → benchmark_IoU_Dice_MAE.csv
 - ถ้ามี <data>/ground_truth.csv (image, leaf_count, shoot_count, root_count, height_cm, width_cm, area_cm2)
   → validation_metrics.csv (Pearson/MAE/RMSE เทียบการวัดมือจริง)
@@ -16,6 +21,7 @@
 
 import argparse
 import glob
+import json
 import math
 import os
 import time
@@ -45,7 +51,7 @@ GLARE_S = 0.15
 CONDENSE_V = 0.92
 CONDENSE_S = 0.30
 BASE_CONFIDENCE = 0.80
-COVERAGE_READY = 0.35
+COVERAGE_READY = 0.20  # พริกจินดา: ตั้งตามผู้เชี่ยวชาญ 2026-08-18 (เดิม 0.35 จาก literature) — อยู่ระหว่าง validate
 COVERAGE_OVERDENSE = 0.80
 USE_SPECIES_THRESHOLDS = False  # True = ใช้ threshold ต่อชนิดจาก SPECIES_THRESHOLDS
 SPECIES_THRESHOLDS = {
@@ -53,6 +59,32 @@ SPECIES_THRESHOLDS = {
     "กล้วยไม้": {"ready": 0.30, "overdense": 0.75},
     "มันฝรั่ง": {"ready": 0.40, "overdense": 0.85},
 }
+
+
+def load_config(cfg_path=None):
+    """โหลด config.json มาแทนค่าคงที่ (PIXEL_TO_CM, threshold, prompts, species thresholds)
+    โดยไม่ต้องแก้โค้ด — ใช้คู่กับ docs/CALIBRATION_GUIDE.md"""
+    global PROMPTS, SCORE_THRESHOLD, MASK_THRESHOLD, DETECT_BOTTLE, PIXEL_TO_CM
+    global USE_SPECIES_THRESHOLDS, SPECIES_THRESHOLDS, COVERAGE_READY, COVERAGE_OVERDENSE
+    if not cfg_path or not os.path.exists(cfg_path):
+        print(f"[INFO] ไม่พบ --config ({cfg_path}) — ใช้ค่าเริ่มต้นในโค้ด")
+        return
+    with open(cfg_path, encoding="utf-8") as f:
+        cfg = json.load(f)
+    PROMPTS = cfg.get("prompts", PROMPTS)
+    SCORE_THRESHOLD = float(cfg.get("score_threshold", SCORE_THRESHOLD))
+    MASK_THRESHOLD = float(cfg.get("mask_threshold", MASK_THRESHOLD))
+    DETECT_BOTTLE = bool(cfg.get("detect_bottle", DETECT_BOTTLE))
+    PIXEL_TO_CM = float(cfg["pixel_to_cm"]) if cfg.get("pixel_to_cm") else PIXEL_TO_CM
+    USE_SPECIES_THRESHOLDS = bool(cfg.get("use_species_thresholds", USE_SPECIES_THRESHOLDS))
+    if cfg.get("species_thresholds"):
+        SPECIES_THRESHOLDS = cfg["species_thresholds"]
+    if cfg.get("coverage"):
+        COVERAGE_READY = float(cfg["coverage"].get("ready", COVERAGE_READY))
+        COVERAGE_OVERDENSE = float(cfg["coverage"].get("overdense", COVERAGE_OVERDENSE))
+    print(f"[INFO] โหลด config: {cfg_path}")
+    print(f"  prompts={PROMPTS} · pixel_to_cm={PIXEL_TO_CM} · "
+          f"species_thresholds={'เปิด' if USE_SPECIES_THRESHOLDS else 'ปิด'}")
 
 
 def extract_zips(data_dir):
@@ -218,7 +250,7 @@ def extract_features(img, masks_by_prompt, roi=None):
 
     leaf_masks = masks_by_prompt.get("leaf", (np.zeros((0, H, W), dtype=bool), None))[0]
     leaf_mask_union = leaf_masks.any(axis=0) if len(leaf_masks) > 0 else None
-    leaf_count_raw = counts["leaf"]
+    leaf_count_raw = counts.get("leaf", 0)
     leaf_count_method = "prompt"
     if leaf_mask_union is None or not leaf_mask_union.any():
         leaf_mask_union = (ph_union & roi) if ph_union.any() else None
@@ -283,9 +315,9 @@ def extract_features(img, masks_by_prompt, roi=None):
         "leaf_count": leaf_count,
         "leaf_count_raw": leaf_count_raw,
         "leaf_count_method": leaf_count_method,
-        "shoot_count": counts["plant"] + counts["shoot"],
-        "root_count": counts["root"],
-        "stem_count": counts["stem"],
+        "shoot_count": counts.get("plant", 0) + counts.get("shoot", 0),
+        "root_count": counts.get("root", 0),
+        "stem_count": counts.get("stem", 0),
         "mean_leaf_area_px": round(mean_leaf_area, 2),
         "leaf_area_cv": round(leaf_area_cv, 4),
         "max_leaf_area_px": round(max_leaf_area, 2),
@@ -330,7 +362,11 @@ def analyze_image(model, processor, device, img, filename, species=None):
     else:
         th = {"ready": COVERAGE_READY, "overdense": COVERAGE_OVERDENSE}  # ค่ากลาง generic
 
-    if feat["coverage_ratio"] >= th["overdense"]:
+    if DETECT_BOTTLE and roi is None:
+        # หาขวดไม่เจอ → ROI ทั้งภาพ → ค่า coverage ไม่น่าเชื่อถือ → กัน verdict ผิด
+        verdict = "ROI-ไม่ชัด-ตรวจเอง"
+        pass  # หมายเหตุ ROI เพิ่มในส่วน notes ด้านล่าง (กัน notes ยังไม่ถูกนิยาม)
+    elif feat["coverage_ratio"] >= th["overdense"]:
         verdict = "หนาแน่นเกิน-ตรวจ"
     elif feat["coverage_ratio"] >= th["ready"]:
         verdict = "พร้อมอนุบาล"
@@ -356,12 +392,20 @@ def analyze_image(model, processor, device, img, filename, species=None):
     if feat["yellow_ratio"] > 30:
         notes.append("ใบเหลืองมาก")
 
+    warnings = []
+    if feat["glare_score"] > 40:
+        warnings.append("glare")
+    if feat["condensation_score"] > 40:
+        warnings.append("condensation")
+    quality_warning = "|".join(warnings)
+
     feat.update({
         "image": filename,
         "species": species,
         "verdict": verdict,
         "readiness_index": round(readiness_index, 4),
         "confidence": round(confidence, 4),
+        "quality_warning": quality_warning,
         "note": " | ".join(notes),
     })
     return feat, masks_by_prompt
@@ -621,11 +665,14 @@ def main():
     parser.add_argument("--data", default="/content/data", help="โฟลเดอร์ภาพต้นฉบับ")
     parser.add_argument("--out", default="/content/results", help="โฟลเดอร์ผลลัพธ์")
     parser.add_argument("--synthetic", action="store_true", help="รัน synthetic benchmark เพิ่ม (ไม่ต้องมี ground truth)")
+    parser.add_argument("--config", default=None, help="ไฟล์ config.json (PIXEL_TO_CM/threshold/prompts)")
     args = parser.parse_args()
+
+    load_config(args.config)
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print(f"[INFO] Execution Device: {device}")
-    if device.type == "cpu":
+    if device == "cpu":
         raise SystemExit("ต้องใช้ GPU — facebook/sam3 ไม่รองรับ CPU")
 
     from transformers import Sam3Processor, Sam3Model
@@ -648,11 +695,15 @@ def main():
         print(f"[INFO] โหลด species_map.csv — {len(species_map)} รายการ")
     rows = []
     all_masks = {}
-    for name, img in images.items():
+    progress_path = os.path.join(args.out, "_progress.csv")
+    total = len(images)
+    for i, (name, img) in enumerate(images.items(), 1):
         feat, mbp = analyze_image(model, processor, device, img, name, species=species_map.get(name))
         all_masks[name] = mbp
         rows.append(feat)
-        print(f"  {name} — leaf={feat['leaf_count']} shoot={feat['shoot_count']} "
+        # checkpoint รายภาพ — กัน Colab timeout/ค้าง กลางทาง
+        pd.DataFrame(rows).to_csv(progress_path, index=False, encoding="utf-8-sig")
+        print(f"  [{i}/{total}] {name} — leaf={feat['leaf_count']} shoot={feat['shoot_count']} "
               f"cov={feat['coverage_ratio']:.2f} green={feat['green_pct']:.0f}% {feat['verdict']}")
     df = pd.DataFrame(rows)
 
@@ -662,11 +713,28 @@ def main():
     df.to_excel(xlsx_path, index=False)
     print(f"[INFO] บันทึก: {csv_path} / {xlsx_path}")
 
+    # สรุปแยกชนิดพืช (งานหลายชนิด — ดูค่าเฉลี่ย/การกระจาย verdict ต่อชนิด)
+    if "species" in df.columns and df["species"].nunique() > 1:
+        sp_sum = df.groupby("species").agg(
+            n=("image", "count"),
+            coverage_mean=("coverage_ratio", "mean"),
+            leaf_mean=("leaf_count", "mean"),
+            shoot_mean=("shoot_count", "mean"),
+            green_mean=("green_pct", "mean"),
+            ready_pct=("verdict", lambda s: (s == "พร้อมอนุบาล").mean() * 100),
+        ).reset_index()
+        sp_path = os.path.join(args.out, "species_summary.csv")
+        sp_sum.to_csv(sp_path, index=False, encoding="utf-8-sig")
+        print("=== สรุปแยกชนิด ===")
+        print(sp_sum.to_markdown(index=False))
+        print(f"บันทึก: {sp_path}")
+
+
     build_report(df, images, all_masks, args.out)
 
     show_cols = ["image", "species", "leaf_count", "shoot_count", "root_count", "stem_count",
                  "coverage_ratio", "height_proxy", "green_pct", "yellow_ratio", "hull_ratio",
-                 "readiness_index", "confidence", "verdict", "note"]
+                 "readiness_index", "confidence", "quality_warning", "verdict", "note"]
     print(df[show_cols].to_markdown(index=False))
 
     pairs = [("leaf_count", "coverage_ratio"), ("leaf_count", "shoot_count"),
