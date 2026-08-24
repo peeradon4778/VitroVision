@@ -1,5 +1,8 @@
 # 🌱 VitroVision — Subculture Readiness Criteria (สังเคราะห์จาก literature)
 
+> 🔴 **ตกรุ่น (DEPRECATED) — 2026-07-29 ตาม grill v3:** เจ้าของโครงการเปลี่ยนโจทย์จาก "ความพร้อมตัดย้าย (subculture)" → **"ความพร้อมอนุบาล (acclimatization/hardening)"** — เกณฑ์ทั้งหมดในไฟล์นี้ใช้ต่อไม่ได้ (ดู `research/_grill_v3.md` Q1) — ต้องสร้างเกณฑ์ "พร้อมอนุบาล" ใหม่ทั้งชุดจาก literature โดยมี**ระบบรากเป็นตัวชี้วัดอันดับ 1**
+> เก็บไฟล์นี้ไว้เป็นหลักฐานของรอบแรกเท่านั้น
+>
 > สร้าง: 2026-07-06 โดย vitro-researcher (Wave 1)
 > อ้างอิง citation ทั้งหมดในไฟล์นี้ตรงกับ `research/citation_gate.md` หัวข้อ 2 และ 6 — ทุกอันผ่าน verify แล้ว
 > **สถานะ: rough threshold เท่านั้น — รอ lab validate กับพืชจริงในแล็บ** (เป็น 1 ใน 4 จุดที่ orchestration.md ระบุว่าต้องถามเจ้าของโครงการ/คนแล็บ) ห้าม writer เขียนราวกับเป็นค่าที่ยืนยันแล้วในเอกสาร proposal

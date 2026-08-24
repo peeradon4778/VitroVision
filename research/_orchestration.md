@@ -6,9 +6,9 @@
 ---
 
 ## 🔒 ตรึงแล้ว (อย่าถกซ้ำ)
-- ชื่อ TH: **VitroVision — ระบบคัดกรองความพร้อมของการตัดย้ายเนื้อเยื่อด้วย Zero-Shot จากโมเดล SAM3 สำหรับพืชเพาะเลี้ยงเนื้อเยื่อ**
-- ชื่อ EN: **VitroVision: A SAM3-Powered Zero-Shot Vision System for Subculture Readiness in Plant Tissue Culture**
-- RQ: snapshot เดียว → triage 3 คลาส (wait / subculture / transplant-overdue) แบบ zero-shot ข้ามชนิดพืช (decision-support เท่านั้น)
+- ชื่อ TH: **VitroVision — ระบบคัดกรองความพร้อมอนุบาลของพืชเพาะเลี้ยงเนื้อเยื่อด้วย Zero-Shot จากโมเดล SAM3** (เปลี่ยนจาก "ตัดย้าย" ตาม grill v3 29/07/2026)
+- ชื่อ EN: **VitroVision: A SAM3-Powered Zero-Shot Vision System for Acclimatization Readiness in Plant Tissue Culture**
+- RQ: snapshot เดียว → triage กลุ่ม (ยังไม่พร้อม / พร้อมอนุบาล / ตรวจเอง) แบบ zero-shot ข้ามชนิดพืช (decision-support เท่านั้น) — ระบบราก (root) เป็นตัวชี้วัดอันดับ 1 ของความพร้อมอนุบาล
 - Engineering goal: Native Android app ถ่าย 1 รูป → mask + trait metrics + triage 3-class + confidence + manual override
 - Segmentation engine: **SAM3 PCS text-prompted** (prompt เริ่ม `["plant","leaf"]`) — พิสูจน์ผ่าน spike test 2026-07-05 · **ห้ามใช้ SAM automatic/everything mode เด็ดขาด**
 - สถาปัตยกรรม: cloud-primary (app → Roboflow SAM3 PCS API → mask/ผล → on-device feature extract + decision)
@@ -20,7 +20,7 @@
 - `leaf_count` = จำนวน instance "leaf" (conf ≥ 0.5)
 - `shoot_count` = จำนวน "plant"/"shoot" detections
 - `glare_score` = สัดส่วน pixel ใน ROI ที่ V(HSV)>~0.95 & saturation ต่ำ (specular)
-- Decision (rule-based, threshold รอ lab validate): wait / subculture / transplant-overdue + confidence (ลดเมื่อ glare สูง) + manual override เสมอ
+- Decision (rule-based, threshold รอ lab validate): ยังไม่พร้อม / พร้อมอนุบาล / ตรวจเอง (ROI ไม่ชัดหรือหนาแน่นเกิน) + confidence (ลดเมื่อ glare สูง) + manual override เสมอ
 
 ## 📄 เอกสารเป้าหมาย
 - YSC Proposal **ส่วน 1 เท่านั้น** (ภาษาไทยก่อน) = บทคัดย่อ → บทนำ(พีระมิด กว้าง→แคบ→gap→RQ) → วัตถุประสงค์ → สมมติฐาน → วัสดุอุปกรณ์ → **Methodology (เด่นพิเศษ + รูป pipeline/architecture)** → การวิเคราะห์ข้อมูล → แผนงาน(Gantt 2-3 เดือน) → ความเสี่ยง → ประโยชน์ → **Gen-AI disclosure (สำคัญ ใช้เต็มระบบ)** → บรรณานุกรม APA7
@@ -31,7 +31,7 @@
 
 ## 👥 คลื่นงาน
 **Wave 1 (parallel — launch พร้อมกัน):**
-- [ ] Researcher — citation pool ใหม่ (verify Consensus/PubMed) + เกณฑ์ subculture จาก lit + ยืนยัน ส่วน1/2 จาก NSTDA + งานวิจัย optimize
+- [ ] Researcher — citation pool ใหม่ (verify Consensus/PubMed) + เกณฑ์ความพร้อมอนุบาลจาก lit (แทนเกณฑ์ subculture ที่ตกรุ่น) + ยืนยัน ส่วน1/2 จาก NSTDA + งานวิจัย optimize
 - [ ] Designer — architecture + pipeline diagram (EN, ระดับตีพิมพ์) + design system + wireframe แอป
 - [ ] Fullstack — Android skeleton + Roboflow SAM3 PCS integration + feature extract + rule decision + result screen + regenerate spike overlay
 
@@ -49,6 +49,6 @@
 
 ## ❓ 4 จุดต้องถามเจ้าของโครงการ (ห้ามเดา)
 1. ภาพขวดจริงเพิ่ม (high-density / ชนิดพืชอื่น)
-2. เกณฑ์ "พร้อม subculture" ต้องยืนยันกับคนแล็บจริง (researcher หา rough จาก lit ไปก่อน)
+2. เกณฑ์ "พร้อมอนุบาล" ต้องยืนยันกับคนแล็บจริง (researcher หา rough จาก lit ไปก่อน — ระบบราก = ตัวชี้วัดอันดับ 1)
 3. ยืนยัน target = YSC 2027
 4. ทดสอบแอปจริงในแล็บด้วย Samsung S24 FE (mobile data)
