@@ -41,6 +41,14 @@
 | เช้า–บ่าย | วิเคราะห์ผลรัน Colab ชุด 100 ขวดพริกจินดา (`data/raw/20260814_batch`) — จัดกลุ่ม verdict 3 กลุ่ม + ตรวจความสัมพันธ์ระหว่าง features + เตรียมผลสรุปสำหรับรายงาน/การนำเสนอ | `notebooks/sam3/colab_run_v2_clean.ipynb` (ผลอยู่ใน Downloads/Colab) | **ผลจริง:** 13 พร้อมอนุบาล / 51 ยังไม่พร้อม / 36 ROI-ไม่ชัด-ตรวจเอง; corr leaf↔coverage 0.760, coverage↔height 0.716, green↔healthy 0.922, leaf↔shoot 0.538, coverage↔area 0.932; **100 ขวด/~15 นาที** |
 | บ่าย | สรุปสถาปัตยกรรม/design diagrams ของระบบ (Mermaid, ภาษาอังกฤษตามข้อกำหนด YSC) | `docs/diagrams.md` | — |
 
+## 2026-08-24 — ปรับ framing เอกสารตาม YSC Category Wizard (75→95 คะแนน) + อัปเดตผล 100 ขวด
+
+| เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |
+|---|---|---|---|
+| กลางคืน | ทดสอบ proposal กับ YSC Wizard Tools (Category Wizard, ysc-wizard.vercel.app) — รอบ 1 (framing ชีววิทยา) ได้ **75/100** · รอบ 2 (framing แบบ CS: dataset contribution + baseline + ablation) ได้ **95/100** (โมเดล Typhoon 2.5 30B SCB 10X Cloud) — จุดอ่อนที่พบ: Scope 5/15 → 14/15, Metric 17/25 → 24/25 · สาขาที่แนะนำ: CS → CSAI (AI/ML) อันดับ 1 | ทดสอบออนไลน์ (ไม่ใช่ไฟล์) | 75 → 95/100 — framing เปลี่ยนทุกอย่าง |
+| กลางคืน | ปรับ proposal: บทคัดย่อ/RQ/สมมติฐาน/วัตถุประสงค์ framing แบบ CS · methodology ตรง pipeline จริง (5 prompts, ROI detection, 6 กลุ่ม features, verdict ROI-ไม่ชัด) · เพิ่ม 7.6 Baseline Comparison + Sensitivity Analysis · เพิ่ม segmentation metrics (mIoU/Dice/F1) · เพิ่ม dataset contribution + citations ใหม่ (Orvati Nia 2026, Abbey & Meroz 2026, Dubois 2026) | `docs/proposal_th_draft.md` (381→403 บรรทัด) | โครงสร้างครบ 13 หัวข้อ |
+| กลางคืน | ปรับ report v1: บทคัดย่อ framing CS + เพิ่มผล 100 ขวด [RESULT] (13/51/36 + correlation r = 0.716–0.932) · อัปเดต 1.4/3.6/5/6.2 ให้มี baseline/ablation plan · แก้ H₁ เป็น 5 prompts · เกณฑ์ ready 0.20 | `docs/report_th_v1.md` (243→272 บรรทัด) | — |
+
 ## ข้อควรทำต่อ (backlog)
 
 - [x] ~~รัน Colab รอบ 2 ด้วย notebook ใหม่~~ → **ทำแล้ว 18/08** (`colab_run_v2_clean.ipynb`) — ผล 100 ขวดพริกจินดา: 13 พร้อมอนุบาล / 51 ยังไม่พร้อม / 36 ROI-ไม่ชัด-ตรวจเอง

@@ -14,13 +14,13 @@
 
 ## 2. บทคัดย่อ
 
-การเพาะเลี้ยงเนื้อเยื่อพืช (plant tissue culture) เป็นเทคโนโลยีหลักของการขยายพันธุ์พืชเชิงพาณิชย์ทั่วโลก รวมถึงประเทศไทยซึ่งเป็นฐานการผลิตกล้วยไม้ อินทผลัม ปาล์มน้ำมัน และพืชเศรษฐกิจอีกหลายชนิด ปัญหาสำคัญของกระบวนการนี้คือการตัดสินใจว่าเมื่อใดจึงควรตัดย้าย (subculture) ซึ่งปัจจุบันอาศัยการตรวจสอบด้วยสายตาของนักวิทยาศาสตร์เป็นรายขวด ทำให้เป็นคอขวดด้านแรงงานและเวลา โดยเฉพาะในห้องปฏิบัติการที่มีปริมาณขวดมาก
+การเพาะเลี้ยงเนื้อเยื่อพืช (plant tissue culture) เป็นเทคโนโลยีหลักของการขยายพันธุ์พืชเชิงพาณิชย์ แต่การตัดสินใจว่าเมื่อใดจึงควรตัดย้าย (subculture) ยังคงอาศัยการตรวจด้วยสายตาของนักวิทยาศาสตร์เป็นรายขวด ซึ่งเป็นคอขวดด้านแรงงานและเวลา และมีความแปรปรวนระหว่างผู้ประเมิน
 
-โครงงานนี้นำเสนอ VitroVision — ระบบคัดกรองความพร้อมของการตัดย้ายเนื้อเยื่อแบบ non-destructive ที่ใช้ SAM3 (Segment Anything Model 3) ในโหมด Promptable Concept Segmentation (PCS) เพื่อ segment ต้นพืชและใบจากภาพถ่ายเพียงภาพเดียวผ่านขวดแก้ว โดยผู้ใช้ถ่ายภาพขวดเพาะเลี้ยงด้วยสมาร์ตโฟนระบบปฏิบัติการ Android ส่งภาพไปยัง Roboflow SAM3 PCS API พร้อม text prompts คำว่า "plant" และ "leaf" จากนั้นระบบจะประมวลผล mask ที่ได้เพื่อคำนวณ feature ต่าง ๆ ได้แก่ coverage_ratio, height_proxy, leaf_count, shoot_count และ glare_score ก่อนนำเข้า rule-based decision algorithm เพื่อจัดกลุ่มขวดออกเป็น 3 คลาส ได้แก่ wait (ยังไม่พร้อม), subculture (พร้อมตัดย้าย), และ transplant-overdue (เกินเวลาที่เหมาะสม) พร้อม confidence score และตัวเลือกให้ผู้ใช้ปรับแก้ผลด้วยตนเอง (manual override)
+โครงงานนี้พัฒนาและประเมินระบบแบ่งส่วนภาพ (segmentation) แบบ zero-shot สำหรับการคัดกรองความพร้อมของการตัดย้ายเนื้อเยื่อผ่านขวดแก้ว — ปัญหาคอมพิวเตอร์วิทัศน์ (computer vision) ที่ท้าทายจากแสงสะท้อน (glare) ไอน้ำ (condensation) และความโค้งของแก้ว ระบบใช้แบบจำลองพื้นฐาน Segment Anything Model 3 (SAM3) ในโหมด Promptable Concept Segmentation (PCS) ร่วมกับการออกแบบพรอมป์ข้อความ (prompt engineering) 5 คำ ได้แก่ plant, leaf, shoot, stem และ root การตรวจจับขอบเขตขวด (bottle ROI) เป็นกรอบอ้างอิง และขั้นตอนวิธีตัดสินใจแบบกฎ (rule-based triage algorithm) ที่จัดกลุ่มขวดเป็น 3 คลาส (wait / subculture / transplant-overdue) พร้อมคะแนนความมั่นใจและกลไกกันความผิดพลาดเมื่อตรวจหาขอบเขตขวดไม่พบ
 
-ผลการทดสอบเบื้องต้น (spike test, 5 กรกฎาคม 2569) ยืนยันว่า SAM3 PCS สามารถ segment ต้นพืชที่เพาะเลี้ยงในขวดแก้วผ่านสิ่งรบกวน เช่น ฝ้า ไอน้ำ และแสงสะท้อน (glare) ได้จริง แม้ยังไม่ผ่านการปรับเทียบ (fine-tune) สำหรับงานนี้โดยเฉพาะ — เป็นหลักฐานเบื้องต้นว่าแนวทาง zero-shot segmentation มีความเป็นไปได้
+งานนี้สร้างชุดข้อมูลภาพถ่ายจริงของพืชเพาะเลี้ยงเนื้อเยื่อผ่านขวดแก้วชุดแรก (100 ขวด พริกจินดา) พร้อมระบบการวัดเชิงปริมาณ 6 กลุ่ม และประเมินระบบเปรียบเทียบกับวิธีพื้นฐาน (baseline) ได้แก่ SAM2, YOLO-seg และการแบ่งส่วนเชิงคลาสสิก ด้วยตัวชี้วัดมาตรฐาน mIoU, Dice, precision, recall และ F1 พร้อมการวิเคราะห์ความไวของพรอมป์ (prompt sensitivity) และความไวของเกณฑ์การตัดสินใจ (threshold sensitivity) ผลทดสอบเบื้องต้นให้ความสัมพันธ์เชิงปริมาณที่สมเหตุผลเชิงชีววิทยา (จำนวนใบกับพื้นที่ปกคลุม r = 0.76 และสัดส่วนเขียวกับสุขภาพต้น r = 0.92) และประมวลผล 100 ขวดภายในเวลาประมาณ 15 นาที
 
-ระบบนี้มีข้อจำกัดที่ชัดเจน: (1) เป็นเครื่องมือช่วยตัดสินใจ (decision-support) ไม่ใช่ระบบวินิจฉัยขั้นสุดท้าย (2) ค่า threshold ของการจัดกลุ่มเป็นค่า rough จากการสังเคราะห์วรรณกรรมข้ามชนิดพืช ต้องผ่านการเทียบค่า (calibration) กับข้อมูลในห้องปฏิบัติการจริงก่อนนำไปใช้ และ (3) ความแม่นยำของ segmentation ขึ้นอยู่กับคุณภาพของภาพ คุณภาพเครือข่ายอินเทอร์เน็ต และชนิดของพืช อย่างไรก็ตาม VitroVision นำเสนอแนวทางใหม่ในการใช้ foundation model ล่าสุดอย่าง SAM3 กับปัญหาทางชีววิทยาพืชที่ยังไม่มีระบบ low-cost อื่นรองรับ ซึ่งอาจช่วยเพิ่มประสิทธิภาพห้องปฏิบัติการเพาะเลี้ยงเนื้อเยื่อในประเทศไทยและประเทศกำลัง開発อื่น ๆ
+นี่เป็นงานแรกที่ใช้แบบจำลองพื้นฐาน zero-shot ประเมินความพร้อมการตัดย้ายเนื้อเยื่อแบบไม่ทำลายตัวอย่าง (non-destructive) ผ่านขวดแก้ว — เป็นระบบต้นทุนต่ำที่ใช้เพียงสมาร์ตโฟน ช่วยลดแรงงานและเพิ่มความสม่ำเสมอของการตัดสินใจในห้องปฏิบัติการเพาะเลี้ยงเนื้อเยื่อ
 
 ---
 
@@ -48,7 +48,7 @@
 
 ### 3.4 คำถามวิจัย (Research Question)
 
-ด้วยภาพถ่ายเพียงภาพเดียว (single snapshot) ผนวกกับ SAM3 PCS zero-shot segmentation และ rule-based triage algorithm สามารถจัดกลุ่มขวดเพาะเลี้ยงเนื้อเยื่อใน 3 คลาส (wait / subculture / transplant-overdue) ได้อย่างถูกต้องเพียงใด?
+ด้วยภาพถ่ายเพียงภาพเดียว (single snapshot) ผนวกกับ SAM3 PCS zero-shot segmentation (พรอมป์ 5 คำ + การตรวจจับขอบเขตขวด) และ rule-based triage algorithm ระบบสามารถจัดกลุ่มขวดเพาะเลี้ยงเนื้อเยื่อใน 3 คลาส (wait / subculture / transplant-overdue) ได้ถูกต้องเพียงใดเมื่อเทียบกับวิธีพื้นฐาน (baseline) และค่าอ้างอิงจากผู้ประเมิน?
 
 ### 3.5 วัตถุประสงค์ของโครงงาน
 
@@ -56,29 +56,29 @@
 
 ### 3.6 สมมติฐาน
 
-**H₁:** SAM3 PCS ที่ใช้ text prompts "plant" และ "leaf" สามารถ segment ต้นพืชเพาะเลี้ยงเนื้อเยื่อผ่านขวดแก้วที่มี glare, ฝ้า และ condensation ได้ โดยมี mIoU เฉลี่ย ≥ 0.65 เมื่อเทียบกับ ground truth ที่ annotate โดยมนุษย์ (อ้างอิงจากผล spike test 2026-07-05 ที่แสดง feasibility)
+**H₁:** SAM3 PCS ที่ใช้ text prompts 5 คำ (plant, leaf, shoot, stem, root) สามารถ segment ต้นพืชเพาะเลี้ยงเนื้อเยื่อผ่านขวดแก้วที่มี glare, ฝ้า และ condensation ได้ โดยมี mIoU เฉลี่ย ≥ 0.65 เมื่อเทียบกับ ground truth ที่ annotate โดยมนุษย์ และสูงกว่า baseline (SAM2, YOLO-seg, การแบ่งส่วนเชิงคลาสสิก) อย่างมีนัยสำคัญ (อ้างอิงจากผล spike test 2026-07-05 และงาน Orvati Nia et al. 2026 ที่พบว่า SAM3 ให้ความแม่นยำสูงสุดข้ามโครงสร้างพืช)
 
-**H₂:** ชุด feature 5 มิติ (coverage_ratio, height_proxy, leaf_count, shoot_count, glare_score) ที่คำนวณจาก mask ของ SAM3 PCS สามารถทำนายคลาส subculture readiness ด้วย rule-based algorithm ได้ถูกต้อง ≥ 70% เมื่อเทียบกับการประเมินโดยนักวิทยาศาสตร์ห้องปฏิบัติการ (รอการทดสอบกับข้อมูลจริง)
+**H₂:** ชุด feature 6 กลุ่ม (โครงสร้าง/อวัยวะ/ความซับซ้อน/สี/คุณภาพภาพ/verdict) ที่คำนวณจาก mask ของ SAM3 PCS สามารถจำแนกคลาส subculture readiness ด้วย rule-based algorithm ได้ถูกต้อง ≥ 70% เมื่อเทียบกับการประเมินโดยนักวิทยาศาสตร์ห้องปฏิบัติการ (รอการทดสอบกับข้อมูลจริง)
 
 ---
 
 ## 4. วัตถุประสงค์
 
-1. เพื่อพัฒนาแอปพลิเคชัน Android ที่เชื่อมต่อกับ Roboflow SAM3 PCS API สำหรับการถ่ายภาพขวดเพาะเลี้ยงเนื้อเยื่อและ segment ต้นพืชและใบแบบ zero-shot ผ่าน text prompts "plant" และ "leaf"
+1. **สร้างชุดข้อมูลภาพถ่ายจริง**ของพืชเพาะเลี้ยงเนื้อเยื่อผ่านขวดแก้ว (≥ 100 ขวด พร้อม metadata และการกำกับภาพโดยมนุษย์บางส่วน) ซึ่งเป็นชุดข้อมูลใหม่ที่ยังไม่มีในงานวิจัยก่อนหน้า พร้อมระบบการวัดเชิงปริมาณ 6 กลุ่ม
 
-2. เพื่อออกแบบชุด feature (coverage_ratio, height_proxy, leaf_count, shoot_count, glare_score) ที่คำนวณจาก SAM3 mask สำหรับบ่งชี้สถานะความพร้อมในการตัดย้ายของพืชเพาะเลี้ยงเนื้อเยื่อแบบ non-destructive
+2. **พัฒนาและประเมิน pipeline segmentation แบบ zero-shot** ที่ใช้ SAM3 PCS (พรอมป์ 5 คำ) ร่วมกับการตรวจจับขอบเขตขวด (ROI) และขั้นตอนวิธีตัดสินใจแบบกฎ (rule-based triage) ที่จัดกลุ่มขวดเป็น 3 คลาส พร้อม confidence score และ manual override
 
-3. เพื่อสร้างและทดสอบ rule-based decision algorithm สำหรับจัดกลุ่มขวดเป็น 3 คลาส (wait / subculture / transplant-overdue) พร้อม confidence score และ manual override
+3. **ประเมินเปรียบเทียบกับวิธีพื้นฐาน (baseline)** — SAM2, YOLO-seg และการแบ่งส่วนเชิงคลาสสิก — ด้วยตัวชี้วัดมาตรฐาน mIoU, Dice, precision, recall และ F1 พร้อมวิเคราะห์ความไวของพรอมป์ (prompt sensitivity) และความไวของเกณฑ์ (threshold sensitivity)
 
-4. เพื่อประเมินความถูกต้องของระบบเทียบกับการประเมินโดยนักวิทยาศาสตร์ห้องปฏิบัติการ และปรับเทียบ threshold สำหรับพืชแต่ละชนิด
+4. **ตรวจสอบความถูกต้องของระบบ**เทียบกับการประเมินโดยนักวิทยาศาสตร์ห้องปฏิบัติการ และปรับเทียบ threshold สำหรับพืชแต่ละชนิด
 
 ---
 
 ## 5. สมมติฐาน
 
-**สมมติฐานที่ 1 (เชิงเทคนิค — segmentation):** SAM3 PCS ที่ใช้ text prompts "plant" และ "leaf" สามารถ segment ต้นพืชเพาะเลี้ยงเนื้อเยื่อผ่านขวดแก้วซึ่งมีสิ่งรบกวนทางแสง (glare, condensation, reflection) ได้ โดยมีค่าเฉลี่ย Intersection over Union (mIoU) ระหว่าง mask ที่ได้จากการ segment อัตโนมัติกับ ground truth ที่ annotate โดยมนุษย์ ≥ 0.65
+**สมมติฐานที่ 1 (เชิงเทคนิค — segmentation):** SAM3 PCS ที่ใช้ text prompts 5 คำ (plant, leaf, shoot, stem, root) สามารถ segment ต้นพืชเพาะเลี้ยงเนื้อเยื่อผ่านขวดแก้วซึ่งมีสิ่งรบกวนทางแสง (glare, condensation, reflection) ได้ โดยมีค่าเฉลี่ย Intersection over Union (mIoU) ระหว่าง mask ที่ได้จากการ segment อัตโนมัติกับ ground truth ที่ annotate โดยมนุษย์ ≥ 0.65 และสูงกว่า baseline ทั้ง 3 วิธี (SAM2, YOLO-seg, การแบ่งส่วนเชิงคลาสสิก)
 
-**สมมติฐานที่ 2 (เชิงชีววิทยา — การทำนาย):** ชุด feature ที่คำนวณจาก SAM3 mask (coverage_ratio, height_proxy, leaf_count, shoot_count) ผนวกกับ metadata (days_since_last_subculture) สามารถจำแนกขวดเพาะเลี้ยงเนื้อเยื่อออกเป็น 3 คลาสตามความพร้อมในการตัดย้ายได้ถูกต้อง ≥ 70% เมื่อเทียบกับการประเมินโดยนักวิทยาศาสตร์ที่มีประสบการณ์ในห้องปฏิบัติการ โดยมีค่า minimum sensitivity ≥ 0.6 สำหรับคลาส subculture (คลาสเป้าหมายหลัก)
+**สมมติฐานที่ 2 (เชิงการประยุกต์ — การจัดกลุ่ม):** ชุด feature 6 กลุ่มที่คำนวณจาก SAM3 mask ผนวกกับ metadata (days_since_last_subculture) สามารถจำแนกขวดเพาะเลี้ยงเนื้อเยื่อออกเป็น 3 คลาสตามความพร้อมในการตัดย้ายได้ถูกต้อง ≥ 70% เมื่อเทียบกับการประเมินโดยนักวิทยาศาสตร์ที่มีประสบการณ์ในห้องปฏิบัติการ โดยมีค่า minimum sensitivity ≥ 0.6 สำหรับคลาส subculture (คลาสเป้าหมายหลัก)
 
 ---
 
@@ -126,61 +126,62 @@
 
 ### 7.2 ขั้นตอนการประมวลผลภาพ (Image Processing Pipeline)
 
-**7.2.1 การส่งภาพไปยัง SAM3 PCS API**
+**7.2.1 การรัน SAM3 PCS (facebook/sam3) บน Google Colab**
 
-1. แอปพลิเคชันรับภาพจากกล้องสมาร์ตโฟน (หรือเลือกจากแกลเลอรี)
-2. ปรับขนาดภาพให้มีด้านยาวสูงสุดไม่เกิน 2048 pixels (ลด payload และเวลา)
-3. แปลงภาพเป็น base64 string
-4. ส่ง POST request ไปยัง Roboflow SAM3 PCS endpoint พร้อม:
-   - ภาพ (base64 encoded)
-   - text prompts: `["plant", "leaf"]`
-   - confidence threshold: 0.3 (ค่าเริ่มต้น)
-5. รับ response ที่ประกอบด้วย:
-   - predictions: array ของ instance detection
-   - แต่ละ instance ประกอบด้วย: class name, confidence score, bbox (x, y, width, height), polygon points (mask), image dimensions
+1. รวบรวมภาพถ่ายขวดจากชุดข้อมูล (ภาพจริงจากห้องปฏิบัติการ ผ่าน `data/raw/`)
+2. ตรวจหาขอบเขตขวด (bottle ROI detection) เพื่อใช้เป็นกรอบอ้างอิงของพื้นที่ปกคลุม (coverage_ratio)
+3. รัน segmentation ด้วย SAM3 PCS (facebook/sam3, gated — ต้องยืนยันสิทธิ์ผ่าน Hugging Face) บน GPU (Colab T4) แบบ headless batch ด้วยคำสั่ง:
+   `python sam3_growth_pipeline.py --data <โฟลเดอร์ภาพ> --out <โฟลเดอร์ผลลัพธ์> [--config config.json]`
+4. กำหนดค่า: พรอมป์ข้อความ 5 คำ `["plant", "leaf", "shoot", "stem", "root"]`, score threshold ≥ 0.5, mask threshold ≥ 0.5
+5. รับผลลัพธ์เป็น binary mask ต่อพรอมป์ พร้อม confidence score และ bounding box
 
 **7.2.2 การจัดระเบียบผลลัพธ์**
 
-- แยก predictions เป็น 2 กลุ่มตาม class: "plant" และ "leaf"
-- คัดกรอง instance ที่ confidence ต่ำกว่า 0.5 (ยกเว้นกรณีที่ไม่มี instance ใดผ่าน threshold ให้ใช้ค่า 0.3 เป็น lower bound)
-- กรณีที่ได้ mask เป็น polygon points (ไม่ใช่ binary mask) ให้แปลงเป็น binary mask บน canvas ขนาดภาพเดิม
+- แยก mask ตาม class ของพรอมป์ (plant/leaf/shoot/stem/root)
+- นับใบแบบ merged (รวมชิ้นส่วนที่ติดกันเป็น 1 ใบ) เพื่อลด over-segmentation พร้อม fallback นับจาก plant+shoot เมื่อไม่พบ mask ใบ
+- ตรวจพบขวดไม่เจอ (ROI ไม่ชัด) → กันไม่ให้ verdict ผิดโดยส่งไปให้มนุษย์ตรวจ (ดูหัวข้อ 7.4)
+- คำนวณ PIXEL_TO_CM จาก config เมื่อมีค่าสอบเทียบ (ตาม CALIBRATION_GUIDE)
 
 **7.2.3 หมายเหตุสำคัญเกี่ยวกับ SAM3 PCS**
 
-Spike test เมื่อวันที่ 5 กรกฎาคม 2569 ได้ทดสอบ SAM3 PCS กับภาพขวดเพาะเลี้ยงเนื้อเยื่อจริง (ผ่าน Roboflow API) ด้วย text prompts "plant" และ "leaf" — ผลการทดสอบยืนยันว่าโมเดลสามารถ segment ตำแหน่งของต้นพืชที่อยู่ภายในขวดแก้วได้สำเร็จ แม้มี glare และ condensation ในภาพ โดยเฉพาะอย่างยิ่ง SAM3 PCS สามารถแยกแยะระหว่างต้นพืชกับพื้นหลังและขอบขวดได้ ซึ่งเป็นการพิสูจน์ feasibility ของแนวทาง zero-shot segmentation สำหรับงานนี้ก่อนเริ่มพัฒนาเต็มรูปแบบ
+Spike test เมื่อวันที่ 5 กรกฎาคม 2569 ทดสอบ SAM3 PCS กับภาพขวดเพาะเลี้ยงเนื้อเยื่อจริงด้วย text prompts "plant" และ "leaf" — ผลยืนยันว่าโมเดลสามารถ segment ตำแหน่งต้นพืชภายในขวดแก้วได้สำเร็จ แม้มี glare และ condensation และแยกแยะต้นพืชจากพื้นหลัง/ขอบขวดได้ ซึ่งพิสูจน์ feasibility ของแนวทาง zero-shot segmentation งานอิสระของ Orvati Nia et al. (2026) เปรียบเทียบ SAM v2.1/SAM3/YOLOv11/YOLOv12/BiRefNet บนภาพพืชมากกว่า 50,000 ภาพ พบว่า SAM3 ให้ความแม่นยำสูงสุดและสม่ำเสมอที่สุดข้ามโครงสร้างพืช โดยใช้โหมด detector-free + พรอมป์ข้อความ "plant" ตรงกับแนวทางของโครงงานนี้
 
 ### 7.3 การคำนวณ Feature (Feature Extraction)
 
-เมื่อได้ mask ของ "plant" และ "leaf" แล้ว ระบบจะคำนวณ feature ดังต่อไปนี้
+เมื่อได้ mask ของพรอมป์ทั้ง 5 คำแล้ว ระบบคำนวณ feature 6 กลุ่ม ดังนี้
 
 **ตารางที่ 1: นิยามของ feature ที่ใช้ในระบบ**
 
-| Feature | ตัวแปร | สูตร/นิยาม | หน่วย |
+| กลุ่ม | Feature | สูตร/นิยาม | หน่วย |
 |---|---|---|---|
-| coverage_ratio | `cr` | area(plant_mask ∪ leaf_mask) / area(ROI) | สัดส่วน (0-1) |
-| height_proxy | `hp` | bbox_height(plant_mask) / ROI_height | สัดส่วน (0-1) |
-| leaf_count | `lc` | จำนวน instance ที่มี class = "leaf" และ confidence ≥ 0.5 | จำนวนเต็ม |
-| shoot_count | `sc` | จำนวน instance ที่มี class = "plant" (รวม "shoot") และ confidence ≥ 0.5 | จำนวนเต็ม |
-| glare_score | `gs` | สัดส่วน pixel ใน ROI ที่มีค่า V (จาก HSV) > 0.95 และ S < 0.2 | สัดส่วน (0-1) |
+| โครงสร้าง | `coverage_ratio` | area(plant∪leaf masks) / area(ROI) | สัดส่วน (0-1) |
+| โครงสร้าง | `height_proxy` | bbox_height(plant mask) / ROI_height | สัดส่วน (0-1) |
+| โครงสร้าง | `projected_area_px` | พื้นที่ฉายภาพรวมของ mask | พิกเซล |
+| อวัยวะ | `leaf_count` | จำนวนใบ (นับแบบ merged กัน over-segmentation; fallback จาก plant+shoot) | จำนวนเต็ม |
+| อวัยวะ | `shoot_count`, `stem_count`, `root_count` | จำนวน instance ต่อพรอมป์ (confidence ≥ 0.5) | จำนวนเต็ม |
+| ความซับซ้อน | `hull_ratio` | พื้นที่ mask / พื้นที่ convex hull (ความซับซ้อนของรูปร่าง) | สัดส่วน (0-1) |
+| สี | `green/yellow/brown_ratio` | สัดส่วนพิกเซลใน ROI แยกตามช่วง HSV | สัดส่วน (0-1) |
+| คุณภาพภาพ | `glare_score`, `condensation_score` | สัดส่วนพิกเซล specular/ฝ้าภายใน ROI | สัดส่วน (0-1) |
+| การตัดสินใจ | `verdict`, `confidence` | ผลจัดกลุ่ม 3 คลาส + คะแนนความมั่นใจ (ดู 7.4) | — |
 
 **หมายเหตุ:**
-- ROI (Region of Interest) คือพื้นที่ภายในขวดซึ่งกำหนดโดย crop คงที่จากการจัดฉากถ่ายมาตรฐาน (fixed-distance setup) — ไม่ใช้ automatic detection ในเวอร์ชันแรก
-- `height_proxy` เป็นสัดส่วนสัมพัทธ์ ไม่ใช่ความยาวจริงในหน่วยเซนติเมตร (2D proxy ไม่ได้วัด 3D height จริง)
-- ในการคำนวณ `coverage_ratio` ให้รวม mask ทั้ง plant และ leaf เพื่อไม่ให้นับซ้ำซ้อน
+- ROI คือพื้นที่ภายในขวด กำหนดโดยการตรวจจับขวดอัตโนมัติ (bottle detection) หรือ crop คงที่จากการจัดฉากถ่ายมาตรฐาน
+- `height_proxy` เป็นสัดส่วนสัมพัทธ์ ไม่ใช่ความยาวจริงในหน่วยเซนติเมตร (2D proxy) — เปลี่ยนเป็นหน่วย cm ได้เมื่อตั้งค่า `PIXEL_TO_CM`
 
 ### 7.4 ขั้นตอนวิธีตัดสินใจ (Decision Algorithm)
 
 ระบบใช้ rule-based algorithm (ไม่ใช่ machine learning model) สำหรับจัดกลุ่มขวดเป็น 3 คลาส เพื่อให้สามารถตรวจสอบ ปรับแก้ และอธิบายการตัดสินใจได้ (interpretable/explainable)
 
-**ตารางที่ 2: เกณฑ์การจัดกลุ่มเบื้องต้น (Rough Thresholds — รอการเทียบค่ากับข้อมูลในห้องปฏิบัติการจริง)**
+**ตารางที่ 2: เกณฑ์การจัดกลุ่ม (ค่าเริ่มต้น generic — ปรับได้ผ่าน config และต้อง calibrate กับข้อมูลจริง)**
 
 | คลาส | เงื่อนไข |
 |---|---|
-| **wait** | `days_since_last_subculture < 21` หรือ (`0 ≤ coverage_ratio < 0.35` และ `days_since_last_subculture ≤ 45`) |
-| **subculture** | `0.35 ≤ coverage_ratio ≤ 0.70` และ `21 ≤ days_since_last_subculture ≤ 45` (และไม่เข้าเงื่อนไข transplant-overdue) |
-| **transplant-overdue** | `coverage_ratio > 0.80` หรือ `days_since_last_subculture > 60` หรือ (`coverage_ratio > 0.70` และ `shoot_count` ลดลง/คงที่จากรอบก่อน) |
+| **wait** | `coverage_ratio < ready` (ค่าเริ่มต้น 0.20 สำหรับพริกจินดา ตั้งตามผู้เชี่ยวชาญ 2026-08-18) |
+| **subculture (พร้อมตัดย้าย)** | `ready ≤ coverage_ratio ≤ overdense` |
+| **transplant-overdue** | `coverage_ratio > overdense` (ค่าเริ่มต้น 0.80) |
+| **ROI-ไม่ชัด-ตรวจเอง** | ตรวจหาขวดไม่พบ (ROI detection ล้มเหลว) → ส่งให้มนุษย์ตรวจ ไม่เดาจาก ROI ทั้งภาพ |
 
-**⚠️ คำเตือน:** ตัวเลข 0.35, 0.70, 0.80, 21, 45, 60 ในตารางข้างต้นเป็นค่า rough ที่สังเคราะห์จากวรรณกรรมข้ามชนิดพืช (Pastelín Solano et al., 2019; Regni et al., 2025; Barua et al., 2022; Muhammad et al., 2004) — ยังไม่ผ่านการเทียบค่าจริงในห้องปฏิบัติการที่ทีมใช้งาน ในระบบจริง threshold เหล่านี้สามารถปรับค่าได้ (configurable) และต้องได้รับการ calibrate ก่อนนำไปใช้ในห้องปฏิบัติการใด
+**⚠️ คำเตือน:** ตัวเลข 0.20, 0.80 เป็นค่าเริ่มต้นที่ปรับตั้งจากวรรณกรรมและผู้เชี่ยวชาญ — ยังต้อง calibrate กับข้อมูลจริงในห้องปฏิบัติการก่อนนำไปใช้ ระบบรองรับการตั้งค่าเฉพาะชนิดพืชผ่าน `--config` (SPECIES_THRESHOLDS)
 
 **7.4.1 การคำนวณ confidence score**
 
@@ -203,10 +204,19 @@ confidence = base_confidence × (1 - glare_penalty)
 
 ### 7.5 การตรวจสอบความถูกต้อง (Validation)
 
-1. **เปรียบเทียบกับ ground truth:** นำภาพขวดที่ถ่ายพร้อม metadata + การประเมินโดยนักวิทยาศาสตร์มาทดสอบระบบ คำนวณ confusion matrix, precision, recall, F1-score สำหรับแต่ละคลาส
-2. **Iterative threshold tuning:** หากผล validation แรกต่ำกว่าเป้าหมาย (accuracy < 70%) ให้ปรับ threshold ในตารางที่ 2 แล้วทดสอบซ้ำ บันทึกทุกการเปลี่ยนแปลง
-3. **Cross-species test:** ทดสอบระบบกับพืชต่างชนิดกันเพื่อดูว่า threshold ชุดเดียวใช้ได้กับทุกชนิดหรือไม่ หากผลต่างกันมาก ต้องแนะนำให้ calibrate threshold ต่อชนิดพืช
-4. **Inter-rater reliability:** หากเป็นไปได้ ให้เปรียบเทียบการประเมินระหว่างนักวิทยาศาสตร์ 2 คนขึ้นไป เพื่อดู baseline ของมนุษย์เองก่อนเปรียบเทียบกับระบบ
+1. **Ground truth annotation:** annotate mask (plant/leaf) บนภาพตัวอย่าง ≥ 30 ขวด โดยมนุษย์ → คำนวณ mIoU/Dice ของ segmentation เทียบกับ ground truth
+2. **เปรียบเทียบกับค่าอ้างอิงจากผู้ประเมิน:** นำภาพพร้อม metadata มาทดสอบระบบ คำนวณ confusion matrix, precision, recall, F1-score สำหรับแต่ละคลาสของ verdict
+3. **Iterative threshold tuning:** หากผล validation แรกต่ำกว่าเป้าหมาย (accuracy < 70%) ให้ปรับ threshold แล้วทดสอบซ้ำ บันทึกทุกการเปลี่ยนแปลง
+4. **Cross-species test:** ทดสอบระบบกับพืชต่างชนิดกันเพื่อดูว่า threshold ชุดเดียวใช้ได้กับทุกชนิดหรือไม่
+5. **Inter-rater reliability:** หากเป็นไปได้ ให้เปรียบเทียบการประเมินระหว่างนักวิทยาศาสตร์ 2 คนขึ้นไป เพื่อดู baseline ของมนุษย์เอง
+
+### 7.6 การประเมินเปรียบเทียบกับวิธีพื้นฐาน (Baseline Comparison) และการวิเคราะห์ความไว (Sensitivity Analysis)
+
+**7.6.1 Baseline segmentation** — รันวิธีพื้นฐาน 3 วิธีบนชุดข้อมูลเดียวกัน และเปรียบเทียบด้วยตัวชี้วัดมาตรฐาน: SAM2 (Ravi et al., 2024), YOLO-seg (เช่น YOLOv8-seg), และการแบ่งส่วนเชิงคลาสสิก (thresholding/color segmentation) รายงาน mIoU, Dice, precision, recall, F1 พร้อมเวลาประมวลผลต่อภาพ — อ้างอิงจากงาน Orvati Nia et al. (2026) ที่ใช้เกณฑ์การเปรียบเทียบลักษณะเดียวกัน
+
+**7.6.2 Prompt sensitivity** — ทดสอบชุดพรอมป์ทางเลือก (เช่น plant อย่างเดียว, plant+leaf, ครบ 5 คำ, คำพ้อง เช่น "seedling") แล้วรายงานความแปรปรวนของ mIoU และ verdict — อ้างอิงงาน Dubois et al. (2026) ที่พบว่า SAM3 แบบชี้นำด้วยข้อความไวต่อถ้อยคำพรอมป์
+
+**7.6.3 Threshold sensitivity** — ทดสอบค่า ready/overdense ช่วง 0.10–0.90 (step 0.05) แล้วรายงานผลต่อ accuracy ของ verdict และเลือกชุด threshold ที่ให้ MCC สูงสุด
 
 ---
 
@@ -220,6 +230,10 @@ confidence = base_confidence × (1 - glare_penalty)
 - เปรียบเทียบผลระหว่างพืชต่างชนิดว่า feature thresholds ต้องปรับต่างกันหรือไม่
 
 ### 8.2 การประเมินความแม่นยำของระบบ (Classification Metrics)
+
+**การประเมิน segmentation (เปรียบเทียบ baseline):** คำนวณ mIoU, Dice coefficient, precision, recall และ F1 ที่ระดับพิกเซล โดยเทียบ mask ของ SAM3 กับ ground truth ที่ annotate โดยมนุษย์ และเทียบกับ baseline (SAM2, YOLO-seg, การแบ่งส่วนเชิงคลาสสิก) บนชุดภาพเดียวกัน พร้อมบันทึกเวลาประมวลผลต่อภาพเพื่อพิจารณา trade-off ระหว่างความแม่นยำกับต้นทุนการคำนวณ
+
+**การประเมิน verdict (การจัดกลุ่ม 3 คลาส):**
 
 **ตารางที่ 3: แม่แบบ confusion matrix สำหรับการประเมินผล**
 
@@ -290,6 +304,8 @@ confidence = base_confidence × (1 - glare_penalty)
 5. **การบันทึกประวัติการเจริญเติบโต (Growth history tracking):** เมื่อใช้ระบบอย่างต่อเนื่องหลายรอบ subculture จะได้ข้อมูลอนุกรมเวลา (time-series) ของ coverage_ratio, shoot_count ต่อขวด ซึ่งอาจใช้วิเคราะห์แนวโน้มและคาดการณ์ล่วงหน้าได้
 
 6. **ต้นทุนต่ำ ใช้ง่าย:** ใช้เพียงสมาร์ตโฟน Android ที่มีอยู่แล้วในห้องปฏิบัติการส่วนใหญ่ ไม่ต้องซื้อ hardware เพิ่ม (ต่างจากระบบเฉพาะทาง)
+
+7. **ชุดข้อมูลเปิด (Open dataset):** ชุดข้อมูลภาพเพาะเลี้ยงเนื้อเยื่อผ่านขวดแก้วพร้อม metadata และการกำกับภาพ จะจัดทำตามหลัก FAIR (Findable, Accessible, Interoperable, Reusable) เพื่อเปิดให้นักวิจัยอื่นใช้ต่อ — เป็นทรัพยากรใหม่สำหรับงาน phenotyping ในสภาพเพาะเลี้ยงเนื้อเยื่อที่ยังขาดแคลน
 
 ---
 
@@ -375,6 +391,12 @@ Thammasiri, K. (2015). Current status of orchid production in Thailand. *Acta Ho
 ศูนย์พันธุวิศวกรรมและเทคโนโลยีชีวภาพแห่งชาติ (ไบโอเทค), สวทช. (2563, 12 มิถุนายน). *ไบโอเทค สวทช. พัฒนาระบบเพาะเลี้ยงพืชในอาหารเหลว เพิ่มกำลังการขยายพันธุ์ต้นกล้า*. https://www.nstda.or.th/home/news_post/biotec-bioreactor/
 
 ศูนย์พันธุวิศวกรรมและเทคโนโลยีชีวภาพแห่งชาติ (ไบโอเทค), สวทช. (2565, 3 พฤษภาคม). *ความสำเร็จในการขยายผลการผลิตต้นกล้าอินทผลัมในเชิงพาณิชย์ ด้วยเทคโนโลยีการเพาะเลี้ยงเนื้อเยื่อสู่เกษตรกรไทย*. https://www.biotec.or.th/home/tissueculture-dates/
+
+Orvati Nia, F., Peeples, J., Murray, S. C., McFarland, A., Vann, T., Salehi, S., Hardin, R., Baltensperger, D. D., Ibrahim, A. M. H., Thomasson, J. A., Fadamiro, H., Subramanian, N. K., Pillai, S. D., Roston, R., Ishimwe, J., Basak, D., Oladepo, N., & Vysyaraju, U. (2026). *A data-driven image extraction and analysis pipeline for plant phenotyping in controlled environments* (preprint). bioRxiv. https://doi.org/10.64898/2026.02.25.707797
+
+Abbey, A., & Meroz, Y. (2026). *Segment any plant (SAP): Foundation-model segmentation for plant time-series phenotyping* (preprint). bioRxiv. https://doi.org/10.64898/2026.03.11.711099
+
+Dubois, R., Bousset, L., Jumel, S., Leclerc, M., Parisey, N., & Joly, A. (2026). *Text guidance is powerful but prompt-sensitive for weakly-supervised leaf symptom segmentation* (preprint). bioRxiv. https://doi.org/10.64898/2026.07.10.737680
 
 ---
 
