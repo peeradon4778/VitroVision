@@ -13,6 +13,7 @@ venv/
 # Data & models (ไม่ push)
 data/raw/*
 data/processed/*
+data/_staging*
 models/*
 !**/.gitkeep
 
