@@ -36,7 +36,7 @@
 
 ## C. 🔴 หัวใจ/ด่านตาย — วัตถุใน**ภาชนะโปร่งใส** (refraction)
 - `refraction-aware 3D reconstruction transparent object`
-- `reconstruction object inside transparent container` ← Tong 2023 ReNeuS (ตรงงานเป๊ะ)
+- `reconstruction object inside transparent container` ← (รอ paper ใหม่จากรอบสืบค้น 2026-08)
 - `refractive structure from motion` / `eikonal rendering refraction`
 - `underwater refraction correction photogrammetry` — ปัญหาเดียวกัน (interface หักเหแสง)
 - `index matching liquid transparent vessel imaging` — ลบ refraction เชิงกายภาพ
@@ -60,7 +60,7 @@
 - `convex hull volume / surface area from mesh` — ปริมาตร, leaf area จริง (2D ทำไม่ได้)
 
 ## G. เฉพาะทาง in vitro (domain)
-- `non-destructive phenotyping plant tissue culture` (Bethge "Phenomenon", multi-sensor ผ่านขวดปิด)
+- `non-destructive phenotyping plant tissue culture` (รอ paper ใหม่จากรอบสืบค้น 2026-08)
 - `micropropagation image analysis` · `shoot multiplication rate quantification`
 
 ## H. Validation / anchor ชีววิทยา (CSBI)
@@ -73,9 +73,6 @@
 COLMAP / Meshroom (AliceVision, ฟรี GUI) / Polycam หรือ RealityScan (แอปมือถือ)
 → **เทสต์ 1 วัน:** ถ่าย video ขวด dense ที่มี 1 ขวด → รัน photogrammetry → ดูว่า point cloud พังเพราะ refraction ไหม → เลือก path (2.5D / refraction-mitigated / neural GPU)
 
-## 📚 Papers ที่ verify แล้ว (จาก Consensus 2026-07-01)
-- Yang 2024, Comput. Electron. Agric. — multi-view SfM/MVS plant phenotyping (R²=0.999)
-- Li 2022, Front. Plant Sci. — **RGB video → SfM** maize traits (R²=0.99)
-- Wang 2025, Front. Plant Sci. — SfM+MVS + 6-view ICP registration
-- Tong 2023, CVPR — "Seeing Through the Glass" (refraction ทำ SfM/neural มาตรฐานพัง; แก้ด้วย NeuS+ray tracing)
-- Bethge 2023, Plant Methods — non-destructive in vitro phenotyping (เลี่ยง full-3D ใช้ laser depth + projected area)
+## 📚 Papers ที่ verify แล้ว — ❌ โล๊ะทิ้งหมด 2026-08-06 (ตามผู้ใช้: งานเก่า)
+> เดิมมี 5 ตัว (Yang 2024 / Li 2022 / Wang 2025 / Tong 2023 / Bethge 2023) — **ลบออกจากบรรณานุกรมทั้งหมดแล้ว**
+> รอรอบสืบค้นใหม่ → ดู `research/citations_20260806.md` (19 ตัวที่ verify แล้ว) + ผู้ใช้จะอ่านงานจริงอีกรอบก่อนคัดเลือก

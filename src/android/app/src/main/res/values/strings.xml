@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">VitroVision</string>
+    <string name="app_subtitle">ระบบคัดกรองความพร้อมตัดย้ายเนื้อเยื่อ</string>
+    <string name="cancel">ยกเลิก</string>
+    <string name="feature_section_title">ค่าที่วัดได้</string>
+    <string name="capture_photo">ถ่ายภาพ</string>
+    <string name="capturing">บันทึกภาพ</string>
+    <string name="confirm_photo">ยืนยันภาพนี้</string>
+    <string name="use_photo">ใช้ภาพนี้</string>
+    <string name="retake">ถ่ายใหม่</string>
+    <string name="processing">กำลังประมวลผล…</string>
+    <string name="connection_error">เชื่อมต่อไม่ได้ กรุณาลองอีกครั้ง</string>
+    <string name="no_predictions">ไม่พบต้นพืชในภาพ</string>
+    <string name="feature_coverage">พื้นที่ปกคลุม</string>
+    <string name="feature_height">สัดส่วนความสูง</string>
+    <string name="feature_leaves">จำนวนใบ</string>
+    <string name="feature_shoots">จำนวนยอด</string>
+    <string name="feature_glare">แสงสะท้อน</string>
+    <string name="feature_days">วันหลังย้ายครั้งล่าสุด</string>
+    <string name="decision_title">คำวินิจฉัย</string>
+    <string name="decision_wait">รอ</string>
+    <string name="decision_subculture">ย้ายได้</string>
+    <string name="decision_transplant">ย้ายด่วน</string>
+    <string name="confidence">ความเชื่อมั่น</string>
+    <string name="manual_override">ต้องการเปลี่ยนผล?</string>
+    <string name="override_wait">รอ</string>
+    <string name="override_subculture">ย้าย</string>
+    <string name="override_transplant">ย้ายด่วน</string>
+    <string name="back_home">กลับหน้าแรก</string>
+    <string name="last_result">ผลล่าสุด</string>
+    <string name="no_result">ยังไม่มีผลการวิเคราะห์</string>
+    <string name="camera_permission_denied">ต้องอนุญาตเข้าถึงกล้องก่อนใช้งาน</string>
+    <string name="override_confirmed">เปลี่ยนผลเรียบร้อย</string>
+</resources>
