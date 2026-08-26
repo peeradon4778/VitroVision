@@ -89,7 +89,10 @@
 1. **เตรียม** — annotate มือ: เติม `ground_truth.csv` (100 แถว) + สร้าง `ground_truth_masks/` (≥ 30 ภาพ) → จัดเก็บใน `data/processed/` (เอกสารหลักฐานใน repo)
 2. **รัน validation (B)** — pipeline ตรวจพา `ground_truth.csv` อัตโนมัติ → ได้ `validation_metrics.csv` (Pearson/MAE/RMSE)
 3. **รัน benchmark (A)** — `python src/benchmark_colab.py --data <ภาพ> --gt ground_truth_masks --out <ผล>` → ได้ mIoU/Dice/F1
-4. **วิเคราะห์ confusion matrix (C)** — เทียบ `expert_verdict` กับคอลัมน์ `verdict` ของ SAM3 → accuracy/sensitivity/MCC
+4. **วิเคราะห์ confusion matrix (C)** — เทียบ `expert_verdict` กับคอลัมน์ `verdict` ของ SAM3 → accuracy/sensitivity/MCC ด้วย `src/validate_verdict.py`:
+   ```
+   python src/validate_verdict.py --summary data/processed/plant_growth_summary.csv --gt data/processed/ground_truth.csv --out data/processed/verdict_confusion.csv
+   ```
 5. **รายงาน** — เติมผลลง `report_th_v1.md` + `proposal_th_draft.md` (เปลี่ยน `[PLAN]`→`[RESULT]`) + DEV_LOG + commit
 
 ### 7.1 หมายเหตุรอง

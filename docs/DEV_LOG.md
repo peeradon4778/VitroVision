@@ -129,6 +129,13 @@
 | บ่าย | สร้างเทมเพลต `ground_truth.csv` 100 แถว ชื่อภาพตรงกับ batch (001–100.jpg) + คอลัมน์ expert_verdict | `docs/assets/ground_truth_template.csv` | 100 แถว, ตรงชื่อภาพ 100% — พร้อมกรอกค่ามือ |
 | บ่าย | ปรับ label verdict เก่าใน DATA_TEMPLATES (wait/subculture → ยังไม่พร้อม/พร้อมอนุบาล/ตรวจเอง) | `docs/DATA_TEMPLATES.md` | grep ยืนยันไม่เหลือ label เก่า |
 
+## 2026-08-26 — สคริปต์ verdict confusion matrix (Level C) + เชื่อมแผน validation
+
+| เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |
+|---|---|---|---|
+| บ่าย | เขียน `src/validate_verdict.py` คำนวณ verdict confusion matrix (accuracy / per-class precision·sensitivity·F1 / macro-F1 / MCC / Cohen's kappa) เทียบ expert_verdict กับ verdict ของ SAM3 | `src/validate_verdict.py` | compile ผ่าน; smoke-test 100 แถว: Accuracy 0.92 / MCC 0.869 / kappa 0.867 — ทำงานครบ ใช้ได้เมื่อมี ground_truth จริง |
+| บ่าย | เชื่อมคำสั่งรันเข้าแผน validation (ขั้นตอนที่ 4) | `docs/VALIDATION_PLAN.md` | ครอบคลุมทั้ง 3 ระดับ (A/B/C) |
+
 ## แม่แบบ entry ใหม่ (คัดลอกไปใช้)
 
 ```md
