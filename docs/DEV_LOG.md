@@ -113,6 +113,14 @@
 
 > ⚠️ ยังไม่เสร็จ (ค้าง): รวม Gen-AI disclosure 2 จุด, หน้าปก/รหัสโครงการ SIMS, กรอกประวัติผู้พัฒนา, ยืนยันผลนำร่อง 100 ขวด — หมายเหตุ commit เป็นจุดพักก่อน
 
+## 2026-08-26 — ยืนยันผลนำร่อง 100 ขวดจริง (หลักฐานจาก Colab) + อัปเดตเอกสาร
+
+| เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |
+|---|---|---|---|
+| บ่าย | รัน `sam3_growth_pipeline.py` ชุดจริง 100 ขวดพริกจินดา (20260814_batch) บน Colab T4 และแก้บั๊กหน่วยความจำ (เก็บ mask แค่ 6 ภาพแรก กัน RAM พัง ~51) — ได้ผลลัพธ์จริงครบ 100 ภาพ | `data/processed/plant_growth_summary.csv` | **verdict: 14 พร้อมอนุบาล / 51 ยังไม่พร้อม / 35 ROI-ไม่ชัด-ตรวจเอง [RESULT]** · corr: coverage↔area 0.949, ใบ↔coverage 0.852, เขียว↔healthy 0.910, coverage↔height 0.701, ใบ↔shoot 0.534 |
+| บ่าย | ตรวจความถูกต้อง/ซื่อตรงของผล — verdict แยกจาก coverage ชัด (พร้อมอนุบาลทุกภาพ cov≥0.20, ROI-ไม่ชัดทุกภาพ cov<0.075) · **พบข้อจำกัดสำคัญ: root_count≥1 มีแค่ 1/100** (prompt "root" จับรากผ่านขวดแก้วไม่ได้) · canopy_h/w_cm เป็น NaN ทั้งหมด (pixel_to_cm ยังไม่ calibrate) | `data/processed/plant_growth_summary.csv` | **[RESULT + OPEN]** root_ratio ยังวัดได้จริงไม่ได้ — ตรงกับประเด็นที่ต้องปรับปรุงพรอมป์/วิธี, ต้อง calibrate หน่วย |
+| บ่าย | อัปเดต `report_th_v1.md` + `proposal_th_draft.md`: เปลี่ยนผลชุด 100 จาก `[PLAN]` → `[RESULT]` (14/51/35 + corr จริง) + เพิ่มหมายเหตุซื่อตรงข้อจำกัดระบบราก/calibration | `docs/report_th_v1.md`, `docs/proposal_th_draft.md` | grep ยืนยันไม่เหลือผล 100 เป็น `[PLAN]` (คงไว้เฉพาะ baseline/ground truth) |
+
 ## แม่แบบ entry ใหม่ (คัดลอกไปใช้)
 
 ```md

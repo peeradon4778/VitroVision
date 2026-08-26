@@ -695,11 +695,16 @@ def main():
         print(f"[INFO] โหลด species_map.csv — {len(species_map)} รายการ")
     rows = []
     all_masks = {}
+    # RAM fix: build_report ผลิต overlay แค่ 6 ภาพแรก → เก็บ mask แค่ 6 ภาพแรก (ที่เหลือปล่อย GC)
+    # กันหน่วยความจำพัง ~51 ภาพ จาก mask สะสมครบ 100 ภาพ
+    KEEP_MASK_FIRST = 6
     progress_path = os.path.join(args.out, "_progress.csv")
     total = len(images)
     for i, (name, img) in enumerate(images.items(), 1):
         feat, mbp = analyze_image(model, processor, device, img, name, species=species_map.get(name))
-        all_masks[name] = mbp
+        if i <= KEEP_MASK_FIRST:
+            all_masks[name] = mbp
+        del mbp  # ปล่อย mask ของภาพนี้ทันที — ไม่เก็บครบ 100 ภาพ
         rows.append(feat)
         # checkpoint รายภาพ — กัน Colab timeout/ค้าง กลางทาง
         pd.DataFrame(rows).to_csv(progress_path, index=False, encoding="utf-8-sig")
