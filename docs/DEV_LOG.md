@@ -38,7 +38,7 @@
 
 | เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |
 |---|---|---|---|
-| เช้า–บ่าย | วิเคราะห์ผลรัน Colab ชุด 100 ขวดพริกจินดา (`data/raw/20260814_batch`) — จัดกลุ่ม verdict 3 กลุ่ม + ตรวจความสัมพันธ์ระหว่าง features + เตรียมผลสรุปสำหรับรายงาน/การนำเสนอ | `notebooks/sam3/colab_run_v2_clean.ipynb` (ผลอยู่ใน Downloads/Colab) | **ผลจริง:** 13 พร้อมอนุบาล / 51 ยังไม่พร้อม / 36 ROI-ไม่ชัด-ตรวจเอง; corr leaf↔coverage 0.760, coverage↔height 0.716, green↔healthy 0.922, leaf↔shoot 0.538, coverage↔area 0.932; **100 ขวด/~15 นาที** |
+| เช้า–บ่าย | วิเคราะห์ผลรัน Colab ชุด 100 ขวดพริกจินดา (`data/raw/20260814_batch`) — จัดกลุ่ม verdict 3 กลุ่ม + ตรวจความสัมพันธ์ระหว่าง features + เตรียมผลสรุปสำหรับรายงาน/การนำเสนอ | `notebooks/sam3/colab_run_v2_clean.ipynb` (ผลอยู่ใน Downloads/Colab) | **ผลจริง:** 13 พร้อมอนุบาล / 51 ยังไม่พร้อม / 36 ROI-ไม่ชัด-ตรวจเอง; corr leaf↔coverage 0.760, coverage↔height 0.716, green↔healthy 0.922, leaf↔shoot 0.538, coverage↔area 0.932; **100 ขวด/~15 นาที** · ⚠️ (อัปเดต 2026-08-25) ยังไม่พบไฟล์ผลลัพธ์ `plant_growth_summary.csv` ของชุด 100 ในเครื่อง — ต้อง rerun/ดึงจาก Drive ก่อนนำไปอ้างอิงเป็นหลักฐาน |
 | บ่าย | สรุปสถาปัตยกรรม/design diagrams ของระบบ (Mermaid, ภาษาอังกฤษตามข้อกำหนด YSC) | `docs/diagrams.md` | — |
 
 ## 2026-08-24 — ปรับ framing เอกสารตาม YSC Category Wizard (75→95 คะแนน) + อัปเดตผล 100 ขวด
@@ -57,9 +57,34 @@
 | กลางคืน | **แก้ framing หลัก: subculture → ความพร้อมอนุบาล (acclimatization)** — ตามคำยืนยันเจ้าของโครงการ + grill v3 (29/07) · เปลี่ยนชื่อโครงงาน TH/EN, verdict เป็น ยังไม่พร้อม/พร้อมอนุบาล/ตรวจเอง (ROI ไม่ชัดหรือหนาแน่นเกิน), ระบบราก (root_ratio) = ตัวชี้วัดอันดับ 1, สมมติฐาน/RQ/บทคัดย่อ/metadata/confusion matrix/ประโยชน์ — ทำทั้ง proposal (28 จุด) + report (11 จุด) + scope lock + orchestration + ทำเครื่องหมาย subculture_criteria ตกรุ่น + สร้าง docx ใหม่ | `docs/proposal_th_draft.md`, `docs/report_th_v1.md`, `research/_scope_lock_new_round.md`, `research/_orchestration.md`, `research/subculture_criteria.md`, `docs/proposal_th_draft.docx` | grep ยืนยันไม่มี "ตัดย้าย/subculture" เหลือในเนื้อหา (เหลือเฉพาะชื่อ paper อ้างอิง + ตัวแปร metadata days_since_last_subculture) |
 | กลางคืน | **ทดสอบยืนยันซ้ำ** — นำบทคัดย่อฉบับใหม่จากไฟล์จริง (ย่อ 1,232/1,500 ตัว) เข้า Category Wizard (Retry หลัง API ล่ม 1 รอบ) ได้ **96/100** (SCB 10X Cloud) — Unit 24/25 · Metric 24/25 · Scope 14/15 · Scope-Out 10/10 · Boundary 5/5 · Impact 19/20 · สาขา CS→CSAI อันดับ 1 · ทางเลือก BIPT 74% (ระบบย้ำไม่ควรจัด BIPT เพราะยึดคู่ (วัตถุ, ตัวชี้วัด) ไม่ใช่คำในชื่อ) | ทดสอบออนไลน์ (ผลบันทึกใน DEV_LOG) | 96/100 — ยืนยัน framing ใหม่ถูกต้อง |
 
+## 2026-08-25 — ตรวจภาษา report v1 (รอบที่ 1–3)
+
+| เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |
+|---|---|---|---|
+| กลางวัน | ตรวจภาษา 3 รอบ (คู่มือ ระยะที่ 4) — แก้จุดไวยากรณ์/ความชัดเจน/ความสม่ำเสมอ โดยไม่แตะเนื้อหาทางเทคนิคหรือ [FACT]/[PLAN]: (1) "ด้วย…ด้วย" ซ้ำใน 3.1 → "โดยใช้พรอมป์" (2) "กลไกกันความผิดพลาด" → "กลไกป้องกันความผิดพลาด" (3) "กัน verdict ผิดพลาด" → "ช่วยป้องกันการให้ผลผิดพลาด" (4) "โดยแรงงานคิดเป็น" → "โดยค่าแรงงานคิดเป็น" (แม่นตามบริบทต้นทุน) (5) "ขวดแก้วที่มีแสงสะท้อน…" → "ขวดแก้วภายใต้แสงสะท้อน…" (glare ไม่ใช่สมบัติของขวด) | `docs/report_th_v1.md` | grep ยืนยันไม่เหลือ variant เก่า; อัปเดตสถานะ + checkbox ภาษา = เสร็จ (เหลือ ตรวจ render ใน Word) |
+
+## 2026-08-25 — core generalize: augment บริบทขวด + cross-species split
+
+| เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |
+|---|---|---|---|
+| กลางคืน | เพิ่ม **augmentation เชิงบริบทขวดแก้ว** ใน SegDataset._augment — หมุนเล็กน้อย (มุมถ่าย) + brightness/contrast (glare/ฝ้า/แสง) + จุด specular glare (ไม่แตะ mask) + Gaussian blur (ไอน้ำ) + พลิก — ทุกค่าใช้กับ img/mask พร้อมกัน mask ไม่เพี้ยน | `src/train_unet_distill.py` | รัน 200 iters: shape ตรง, mask คง binary {0,1}, img อยู่ช่วง [0,1] — ผ่าน |
+| กลางคืน | เพิ่ม **cross-species split** — `_detect_species` (หาโฟลเดอร์ย่อยต่อชนิด) + `_split_by_species` (แยก train/val ตามชนิด + holdout อัตโนมัติหรือระบุ) + CLI flag `--species-holdout` — วัด zero-shot generalization ข้ามชนิด (train ไม่เห็นชนิด val) | ไฟล์เดิม | test 4 กรณี: single-species→[], multi-species→2, auto-holdout→ชนิดมากสุดเป็น val, ระบุ holdout—ผ่าน |
+
+## 2026-08-25 — audit + จัดระเบียบ repo (ลบซ้ำ/ย้ายโมเดล)
+
+| เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |
+|---|---|---|---|
+| กลางคืน | audit ข้อมูล/ผลใน repo — พบผลลัพธ์ (51 แถว) ≠ ชุดข้อมูล 100 ภาพ, ข้อมูลภาพขวดชุด 100 เก็บซ้ำ 2 ที่ (zip+โฟลเดอร์ 219MB, manifest md5 ตรงกัน), ไฟล์ชั่วคราว/โมเดลกองนอก repo · ลบ zip ซ้ำ + file lock Word + scratch (`_ysc/`, `_render_check/`) + ย้าย `yolov8n-seg.pt` root→`models/` + อัปเดต default path ใน 2 โค้ด · สร้าง `research/audit_data.md` | `research/audit_data.md`, `src/benchmark_baselines.py`, `src/benchmark_colab.py`, `models/yolov8n-seg.pt` | ลบ/ย้ายสำเร็จ; compile 2 โค้ดผ่าน; git track ยังสะอาด (74) — **ค้าง: รัน pipeline บนชุด 100 ภาพก่อนทำ time-series** |
+
+## 2026-08-25 — แก้เอกสารกันพิรุจ: ผล 100 ขวดเป็น [PLAN] + ข้อมูลสอดคล้อง
+
+| เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |
+|---|---|---|---|
+| กลางคืน | ตรวจร่องรอยพิรุจ (ความไม่สอดคล้องเอกสาร/ข้อมูล) — พบ report/proposal อ้างผล 100 ขวด (13/51/36, r-corr, 36%) เป็น `[RESULT]` แต่ **ไม่มีไฟล์ผลลัพธ์ `plant_growth_summary.csv` ของชุด 100 ในเครื่อง/Drive/OneDrive** (ทุก notebook outputs=0, `03_ผลการทดลอง` ว่าง) · แก้: report+proposal ผล 100 ขวด → `[PLAN]`/รอผลจริง; แก้ "4 ชนิด"→ชนิดเดียว; แก้ข้อเสนอแนะ 36%; DEV_LOG/scope_lock เพิ่มหมายเหตุซื่อตรง (ไม่ลบตัวเลข แต่ชี้ว่ายังไม่มีหลักฐาน — ต้อง rerun/ดึงจาก Drive) | `docs/report_th_v1.md`, `docs/proposal_th_draft.md`, `docs/DEV_LOG.md`, `research/_scope_lock_new_round.md` | grep ยืนยัน report+proposal ไม่มีผล 100 อ้างเป็นจริง ✓; DEV_LOG มีหมายเหตุซื่อตรง |
+
 ## ข้อควรทำต่อ (backlog)
 
-- [x] ~~รัน Colab รอบ 2 ด้วย notebook ใหม่~~ → **ทำแล้ว 18/08** (`colab_run_v2_clean.ipynb`) — ผล 100 ขวดพริกจินดา: 13 พร้อมอนุบาล / 51 ยังไม่พร้อม / 36 ROI-ไม่ชัด-ตรวจเอง
+- [x] ~~รัน Colab รอบ 2 ด้วย notebook ใหม่~~ → **ทำแล้ว 18/08** (`colab_run_v2_clean.ipynb`) — ผล 100 ขวดพริกจินดา: 13 พร้อมอนุบาล / 51 ยังไม่พร้อม / 36 ROI-ไม่ชัด-ตรวจเอง · ⚠️ ไฟล์ผลลัพธ์ยังไม่มีในเครื่อง ต้อง rerun/ดึงจาก Drive
 - [x] ~~ติดตั้ง `PIXEL_TO_CM`~~ → **โค้ดรองรับแล้วผ่าน `--config`** — เหลือ calibrate ค่าจริงกับขวด
 - [x] ~~เปิด `USE_SPECIES_THRESHOLDS=True`~~ → **รองรับผ่าน `--config` แล้ว** — เหลือป้อนค่าเมื่อมีข้อมูลต่อชนิด
 - [ ] ตรวจ overlay ที่ export: ยืนยัน mask ขวด/ใบถูกต้อง (มี overlay จาก Colab รอบ 100 ขวด)
@@ -71,6 +96,22 @@
 - [ ] tag milestone (v0.2 หลังผล 100 ขวด) + ตั้ง Zenodo DOI เมื่องานนิ่ง
 
 ---
+
+## 2026-08-26 — เตรียมส่งข้อเสนอ YSC 2027 (สาขา CSAI) + ประกอบเนื้อหาลง template ทางการ
+
+| เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |
+|---|---|---|---|
+| เช้า | ทำความเข้าใจการเขียนข้อเสนอจาก YSC FAQ (100 ข้อ) + คู่มือ YSC2027 + คลังแบบฟอร์ม/โลโก้ — เก็บ key rules (ผ่าน SIMS, หน้าปกจาก SIMS, PDF=ปก+8 หัวข้อ+ประวัติย่อ, ต่อเนื่องต้อง Form 6, Gen-AI ห้ามเขียนข้อเสนอแทนนักเรียน, Form 2C ถ้าทำในแล็บ ม.) | `research/` (อ้างอิง), `docs/` | เก็บข้อมูลครบ 100 Q&A + กติกา deadline/สาขา |
+| เช้า | สร้าง **เช็กลิสต์แบบฟอร์ม** ที่ต้องส่ง (รอบข้อเสนอ/ชิง) — ต้องส่งทุกโครงงาน vs ส่งเมื่อเกี่ยวข้อง | `docs/YSC_FORMS_CHECKLIST.md` | ครบ 11 ข้อรอบข้อเสนอ + จุดเสี่ยง (2C/3/6, Gen-AI, template 200726) |
+| เช้า | แก้ **สาขา CSBI → CSAI (AI/ML)** ตาม Category Wizard 96/100 + เพิ่ม **ส่วน 14 ประวัติย่อ** (เทมเพลตให้กรอก) | `docs/proposal_th_draft.md` | ยืนยันไม่มี "CSBI" เหลือ; ส่วน 14 ครบ |
+| เช้า | สร้าง **คู่มือส่งข้อเสนอใน SIMS** (สมัคร/สร้างปก/ประกอบ PDF/อัปโหลด + ข้อควรระวัง) | `docs/SIMS_SUBMISSION_GUIDE.md` | ครบขั้นตอนตาม FAQ |
+| สาย | ดาวน์โหลด **template ทางการ** `YSC-Proposal_Template_200726.docx` (283KB) + ส่องโครงสร้าง (290 ย่อหน้า/4 ตาราง, ฟอนต์เดิม TH Sarabun New 15pt, ระยะขอบ 1.905/2.54cm) | `docs/_ysc_template/` | โหลดผ่าน, อ่านโครงสร้างครบ |
+| สาย | เขียน **`docs/build_ysc_proposal.py`** — เติมเนื้อหาลง template โดยตรง (คงโครงสร้าง, ลบ placeholder สีเทา/มนุษย์-สัตว์/สารเคมี, ฟอนต์ **TH Sarabun PSK 16pt**, แทรกรูป, เติมตาราง Gantt/Definitions, ดึงบรรณานุกรมจาก draft) | `docs/build_ysc_proposal.py` | รันผ่าน; ลบขยะ 94 ย่อหน้า; 12 หน้า; render PDF (Word COM) ตรวจถูก |
+| สาย | สร้าง **รูป architecture** (matplotlib, English labels) + **โลโก้เครื่องมือ** (Claude/Colab/HuggingFace PNG) + เพิ่ม section เครื่องมือ/Gen-AI พร้อมโลโก้ | `docs/assets/vitro_architecture.png`, `docs/assets/logos/*.png` | รูป render สวย; โลโก้ 3/4 (roboflow 403 → ชื่อเปล่า) |
+| กลางคืน | เตรียม **Colab run สะอาด** ชุด 100 ขวด + config.json (แก้ช่องโหว่หลักฐานผลลัพธ์ `plant_growth_summary.csv`) | `notebooks/sam3/colab_run_v2_evidence.ipynb`, `config.json` | ipynb valid; `load_config` อ่าน config ถูกครบ |
+| กลางคืน | **Benchmark baseline** บนชุด 100 ภาพ (classical + YOLO-seg, CPU): runtime 0.43s/0.30s, area 1.36%/49.4% เฟรม, classical พัง 23/100 | `data/processed/benchmark_classical_yolo/benchmark_summary.csv` | รัน 100 ภาพ ~2 นาทีผ่าน; YOLO (COCO) ไม่ valid เพราะไม่มี class plant |
+
+> ⚠️ ยังไม่เสร็จ (ค้าง): รวม Gen-AI disclosure 2 จุด, หน้าปก/รหัสโครงการ SIMS, กรอกประวัติผู้พัฒนา, ยืนยันผลนำร่อง 100 ขวด — หมายเหตุ commit เป็นจุดพักก่อน
 
 ## แม่แบบ entry ใหม่ (คัดลอกไปใช้)
 

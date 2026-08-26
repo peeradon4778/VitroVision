@@ -92,13 +92,49 @@ class SegDataset(Dataset):
         mask = cv2.resize(mask, (self.img_size, self.img_size), interpolation=cv2.INTER_NEAREST)
         mask = (mask > 127).astype(np.float32)
         if self.augment:
-            if np.random.rand() > 0.5:
-                img, mask = cv2.flip(img, 1), cv2.flip(mask, 1)   # แนวนอน
-            if np.random.rand() > 0.5:
-                img, mask = cv2.flip(img, 0), cv2.flip(mask, 0)   # แนวตั้ง
-            img = img * (0.9 + 0.2 * np.random.rand())
+            img, mask = self._augment(img, mask)
         return (torch.from_numpy(img.transpose(2, 0, 1)).float(),
                 torch.from_numpy(mask).unsqueeze(0).float())
+
+    def _augment(self, img, mask):
+        """Augmentation เชิงบริบทขวดแก้ว — เลียนแบบ domain shift ที่เจอใน lab จริง
+        (glare/ฝ้า/ไอน้ำ/แสง/มุม) เพื่อให้ model generalize ข้ามชนิดและข้ามสภาพ.
+        กลับกันทั้ง 3 ค่า: ใช้ค่าเดิมกับ img, mask เสมอ เพื่อไม่ให้ mask เพี้ยน."""
+        # 1) พลิก (spatial)
+        if np.random.rand() > 0.5:
+            img, mask = cv2.flip(img, 1), cv2.flip(mask, 1)
+        if np.random.rand() > 0.5:
+            img, mask = cv2.flip(img, 0), cv2.flip(mask, 0)
+        # 2) หมุนเล็กน้อย (จำลองมุมถ่าย) — ใช้ rotate 0..10 องศา รอบมุมหลังที่เติม
+        if np.random.rand() > 0.5:
+            ang = float(np.random.uniform(-10, 10))
+            h, w = img.shape[:2]
+            M = cv2.getRotationMatrix2D((w / 2, h / 2), ang, 1.0)
+            img = cv2.warpAffine(img, M, (w, h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
+            mask = cv2.warpAffine(mask, M, (w, h), flags=cv2.INTER_NEAREST, borderMode=cv2.BORDER_REPLICATE)
+        # 3) ความสว่าง/คอนทราสต์ (glare/ฝ้า/แสง) — ใช้ scipy.ndenumerate ไม่งั้น ใช้ numpy ตรง ๆ
+        if np.random.rand() > 0.4:
+            img = img * float(np.random.uniform(0.85, 1.15))
+        img = np.clip(img, 0.0, 1.0)
+        if np.random.rand() > 0.5:
+            mean = float(img.mean())
+            img = (img - mean) * float(np.random.uniform(0.9, 1.1)) + mean
+            img = np.clip(img, 0.0, 1.0)
+        # 4) จุดขาว (specular glare) จำลองแสงสะท้อนบนขวด — ใส่เฉพาะ img ไม่แตะ mask
+        if np.random.rand() > 0.6:
+            h, w = img.shape[:2]
+            cx, cy = np.random.randint(0, w), np.random.randint(0, h)
+            r = int(np.random.uniform(0.02, 0.06) * max(h, w))
+            yy, xx = np.ogrid[:h, :w]
+            disk = (xx - cx) ** 2 + (yy - cy) ** 2 <= r ** 2
+            img[disk] = 1.0
+        # 5) ไอน้ำ/เบลอเล็กน้อย — ผสมภาพเบลอ
+        if np.random.rand() > 0.6:
+            k = (np.random.choice([3, 5]), np.random.choice([3, 5]))
+            img = cv2.GaussianBlur(img, (int(k[0]) if int(k[0]) % 2 == 1 else 3,
+                                         int(k[1]) if int(k[1]) % 2 == 1 else 3), 0)
+            img = np.clip(img, 0.0, 1.0)
+        return img, mask
 
 
 def dice_loss(pred, target, eps=1e-6):
@@ -150,6 +186,56 @@ def cmd_generate_pseudo(args):
     print(f"[OK] pseudo masks → {mask_dir}")
 
 
+# ═══════════════════════ cross-species split helper ═══════════════════════
+
+def _detect_species(data_dir):
+    """หาโฟลเดอร์ย่อยต่อชนิด (data/<species>/*.jpg). ถ้ามี >=2 โฟลเดอร์ย่อยที่มีภาพ => หลายชนิด.
+    คืน list ชื่อโฟลเดอร์ย่อย (species). ถ้าไม่พบ (ภาพล้วน ๆ ใน data_dir เดียว) คืน []
+    """
+    subs = []
+    if os.path.isdir(data_dir):
+        for name in sorted(os.listdir(data_dir)):
+            p = os.path.join(data_dir, name)
+            if os.path.isdir(p):
+                imgs = glob.glob(os.path.join(p, "*.jpg")) + \
+                       glob.glob(os.path.join(p, "*.JPG")) + \
+                       glob.glob(os.path.join(p, "*.png"))
+                if imgs:
+                    subs.append(name)
+    return subs
+
+
+def _split_by_species(image_paths, holdout_species, data_dir):
+    """แยก train/val ตามชนิด (โฟลเดอร์ย่อย).
+    - ถ้า holdout_species ระบุ: ทุกภาพในชนิดนั้น -> val (test species ไม่เคยเห็น), ที่เหลือ -> train
+    - ถ้าไม่ระบุ: เลือกชนิดที่มีภาพมากสุดเป็น holdout อัตโนมัติ, ที่เหลือ -> train
+    คืน (train_paths, val_paths)
+    """
+    species = _detect_species(data_dir)
+    if not species:
+        raise SystemExit("cross-species ต้องการ --data ที่มีโฟลเดอร์ย่อยต่อชนิด")
+    # map ภาพ -> species
+    def sp_of(p):
+        rel = os.path.relpath(p, data_dir)
+        first = rel.split(os.sep)[0]
+        return first if first in species else None
+    by_species = {s: [] for s in species}
+    for p in image_paths:
+        s = sp_of(p)
+        if s is not None:
+            by_species[s].append(p)
+    # เลือก holdout
+    if holdout_species:
+        if holdout_species not in by_species:
+            raise SystemExit(f"holdout species '{holdout_species}' ไม่พบใน {data_dir}")
+        hold = holdout_species
+    else:
+        hold = max(by_species, key=lambda s: len(by_species[s]))
+    train_paths = [p for s, ps in by_species.items() if s != hold for p in ps]
+    val_paths = by_species[hold]
+    return train_paths, val_paths
+
+
 # ═══════════════════════ เฟส 2: เทรน U-Net ═══════════════════════
 
 def cmd_train(args):
@@ -163,9 +249,19 @@ def cmd_train(args):
     n = len(image_paths)
     if n == 0:
         raise SystemExit(f"ไม่พบภาพใน {args.data}")
-    split = int(n * 0.85)
-    train_paths, val_paths = image_paths[:split], image_paths[split:]
-    print(f"[INFO] train {len(train_paths)} · val {len(val_paths)}")
+
+    # ── cross-species split ──
+    # ถ้า --data มีโฟลเดอร์ย่อยต่อชนิด (data/<species>/*.jpg) ให้แยก train/val โดย
+    # ชนิดที่ train **ไม่เคยเห็น** (= zero-shot species) ออกไปเป็น val/test กลุ่มใหม่
+    species = _detect_species(args.data)
+    if len(species) >= 2:
+        train_paths, val_paths = _split_by_species(image_paths, args.species_holdout, args.data)
+        print(f"[INFO] cross-species: species={species} | holdout={args.species_holdout}"
+              f" | train {len(train_paths)} · val {len(val_paths)}")
+    else:
+        split = int(n * 0.85)
+        train_paths, val_paths = image_paths[:split], image_paths[split:]
+        print(f"[INFO] single-species: train {len(train_paths)} · val {len(val_paths)}")
 
     train_ds = SegDataset(train_paths, args.pseudo, args.img_size, augment=True)
     val_ds = SegDataset(val_paths, args.pseudo, args.img_size, augment=False)
@@ -275,6 +371,8 @@ def main():
     p2.add_argument("--epochs", type=int, default=40)
     p2.add_argument("--batch", type=int, default=8)
     p2.add_argument("--lr", type=float, default=1e-3)
+    p2.add_argument("--species-holdout", default=None,
+                    help="ชื่อชนิด (โฟลเดอร์ย่อย) ที่แยกเป็น val/test — train ไม่เห็นชนิดนี้")
     p2.set_defaults(func=cmd_train)
 
     p3 = sub.add_parser("eval", help="เฟส 3: ประเมิน student")

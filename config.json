@@ -1,0 +1,16 @@
+{
+  "_comment": "Config กลางชุด 100 ขวดพริกจินดา (20260814_batch) — สร้าง 2026-08 เพื่อ rerun บน Colab ให้ได้ผลหลักฐานจริง ใช้คู่กับ notebooks/sam3/colab_run_v2_evidence.ipynb. ค่าอ้างอิง: CALIBRATION_GUIDE.md / DEV_LOG 2026-08-18",
+  "prompts": ["plant", "leaf", "shoot", "stem", "root"],
+  "score_threshold": 0.5,
+  "mask_threshold": 0.5,
+  "detect_bottle": true,
+  "pixel_to_cm": null,
+  "use_species_thresholds": false,
+  "species_thresholds": {
+    "พริกจินดา": { "ready": 0.20, "overdense": 0.80 }
+  },
+  "coverage": {
+    "ready": 0.20,
+    "overdense": 0.80
+  }
+}

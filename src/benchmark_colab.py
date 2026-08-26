@@ -133,7 +133,7 @@ def main():
     ap.add_argument("--hf-token", default=None, help="HF_TOKEN (SAM3 gated)")
     ap.add_argument("--sam2-checkpoint", default="sam2.1_hiera_large.pt",
                     help="path checkpoint SAM2 (ต้องดาวน์โหลดก่อน)")
-    ap.add_argument("--yolo-weights", default="yolov8n-seg.pt",
+    ap.add_argument("--yolo-weights", default="models/yolov8n-seg.pt",
                     help="weights YOLO-seg (COCO = reference เท่านั้น ต้อง fine-tune เพื่อใช้จริง)")
     ap.add_argument("--yolo-classes", default=None, help="class IDs (คั่น ,) — default ทุก class")
     ap.add_argument("--img-size", type=int, default=1024, help="resize ด้านยาว max (0 = ไม่ resize)")

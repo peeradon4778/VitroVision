@@ -2,7 +2,7 @@
 
 รันบนเครื่อง/Colab แบบ headless batch:
     python benchmark_baselines.py --data <โฟลเดอร์ภาพ> --gt <โฟลเดอร์ GT masks> --out <ผลลัพธ์> \
-        [--baselines classical,sam2,yolo] [--yolo-weights yolov8n-seg.pt] \
+        [--baselines classical,sam2,yolo] [--yolo-weights models/yolov8n-seg.pt] \
         [--sam2-checkpoint sam2.1_hiera_large.pt] [--device cpu|gpu]
 
 วิธี baseline ที่รองรับ:
@@ -167,7 +167,7 @@ def main():
     ap.add_argument("--out", default="benchmark_results", help="โฟลเดอร์ผลลัพธ์")
     ap.add_argument("--baselines", default="classical,sam2,yolo",
                     help="baseline ที่รัน คั่นด้วย , (classical, sam2, yolo)")
-    ap.add_argument("--yolo-weights", default="yolov8n-seg.pt", help="weights YOLO-seg")
+    ap.add_argument("--yolo-weights", default="models/yolov8n-seg.pt", help="weights YOLO-seg")
     ap.add_argument("--yolo-classes", default=None,
                     help="class IDs ให้รวม (คั่น ,) — default: ทุก class (reference)")
     ap.add_argument("--sam2-checkpoint", default="sam2.1_hiera_large.pt",
