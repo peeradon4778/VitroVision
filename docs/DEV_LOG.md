@@ -121,6 +121,14 @@
 | บ่าย | ตรวจความถูกต้อง/ซื่อตรงของผล — verdict แยกจาก coverage ชัด (พร้อมอนุบาลทุกภาพ cov≥0.20, ROI-ไม่ชัดทุกภาพ cov<0.075) · **พบข้อจำกัดสำคัญ: root_count≥1 มีแค่ 1/100** (prompt "root" จับรากผ่านขวดแก้วไม่ได้) · canopy_h/w_cm เป็น NaN ทั้งหมด (pixel_to_cm ยังไม่ calibrate) | `data/processed/plant_growth_summary.csv` | **[RESULT + OPEN]** root_ratio ยังวัดได้จริงไม่ได้ — ตรงกับประเด็นที่ต้องปรับปรุงพรอมป์/วิธี, ต้อง calibrate หน่วย |
 | บ่าย | อัปเดต `report_th_v1.md` + `proposal_th_draft.md`: เปลี่ยนผลชุด 100 จาก `[PLAN]` → `[RESULT]` (14/51/35 + corr จริง) + เพิ่มหมายเหตุซื่อตรงข้อจำกัดระบบราก/calibration | `docs/report_th_v1.md`, `docs/proposal_th_draft.md` | grep ยืนยันไม่เหลือผล 100 เป็น `[PLAN]` (คงไว้เฉพาะ baseline/ground truth) |
 
+## 2026-08-26 — วางแผน ground truth + validation (ชุด 100 ขวด)
+
+| เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |
+|---|---|---|---|
+| บ่าย | สร้างแผนตรวจสอบความถูกต้อง 3 ระดับ (A. segmentation mIoU/Dice, B. ค่าวัด Pearson/MAE/RMSE, C. verdict confusion matrix/accuracy/sensitivity≥0.6) + protocol วัดมือ + sampling + inter-rater (ICC/Cohen's kappa) + เกณฑ์ตัดสิน | `docs/VALIDATION_PLAN.md` | ครบ 8 หัวข้อ;☁ หมายเหตุ: root_count ยังวัดไม่ได้ (1/100) → ฝาก validate ใต้ root ไว้หลังปรับปรุงการตรวจจับราก |
+| บ่าย | สร้างเทมเพลต `ground_truth.csv` 100 แถว ชื่อภาพตรงกับ batch (001–100.jpg) + คอลัมน์ expert_verdict | `docs/assets/ground_truth_template.csv` | 100 แถว, ตรงชื่อภาพ 100% — พร้อมกรอกค่ามือ |
+| บ่าย | ปรับ label verdict เก่าใน DATA_TEMPLATES (wait/subculture → ยังไม่พร้อม/พร้อมอนุบาล/ตรวจเอง) | `docs/DATA_TEMPLATES.md` | grep ยืนยันไม่เหลือ label เก่า |
+
 ## แม่แบบ entry ใหม่ (คัดลอกไปใช้)
 
 ```md
