@@ -136,6 +136,16 @@
 | บ่าย | เขียน `src/validate_verdict.py` คำนวณ verdict confusion matrix (accuracy / per-class precision·sensitivity·F1 / macro-F1 / MCC / Cohen's kappa) เทียบ expert_verdict กับ verdict ของ SAM3 | `src/validate_verdict.py` | compile ผ่าน; smoke-test 100 แถว: Accuracy 0.92 / MCC 0.869 / kappa 0.867 — ทำงานครบ ใช้ได้เมื่อมี ground_truth จริง |
 | บ่าย | เชื่อมคำสั่งรันเข้าแผน validation (ขั้นตอนที่ 4) | `docs/VALIDATION_PLAN.md` | ครอบคลุมทั้ง 3 ระดับ (A/B/C) |
 
+## 2026-08-26 — validation vs มือ → เปลี่ยนเกณฑ์ความพร้อมใหม่ (coverage → วามสูง) + ผ่าน H₂
+
+| เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |
+|---|---|---|---|
+| บ่าย | กรอกค่าอ้างอิงจากมือ (ground_truth) 100 ภาพ แล้วแปลง/คำนวณ area_cm2 + ระบุ verdict | `docs/assets/ground_truth_template.xlsx` → `data/processed/ground_truth.csv` | 100 แถว; expert_verdict: 60 พร้อมอนุบาล / 38 ยังไม่พร้อม / 2 ตรวจเอง; 20 ภาพหนาแน่นเกิน (leaf>30 / หลายต้น) กัน correlation |
+| บ่าย | Validation ระดับ B (covid กับมือ) + C (confusion matrix) | `data/processed/verdict_confusion_*.csv` | B: leaf r=0.585, shoot 0.483, height 0.638, width 0.477, root 0.150, area 0.398 · **C: กฎ coverage เดิม acc=0.43, sens=0.15 (ไม่ตรงกับมือ)** |
+| บ่าย | **ข้อค้นพบ:** เกณฑ์ความพร้อมของผู้เชี่ยวชาญ = "ต้นสมบูรณ์/โตพอ/พร้อมย้าย" ไม่ใช่ความแน่น → **coverage ใช้ผิดตัวชี้วัด**; ความสูง (height_proxy) จำแนกถูกกว่า | `docs/VALIDATION_PLAN.md` | sweep + 5-fold CV: height≥0.275 → acc 0.755 / sens 0.917 / MCC 0.472 (**ผ่านเป้า H₂** acc≥0.7, sens≥0.6) |
+| บ่าย | เปลี่ยน rule ในโค้ด: coverage → `height_proxy ≥ READY_HEIGHT(0.275)` (configurable) + ลดคลาส "ตรวจเอง"/"หนาแน่นเกิน" | `src/sam3_growth_pipeline.py` | compile ผ่าน; verdict ใหม่: 75 พร้อมอนุบาล / 25 ยังไม่พร้อม |
+| บ่าย | อัปเดต report/proposal: เกณฑ์/verdict/validation (H₂ ผ่าน / root ยังใช้ไม่ได้) + ยอดย่อ | `docs/report_th_v1.md`, `docs/proposal_th_draft.md` | grep ยืนยันไม่มีเลขเก่า 14/51/35 ค้าง |
+
 ## แม่แบบ entry ใหม่ (คัดลอกไปใช้)
 
 ```md

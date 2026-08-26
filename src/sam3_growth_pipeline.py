@@ -53,6 +53,7 @@ CONDENSE_S = 0.30
 BASE_CONFIDENCE = 0.80
 COVERAGE_READY = 0.20  # พริกจินดา: ตั้งตามผู้เชี่ยวชาญ 2026-08-18 (เดิม 0.35 จาก literature) — อยู่ระหว่าง validate
 COVERAGE_OVERDENSE = 0.80
+READY_HEIGHT = 0.275  # เกณฑ์ความพร้อม (ต้นสมบูรณ์/โตพอ) — อัปเดต 2026-08-26 จาก validation กับมือ: ความสูงเป็นตัวชี้วัดที่ถูก (ไม่ใช่ coverage)
 USE_SPECIES_THRESHOLDS = False  # True = ใช้ threshold ต่อชนิดจาก SPECIES_THRESHOLDS
 SPECIES_THRESHOLDS = {
     "กล้วย": {"ready": 0.35, "overdense": 0.80},
@@ -65,7 +66,7 @@ def load_config(cfg_path=None):
     """โหลด config.json มาแทนค่าคงที่ (PIXEL_TO_CM, threshold, prompts, species thresholds)
     โดยไม่ต้องแก้โค้ด — ใช้คู่กับ docs/CALIBRATION_GUIDE.md"""
     global PROMPTS, SCORE_THRESHOLD, MASK_THRESHOLD, DETECT_BOTTLE, PIXEL_TO_CM
-    global USE_SPECIES_THRESHOLDS, SPECIES_THRESHOLDS, COVERAGE_READY, COVERAGE_OVERDENSE
+    global USE_SPECIES_THRESHOLDS, SPECIES_THRESHOLDS, COVERAGE_READY, COVERAGE_OVERDENSE, READY_HEIGHT
     if not cfg_path or not os.path.exists(cfg_path):
         print(f"[INFO] ไม่พบ --config ({cfg_path}) — ใช้ค่าเริ่มต้นในโค้ด")
         return
@@ -82,6 +83,7 @@ def load_config(cfg_path=None):
     if cfg.get("coverage"):
         COVERAGE_READY = float(cfg["coverage"].get("ready", COVERAGE_READY))
         COVERAGE_OVERDENSE = float(cfg["coverage"].get("overdense", COVERAGE_OVERDENSE))
+    READY_HEIGHT = float(cfg.get("height_ready", READY_HEIGHT))
     print(f"[INFO] โหลด config: {cfg_path}")
     print(f"  prompts={PROMPTS} · pixel_to_cm={PIXEL_TO_CM} · "
           f"species_thresholds={'เปิด' if USE_SPECIES_THRESHOLDS else 'ปิด'}")
@@ -362,25 +364,22 @@ def analyze_image(model, processor, device, img, filename, species=None):
     else:
         th = {"ready": COVERAGE_READY, "overdense": COVERAGE_OVERDENSE}  # ค่ากลาง generic
 
-    if DETECT_BOTTLE and roi is None:
-        # หาขวดไม่เจอ → ROI ทั้งภาพ → ค่า coverage ไม่น่าเชื่อถือ → กัน verdict ผิด
-        verdict = "ROI-ไม่ชัด-ตรวจเอง"
-        pass  # หมายเหตุ ROI เพิ่มในส่วน notes ด้านล่าง (กัน notes ยังไม่ถูกนิยาม)
-    elif feat["coverage_ratio"] >= th["overdense"]:
-        verdict = "หนาแน่นเกิน-ตรวจ"
-    elif feat["coverage_ratio"] >= th["ready"]:
+    # เกณฑ์ความพร้อม = "ต้นสมบูรณ์/โตพอ" — ใช้ความสูง (height_proxy) ตามมุมผู้เชี่ยวชาญ
+    # (validation กับมือ 2026-08-26: coverage/ความแน่น ใช้ไม่ได้; height_proxy≥READY_HEIGHT
+    #  ให้ acc≈0.755, sensitivity≈0.917 — ผ่านเป้า H2) height_proxy ใช้ได้แม้หา ROI ขวดไม่พบ
+    if feat["height_proxy"] >= READY_HEIGHT:
         verdict = "พร้อมอนุบาล"
     else:
         verdict = "ยังไม่พร้อม"
 
     confidence = max(BASE_CONFIDENCE * (1.0 - feat["glare_score"] / 100.0), 0.0)
-    readiness_index = (0.4 * min(feat["coverage_ratio"] / max(th["overdense"], 1e-6), 1.0)
-                       + 0.3 * min(feat["height_proxy"], 1.0)
-                       + 0.3 * min(feat["green_pct"] / 100.0, 1.0))
+    readiness_index = (0.5 * min(feat["height_proxy"], 1.0)
+                       + 0.3 * min(feat["width_proxy"], 1.0)
+                       + 0.2 * min(feat["green_pct"] / 100.0, 1.0))
 
     notes = []
     if DETECT_BOTTLE and roi is None:
-        notes.append("ไม่พบขวด (SAM3) → ROI ทั้งภาพ")
+        notes.append("ไม่พบขวด (SAM3) — เกณฑ์ใช้ความสูง (ไม่พึ่ง ROI)")
     if feat["leaf_count_method"] == "fallback":
         notes.append("leaf prompt ไม่เจอ → นับใบจาก plant+shoot")
     if feat["glare_score"] > 40:

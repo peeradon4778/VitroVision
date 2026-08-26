@@ -1,0 +1,12 @@
+﻿metric,value
+n,100
+accuracy,0.26
+macro_f1,0.2189
+mcc,-0.0456
+cohen_kappa,-0.0347
+
+confusion_matrix_row_expert_col_sam3
+expert,ยังไม่พร้อม,พร้อมอนุบาล,ตรวจเอง
+ยังไม่พร้อม,16,5,17
+พร้อมอนุบาล,34,9,17
+ตรวจเอง,1,0,1
