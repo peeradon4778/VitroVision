@@ -16,7 +16,11 @@
 import argparse
 import glob
 import os
+import sys
 import time
+
+# ทำให้ import โมดูลพี่น้องใน src/ ทำงานได้ทั้งรันจาก root หรือ src/ ตรง ๆ
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import cv2
 import numpy as np
@@ -153,7 +157,7 @@ def cmd_generate_pseudo(args):
     if device == "cpu":
         raise SystemExit("SAM3 ไม่รองรับ CPU — ต้อง Colab GPU")
 
-    from src.sam3_growth_pipeline import PROMPTS, load_images, segment_prompt  # reuse
+    from sam3_growth_pipeline import PROMPTS, load_images, segment_prompt  # reuse (อยู่ใน src/ เดียวกัน)
     from PIL import Image
 
     os.makedirs(args.out, exist_ok=True)
@@ -350,6 +354,127 @@ def cmd_eval(args):
     print(df[["iou", "dice", "precision", "recall"]].mean().round(4).to_string())
 
 
+# ═══════════════════════ เฟส 4: upload ขึ้น Hugging Face ═══════════════════════
+
+def count_params(model):
+    return sum(p.numel() for p in model.parameters())
+
+
+def build_model_card(args, n_params, eval_mean=None):
+    """สร้าง README.md (model card) สำหรับ HF — bilingual (TH/EN)"""
+    n_m = n_params / 1e6
+    eval_line = ""
+    if eval_mean is not None:
+        eval_line = (
+            f"\n## Results (vs pseudo-GT from SAM3)\n"
+            f"- mIoU / Dice / Precision / Recall: {eval_mean}\n"
+        )
+    return f"""---
+language:
+  - th
+  - en
+license: mit
+tags:
+  - computer-vision
+  - image-segmentation
+  - plant-phenotyping
+  - tissue-culture
+  - distillation
+  - pytorch
+pipeline_tag: image-segmentation
+---
+
+# VitroVision UNet Small (plant segmentation in vitro bottle)
+
+โมเดล segmentation ขนาดเล็ก (~{n_m:.1f}M params) ที่ถูก **กลั่น (distill) จาก SAM3** (teacher, zero-shot PCS)
+เพื่อแบ่งส่วนต้นพืชเพาะเลี้ยงเนื้อเยื่อในขวดแก้วแบบ non-destructive สำหรับงาน **VitroVision**
+
+> ⚠️ **โมเดลสังเคราะห์จาก pseudo-label ของ SAM3** (ยังไม่มี human ground-truth masks เต็มชุด)
+> ตัวเลข mIoU/Dice ที่ให้คือเทียบ pseudo-GT ของ teacher (SAM3) — **ไม่ใช่เทียบมนุษย์**
+> อ้างอิงครู: `facebook/sam3` (gated). งานอ้างอิงที่ใช้วิธีเดียวกัน: Orvati Nia et al. (2026).
+
+## Model
+
+- **Architecture:** U-Net เล็ก (encoder/decoder, channels 16→32→64→128→256)
+- **Input:** RGB, resize {args.img_size}x{args.img_size}, normalize 0-1
+- **Output:** sigmoid probability mask (plant=1)
+- **Params:** {n_params:,} ({n_m:.1f}M)
+- **Train:** BCE + Dice loss, Adam lr=1e-3, augment เชิงบริบทขวด (flip/rotate/brightness/glare/blur)
+
+## Usage
+
+```python
+from PIL import Image
+import numpy as np, torch, cv2
+from src.train_unet_distill import UNetSmall
+
+model = UNetSmall()
+model.load_state_dict(torch.load("pytorch_model.bin", map_location="cpu"))
+model.eval()
+img = np.array(Image.open("bottle.jpg").convert("RGB"))
+img = cv2.resize(img, (256, 256)) / 255.0
+x = torch.from_numpy(img.transpose(2, 0, 1)).float().unsqueeze(0)
+mask = (model(x) > 0.5).numpy()[0, 0]
+```
+
+## Limits (ซื่อตรง)
+
+- ฝึกด้วย pseudo-label ของ SAM3 ไม่ใช่ GT มนุษย์
+- ชุดข้อมูล 1 ชนิด (พริกจินดา) × 100 ภาพ → ยังเป็น prototype
+- ต้องการ cross-species / calibration เพิ่มก่อนใช้จริง
+{eval_line}---
+"""
+
+
+def cmd_hf_push(args):
+    """Upload unet_model.pt + config + model card ขึ้น Hugging Face Hub"""
+    import json
+    from huggingface_hub import HfApi
+
+    device = torch.device("cpu")
+    model = UNetSmall()
+    model.load_state_dict(torch.load(args.model, map_location=device))
+    model.eval()
+    n_params = count_params(model)
+
+    # จัดเร่งไฟล์ที่จะอัปโหลดในโฟลเดอร์ชั่วคราว
+    stage = os.path.join(args.out, "hf_upload")
+    os.makedirs(stage, exist_ok=True)
+    torch.save(model.state_dict(), os.path.join(stage, "pytorch_model.bin"))
+
+    config = {
+        "arch": "unet_small",
+        "in_ch": 3, "out_ch": 1, "base": 16,
+        "img_size": args.img_size,
+        "input_norm": "resize 256x256, /255",
+        "output_act": "sigmoid",
+        "num_params": n_params,
+        "teacher": "facebook/sam3",
+        "distill": True,
+        "task": "plant segmentation in vitro bottle",
+        "framework": "pytorch",
+    }
+    with open(os.path.join(stage, "config.json"), "w", encoding="utf-8") as f:
+        json.dump(config, f, ensure_ascii=False, indent=2)
+
+    # อ่านผล eval (ถ้ามี) มาใส่ใน model card
+    eval_mean = None
+    e = getattr(args, "eval_csv", None)
+    if e and os.path.exists(e):
+        df = pd.read_csv(e, encoding="utf-8-sig")
+        eval_mean = df[["iou", "dice", "precision", "recall"]].mean().round(4).tolist()
+
+    with open(os.path.join(stage, "README.md"), "w", encoding="utf-8") as f:
+        f.write(build_model_card(args, n_params, eval_mean))
+
+    api = HfApi(token=args.token if args.token else None)
+    api.create_repo(repo_id=args.repo, repo_type="model", exist_ok=True,
+                    private=args.private)
+    api.upload_folder(repo_id=args.repo, folder_path=stage,
+                      repo_type="model", commit_message="VitroVision UNet Small (distill from SAM3)")
+    print(f"[OK] uploaded → https://huggingface.co/{args.repo} (params {n_params:,})")
+
+
 # ═══════════════════════ main ═══════════════════════
 
 def main():
@@ -383,6 +508,16 @@ def main():
     p3.add_argument("--out", default="distill")
     p3.add_argument("--img-size", type=int, default=256)
     p3.set_defaults(func=cmd_eval)
+
+    p4 = sub.add_parser("hf-push", help="เฟส 4: อัปโหลดโมเดลขึ้น Hugging Face")
+    p4.add_argument("--model", required=True, help="unet_model.pt")
+    p4.add_argument("--repo", required=True, help="HF repo id เช่น peeradon4778/vitrovision-unet-small")
+    p4.add_argument("--token", default=None, help="HF token (write)")
+    p4.add_argument("--out", default="distill")
+    p4.add_argument("--img-size", type=int, default=256)
+    p4.add_argument("--eval-csv", default=None, help="unet_eval.csv (ใส่ผลลง model card)")
+    p4.add_argument("--private", action="store_true")
+    p4.set_defaults(func=cmd_hf_push)
 
     args = ap.parse_args()
     args.func(args)

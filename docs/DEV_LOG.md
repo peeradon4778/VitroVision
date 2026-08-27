@@ -187,6 +187,15 @@
 
 > **ข้อสรุปต่อยอด:** การเปรียบเทียบ baseline ตอนนี้ครบ 2 มิติ — (1) correlation (scale-free r) (2) ความคลาดเคลื่อนเชิงหน่วย (calibrated MAE/RMSE cm) — ทั้งคู่ยืนยันว่า **SAM3 วัดขนาดต้นใกล้มือที่สุด** รองลงมา classical และ YOLO-COCO (มีสัญญาณความสัมพันธ์แทบเป็นศูนย์หลัง calibrate → ไม่มีประโยชน์เชิงวัด)
 
+## 2026-08-27 — วางหมากโมเดลเราเอง: distill SAM3→U-Net → HF (พร้อมรันบน Colab)
+
+| เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |
+|---|---|---|---|
+| เย็น | แก้ `train_unet_distill.py`: import `src.sam3_growth_pipeline` → `sam3_growth_pipeline` (import พังเมื่อรัน script ตรงเพราะ sys.path[0]=src/) + เพิ่ม sys.path ราก + **คำสั่ง `hf-push`** (อัปโหลด unet_model + config + README model card bilingual) | `src/train_unet_distill.py` | py_compile ผ่าน; import แก้แล้ว (test ตรง); count_params≈1.9M; build_model_card ใส่ประเด็นซื่อตรง (pseudo-label ≠ มนุษย์) |
+| เย็น | เขียน Colab runbook เต็ม — 4 เฟส (generate-pseudo→train→eval→hf-push) คำสั่งแต่ละเฟส + ค่าที่คาด + ลำดับ copy-paste + ข้อควรระวัง | `docs/DISTILL_RUNBOOK.md` | ครบ 5 ส่วน; ชี้ความซื่อตรง: โมเดลฝึกจาก pseudo-label ของ SAM3 ยังไม่ใช่ GT มนุษย์ |
+
+> **สถานะโมเดลเราเอง (v2):** ยังไม่มีโมเดลฝึกจริง (ต้องรัน Colab GPU + HF token) แต่โค้ด+runbook พร้อมรันครบ — ที่เหลือคือวางข้อมูลแล้วรันตาม `docs/DISTILL_RUNBOOK.md` · ตัวเลข mIoU ที่ได้จะเป็นเทียบ pseudo-GT (SAM3) จนกว่าจะ annotate mask มือ
+
 ## แม่แบบ entry ใหม่ (คัดลอกไปใช้)
 
 ```md
