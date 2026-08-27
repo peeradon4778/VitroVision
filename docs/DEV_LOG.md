@@ -237,6 +237,14 @@
 
 > **สถานะระบบ annotation:** พร้อมใช้แล้ว (prepar ที่ดี 30 ภาพ + workflow + เครื่องมือ annotate + mask_metrics + interrater) · ที่เหลือ = รัน SAM3 สร้าง seed (Colab) + annotate 30 ภาพ (มือคุณ) · เกต "โมเดลเรา": ได้ Level A mIoU เทียบมือ
 
+## 2026-08-27 — สร้าง ticket งานส่ง YSC (YSC_SUBMISSION_TICKETS)
+
+| เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |
+|---|---|---|---|
+| กลางคืน | สร้าง ticket ไล่รายการงานค้างก่อนส่ง YSC 2027 (ชื่อใหม่ / rebuild docx / framing / แบบฟอร์ม / SIMS / หลักฐาน) ต่อจาก `MODEL_READINESS_TICKETS.md` — เป็น living checklist ให้ไล่ปิดก่อน deadline 10 ก.ย. | `docs/YSC_SUBMISSION_TICKETS.md` | grep ยืนยันไฟล์สร้างครบ; สถานะรวมสะท้อน commit ล่าสุด (03b8604, f1961ae, c2b6268, 121ab48, 02c927d) ✓ |
+
+---
+
 ## แม่แบบ entry ใหม่ (คัดลอกไปใช้)
 
 ```md
