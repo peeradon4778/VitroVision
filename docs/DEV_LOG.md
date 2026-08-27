@@ -157,6 +157,16 @@
 
 > **ข้อสรุป (Trait-level):** SAM3 ตรงกับค่าวัดมือมากกว่า baseline อย่างชัดเจนด้านความสูง (r=0.638) และล้มเหลวน้อยกว่า (1% vs 23%/13%) — สนับสนุน Orvati Nia et al. (2026) ที่ SAM3 ดีสุดในโหมด detector-free · YOLO-COCO ไม่มี class "plant" จับทั้งฉากแทนต้น (ต้อง fine-tune) · **หมายเหตุความซื่อตรง:** ค่านี้คือความสอดคล้องกับมือ ไม่ใช่ mIoU/Dice ระดับพิกเซล (Level A) ซึ่งยังต้อง ground-truth masks [OPEN] · รูปถ่ายเป็นมุมเดียว ยังไม่ครอบคลุม 3D/refraction
 
+## 2026-08-27 — เตรียม cross-species test (pipeline + โปรโตคอล) แบบพร้อมรันทันทีเมื่อมีข้อมูล
+
+| เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |
+|---|---|---|---|
+| เย็น | เขียน `src/benchmark_cross_species.py` — ประเมิน SAM3 แบบ zero-shot ข้ามชนิด: collect ภาพต่อชนิด (โฟลเดอร์ย่อย=ชนิด หรือ species_map.csv) → รัน `analyze_image` (รีไซเคิล pipeline) → สรุป mean±std ต่อชนิด + zero_mask_rate + verdict dist · ถ้ามี GT → Pearson r (height/area vs มือ) + generic_ac น์ต่อชนิด + กราฟ | `src/benchmark_cross_species.py` | py_compile ผ่าน; collect รูปแบบ A (โฟลเดอร์ย่อย) + B (species_map) ตรงทั้งคู่; helper pearson/accuracy ทำงานถูก |
+| เย็น | สร้างโปรโตคอลเก็บข้อมูลข้ามชนิด — เงื่อนไขการถ่ายให้เหมือนชุดพริกจินดา, จำนวนขวด/ชนิด (≥10 เป็นปี, ≥5= pilot), รูปแบบจัดเก็บ A/B, ค่าวัดมือ GT, คำสั่งรัน Colab, วิธีตีความผล | `docs/CROSS_SPECIES_PROTOCOL.md` | ครบหัวข้อ 7; ชี้ 2 สิ่งที่ต้องตอบในผล: segmentation transfer ได้ไหม (zero_mask_rate ต่ำ) vs readyness threshold transfer ได้ไหม (generic_acc ต่อชนิด) |
+| เย็น | ตรวจข้อมูลที่มี — **พบว่ายังไม่มีภาพชนิดอื่นใน repo/เครื่อง** (v1 archive = aruco+ผลเก่า, slide_photos = ภาพกลุ่ม, clones = เอกสาร) → cross-species ต้องรอถ่ายชนิดใหม่ในแล็บ (2-3 ชนิด ก่อน ตัวอย่างเล็ก= pilot) | data scan | ยืนยันไม่มีชุด cross-species; ต้องใช้ `docs/CROSS_SPECIES_PROTOCOL.md` เก็บข้อมูลก่อนรัน |
+
+> **สถานะ:** cross-species = [PLAN → พร้อมรัน] · นักได้สร้าง pipeline + โปรโตคอลแล้ว แต่**ยังไม่มีข้อมูลชนิดอื่น** (รอถ่ายในแล็บ 2–3 ชนิด ก่อน · ชุดเล็ก = pilot ต่อชนิด) · คำถามเชิงวิทยาศาสตร์ที่ตอบ: (1) segmentation ข้ามชนิดไหม (2) เกณฑ์ readyness transfer ได้ไหม
+
 ## แม่แบบ entry ใหม่ (คัดลอกไปใช้)
 
 ```md
