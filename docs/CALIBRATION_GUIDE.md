@@ -26,3 +26,24 @@
 | วันที่ | ชุดภาพ | ขวดกว้างจริง | กว้างพิกเซล | PIXEL_TO_CM |
 |---|---|---|---|---|
 | 2026-08-XX | 16/07/2026 | 6.5 cm | 620 px | 0.0105 |
+
+---
+
+## ✅ ที่ทำแล้ว 2026-08-27 — Calibration เชิงประจักษ์ (proxy → cm) กับชุด 100 ขวด
+
+ใช้ค่าวัดมือ (`ground_truth.csv`: height_cm ครบ 100, width/area 80 ภาพ) fit mapping ระหว่าง proxy ที่ SAM3 วัดได้กับค่าจริง(cm) แบบ cross-validated (out-of-fold, `src/calibrate_units.py`):
+
+| trait | model | k | b | R²(oof) | CV MAE | CV RMSE | n |
+|---|---|---|---|---|---|---|---|
+| canopy_h_cm | intercept | 5.098 | 1.432 | 0.386 | **1.145 cm** | 1.413 cm | 100 |
+| canopy_w_cm | intercept | 2.133 | 0.934 | 0.205 | 0.608 cm | 0.745 cm | 80 |
+| canopy_area_cm2 | intercept | ~0 | 2.616 | 0.086 | 2.873 cm² | 3.666 cm² | 80 |
+
+**ข้อสรุป:**
+- **height** calibrate ได้พอใช้ — `canopy_h_cm = 5.098*height_proxy + 1.432` (CV_MAE 1.15cm บนต้นสูงเฉลี่ย 3.73cm) → ใช้เป็นค่า cm เชิงประมาณได้
+- **area** calibrate ไม่ได้ (k≈0 → เท่ากับพยากรณ์ด้วยค่าเฉลี่ย) — สะท้อนว่า **ค่าวัดมือ area_cm2 เองไม่น่าเชื่อถือ** (เป็นค่าประมาณกว้าง×สูง×k + มี NaN เยอะ) → รายงานซื่อตรง อย่าอ้าง area cm²
+- model `intercept` ชนะ `origin` ทุกตัว (intercept≈1.43cm สะท้อนว่า height_proxy วัดจากขวด ไม่ใช่จากโคน)
+- ⚠️ ค่า calibration นี้ผูกกับ **ชุดภาพ/มุม/ระยะ/ชนิดนี้** — เปลี่ยน setup ต้อง recalibrate
+
+### ค่า geometric (PIXEL_TO_CM) — ยังรอ
+ตัว geometric raw px→cm (ตามวิธีด้านบน) ยังไม่ได้ เพราะต้องใช้ (1) ขวดกว้างจริง (cm) จากผู้ใช้ และ (2) ตรวจจับขวด (ต้องรัน SAM3 บน Colab) — เมื่อมีค่าจะใส่ `pixel_to_cm` ใน `config.json` (อ่านจาก `PIXEL_TO_CM` ใน pipeline) แล้ว `canopy_h_cm` จะมาจากสูตร `bh * PIXEL_TO_CM`

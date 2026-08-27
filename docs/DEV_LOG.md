@@ -167,6 +167,16 @@
 
 > **สถานะ:** cross-species = [PLAN → พร้อมรัน] · นักได้สร้าง pipeline + โปรโตคอลแล้ว แต่**ยังไม่มีข้อมูลชนิดอื่น** (รอถ่ายในแล็บ 2–3 ชนิด ก่อน · ชุดเล็ก = pilot ต่อชนิด) · คำถามเชิงวิทยาศาสตร์ที่ตอบ: (1) segmentation ข้ามชนิดไหม (2) เกณฑ์ readyness transfer ได้ไหม
 
+## 2026-08-27 — Calibrate หน่วย px→cm เชิงประจักษ์ (proxy→cm) + คำนวณ MAE/RMSE
+
+| เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |
+|---|---|---|---|
+| เย็น | เขียน `src/calibrate_units.py` — fit mapping proxy→cm จากค่าวัดมือ (height_cm/width_cm/area_cm2) แบบ cross-validated (out-of-fold) เลือก origin หรือ intercept ตาม CV RMSE ที่ดีกว่า + convert ทุกภาพเป็น cm | `src/calibrate_units.py` | pyc_compile ผ่าน; รันบนชุด 100 (CPU) ได้ผล |
+| เย็น | รัน calibrate: หา mapping ที่ดีที่สุดต่อ trait | `data/processed/calibration/calibration_summary.csv`, `calibrated_canopy.csv`, `calibration_fit.png` | **height:** intercept `5.098*proxy+1.432` → CV_MAE **1.145cm** / RMSE 1.413cm / R²_oof 0.386 (n=100) · **width:** CV_MAE 0.61cm · **area:** k≈0 (เท่ากับพยากรณ์ค่าเฉลี่ย) R²_oof 0.086 → **calibrate ไม่ได้** · intercept ชนะ origin ทุกตัว |
+| เย็น | อัปเดต CALIBRATION_GUIDE + report/proposal/FULL_REPORT/OVERVIEW — ปิด OPEN เรื่องหน่วยความสูง (RESULT บางส่วน) + ข้อค้นพบซื่อตรงว่า area cm² เองไม่น่าเชื่อถือ อย่าอ้าง | `docs/CALIBRATION_GUIDE.md`, `report_th_v1.md`, `proposal_th_draft.md`, `PROJECT_FULL_REPORT.md`, `PROJECT_OVERVIEW.md` | grep ยืนยันไม่เหลือ [OPEN] หน่วยความสูงแบบเดิม |
+
+> **ข้อสรุป (Calibration):** ความสูง proxy→cm ใช้ได้จนถึงระดับ 'ค่าเชิงประมาณ' (CV_MAE 1.15cm) — พอจะอ้าง `canopy_h_cm` กับ MAE/RMSE ได้ · **area cm² ไม่น่าเชื่อถือ** เพราะ (1) ค่าวัดมือ area_cm2 เป็นค่าประมาณกว้าง×สูง×k + NaN เยอะ (2) proxy area ไม่สัมพันธ์กับมัน — รายงานซื่อตรง อย่าอ้าง area cm² · ⚠️ calibration ผูกกับชุดภาพ/มุม/ระยะ/ชนิดนี้ เปลี่ยน setup ต้อง recalibrate · geometric PIXEL_TO_CM (raw px) ยังรอขนาดขวดจริง + ตรวจจับขวดบน Colab
+
 ## แม่แบบ entry ใหม่ (คัดลอกไปใช้)
 
 ```md
