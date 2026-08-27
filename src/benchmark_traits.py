@@ -31,6 +31,7 @@ import pandas as pd
 
 sys.path.insert(0, os.path.dirname(__file__))
 from benchmark_baselines import classical_green_seg  # noqa: E402
+from calibrate_units import oof_cv  # noqa: E402  (ต่อยอด: คำนวณ MAE/RMSE หน่วย cm)
 
 
 # ---------------------------------------------------------------- io helpers
@@ -213,6 +214,31 @@ def main():
     print("\n[INFO] r เป็น scale-free (px vs cm เทียบได้โดยไม่ calibrate)")
     print("[INFO] zero_mask_rate = สัดส่วนภาพที่วิธีนั้น segment ไม่เจอ (proxy=0)")
 
+    # ---- ต่อยอด: Calibrated height MAE/RMSE (cm) ต่อวิธี — calibrate proxy->cm แล้ววัดความคลาดเคลื่อน ----
+    calib_rows = []
+    for name, (proxy, target) in method_h.items():
+        if proxy not in merged.columns:
+            continue
+        sub = merged[merged[proxy].notna() & merged[target].notna()]
+        if len(sub) < 3:
+            continue
+        # calibrate proxy->cm (มี intercept — สะท้อนว่า proxy วัดจากขวดไม่ใช่โคน)
+        r = oof_cv(sub[proxy], sub[target], k_folds=5, intercept=True)
+        calib_rows.append({
+            "method": name, "metric": "height MAE/RMSE (cm, calibrated)",
+            "n": r["n"], "k": round(r["k"], 3), "b": round(r["b"], 3),
+            "cv_mae_cm": round(r["mae"], 3), "cv_rmse_cm": round(r["rmse"], 3),
+            "r2_oof": round(r["r2"], 3),
+        })
+    calib_df = pd.DataFrame(calib_rows)
+    if len(calib_df):
+        calib_df.to_csv(os.path.join(args.out, "trait_benchmark_height_error_cm.csv"),
+                        index=False, encoding="utf-8-sig")
+        print("\n=== ต่อยอด: Calibrated height error (cm) — ยิ่ง MAE/RMSE ต่ำ = วัดขนาดต้นใกล้มือสุด ===")
+        print(calib_df.to_string(index=False))
+        print("[INFO] k,b = proxy->cm (มี intercept) · MAE/RMSE จาก cross-validation")
+
+
     # ---- กราฟ scatter height: proxy vs manual height_cm ต่อวิธี (label ภาษาอังกฤษกันกล่อง) ----
     try:
         import matplotlib
@@ -258,7 +284,24 @@ def main():
         ax2.legend(); ax2.grid(alpha=0.3, axis="y")
         plt.tight_layout()
         plt.savefig(os.path.join(args.out, "trait_compare_bar.png"), dpi=150)
-        print(f"[OK] กราฟ: {os.path.join(args.out, 'height_correlation.png')} + trait_compare_bar.png")
+
+        # ---- bar chart calibrated height MAE/RMSE (cm) ต่อวิธี — ยิ่งต่ำยิ่งดี ----
+        if len(calib_df):
+            fig3, ax3 = plt.subplots(figsize=(8, 4.5))
+            x3 = np.arange(len(calib_df))
+            maes = calib_df["cv_mae_cm"].astype(float)
+            rmses = calib_df["cv_rmse_cm"].astype(float)
+            ax3.bar(x3 - w / 2, maes, w, color=colors["sam3"], label="calibrated MAE (cm)")
+            ax3.bar(x3 + w / 2, rmses, w, color=colors["yolo"], label="calibrated RMSE (cm)")
+            ax3.set_xticks(x3); ax3.set_xticklabels(calib_df["method"])
+            ax3.set_ylabel("height error (cm)"); ax3.set_title("Calibrated height error per method (lower better)")
+            for xi, (ma, rm) in enumerate(zip(maes, rmses)):
+                ax3.text(xi - w / 2, ma + 0.02, f"{ma:.2f}", ha="center", fontsize=8)
+                ax3.text(xi + w / 2, rm + 0.02, f"{rm:.2f}", ha="center", fontsize=8)
+            ax3.legend(); ax3.grid(alpha=0.3, axis="y")
+            plt.tight_layout()
+            plt.savefig(os.path.join(args.out, "height_error_cm_bar.png"), dpi=150)
+        print(f"[OK] กราฟ: height_correlation.png + trait_compare_bar.png + height_error_cm_bar.png")
     except Exception as e:
         print(f"[WARN] กราฟไม่ได้: {e}")
 

@@ -1,0 +1,4 @@
+﻿method,metric,n,k,b,cv_mae_cm,cv_rmse_cm,r2_oof
+sam3,"height MAE/RMSE (cm, calibrated)",100,5.098,1.432,1.145,1.413,0.386
+classical,"height MAE/RMSE (cm, calibrated)",100,4.528,2.768,1.277,1.58,0.233
+yolo,"height MAE/RMSE (cm, calibrated)",100,0.702,3.188,1.501,1.81,-0.006

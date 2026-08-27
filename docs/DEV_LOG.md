@@ -177,6 +177,16 @@
 
 > **ข้อสรุป (Calibration):** ความสูง proxy→cm ใช้ได้จนถึงระดับ 'ค่าเชิงประมาณ' (CV_MAE 1.15cm) — พอจะอ้าง `canopy_h_cm` กับ MAE/RMSE ได้ · **area cm² ไม่น่าเชื่อถือ** เพราะ (1) ค่าวัดมือ area_cm2 เป็นค่าประมาณกว้าง×สูง×k + NaN เยอะ (2) proxy area ไม่สัมพันธ์กับมัน — รายงานซื่อตรง อย่าอ้าง area cm² · ⚠️ calibration ผูกกับชุดภาพ/มุม/ระยะ/ชนิดนี้ เปลี่ยน setup ต้อง recalibrate · geometric PIXEL_TO_CM (raw px) ยังรอขนาดขวดจริง + ตรวจจับขวดบน Colab
 
+## 2026-08-27 — ต่อยอด trait benchmark: เพิ่ม MAE/RMSE (หน่วย cm, calibrated) ต่อวิธี
+
+| เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |
+|---|---|---|---|
+| เย็น | ต่อยอด `src/benchmark_traits.py` ใช้ `oof_cv` จาก `calibrate_units.py` คำนวณ calibrated height MAE/RMSE (cm) ต่อวิธี (fit proxy→cm แบบมี intercept + cross-validation) + เพิ่มกราฟ | `src/benchmark_traits.py` | py_compile ผ่าน; รันซ้ำ 100 ภาพ ได้ผล |
+| เย็น | รัน benchmark ต่อยอด | `data/processed/trait_benchmark/trait_benchmark_height_error_cm.csv`, `height_error_cm_bar.png`, `docs/assets/height_error_cm_bar.png` | **Calibrated height error (cm): SAM3 MAE 1.15 / RMSE 1.41 · classical 1.28 / 1.58 · YOLO-COCO 1.50 / 1.81** (R²_oof: 0.386 / 0.233 / −0.006) — SAM3 วัดความสูงใกล้มือสุดทั้ง correlation และหน่วย |
+| เย็น | อัปเดต report 4.4 — เพิ่มคอลัมน์ MAE/RMSE(cm) + หมายเหตุต่อยอด | `docs/report_th_v1.md` | ไม่มี [PLAN] ค้างใน baseline ระดับค่าวัด |
+
+> **ข้อสรุปต่อยอด:** การเปรียบเทียบ baseline ตอนนี้ครบ 2 มิติ — (1) correlation (scale-free r) (2) ความคลาดเคลื่อนเชิงหน่วย (calibrated MAE/RMSE cm) — ทั้งคู่ยืนยันว่า **SAM3 วัดขนาดต้นใกล้มือที่สุด** รองลงมา classical และ YOLO-COCO (มีสัญญาณความสัมพันธ์แทบเป็นศูนย์หลัง calibrate → ไม่มีประโยชน์เชิงวัด)
+
 ## แม่แบบ entry ใหม่ (คัดลอกไปใช้)
 
 ```md
