@@ -30,6 +30,7 @@
 
 ### 2.2 mask มือ → `ground_truth_masks/`
 - โฟลเดอร์ `ground_truth_masks/` วางข้างๆ โฟลเดอร์ภาพ มี `<ชื่อภาพ>.png` (ขาว = ต้นพืช, ดำ = พื้นหลัง)
+- **เครื่องมือช่วย:** `python src/annotation_tool.py --data <ภาพ> --seed <pseudo_masks?> --out data/processed/ground_truth_masks --port 5000` → เปิดเบราว์เซอร์ป้าย/แก้ mask (seed จาก SAM3 วาดเป็นเขียว ช่วยเร่ง) — ดู `DEV_LOG 2026-08-27`
 - จำนวนแนะนำ **≥ 30 ภาพ** ครอบคลุม 3 คลาส (ยังไม่พร้อม ≥ 10, พร้อมอนุบาล ≥ 5, ตรวจเอง ≥ 5)
 - **≥ 2 คน** annotate เพื่อวัด inter-rater agreement (Cohen's kappa / IoU inter-annotator)
 

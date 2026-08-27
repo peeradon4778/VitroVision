@@ -204,6 +204,13 @@
 
 > **สาระสำคัญ:** จะเรียกว่า "โมเดลของเรา" ได้ต้องมี (1) โมเดลฝึกจริง (2) mIoU เทียบ**มนุษย์** ไม่ใช่ pseudo ของ SAM3 (3) แสดง generalization (4) เผยแพร่ HF + (5) ตัวเลขเทียบ baseline — ตอนนี้มีแค่ baseline · **บล็อกหลัก = annotate mask มือ (T1) + cross-species (T3) ที่ต้องใช้แรงคน/ข้อมูล** ส่วนโค้ด/runbook พร้อมหมด
 
+## 2026-08-27 — สร้าง annotation tool (ground-truth masks) ให้งานเลเวล A เร็วขึ้น
+
+| เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |
+|---|---|---|---|
+| เย็น | สร้าง `src/annotation_tool.py` — Flask app ป้าย/แก้ mask มือในเบราว์เซอร์: โหลดภาพ + seed จาก SAM3 (สีเขียว) + ป้ายขาว/ลบ + brush/undo + save เป็น PNG อัตโนมัติ (alpha>40) + progress | `src/annotation_tool.py` | py_compile ผ่าน; test_client: GET / 200, /img/xxx 200, POST /save สร้าง mask PNG ถูก (36px), /stats ทำงานครบ |
+> **ใช้ยังไง:** `python src/annotation_tool.py --data data/raw/20260814_batch --seed <pseudo_masks> --out data/processed/ground_truth_masks --port 5000` → เปิดเบราว์เซอร์ http://localhost:5000 · seed (SAM3) วาดเป็นเขียวให้แก้ ไม่ต้องวาดใหม่
+
 ## แม่แบบ entry ใหม่ (คัดลอกไปใช้)
 
 ```md
