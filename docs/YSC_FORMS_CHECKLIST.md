@@ -1,6 +1,6 @@
 # ✅ YSC 2027 — เอกสารแบบฟอร์มที่ต้องส่ง (VitroVision)
 
-> Checklist ติดตามเอกสารการสมัคร YSC 2027 สำหรับโครงงาน **VitroVision** (SAM3-Powered Zero-Shot Vision System for Acclimatization Readiness)
+> Checklist ติดตามเอกสารการสมัคร YSC 2027 สำหรับโครงงาน **VitroVision** (Application of AI-Based Computer Vision for Analyzing and Predicting the Growth of Tissue Cultured Plants)
 > อ้างอิง: [YSC Wizard — คลังแบบฟอร์ม](https://ysc-wizard.vercel.app/forms.html) · สร้าง 2026-08 ตาม template ล่าสุด (`*_200726` / `*_2027`)
 > **วิธีใช้:** แก้ status เป็น `[x]` เมื่อทำเสร็จ · `[!]` = ต้องดำเนินการ · `[ ]` = ยังไม่ทำ
 

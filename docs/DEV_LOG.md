@@ -219,6 +219,14 @@
 | เย็น | เขียน `src/interrater.py` — ICC(2,1) (ต่อเนื่อง, implement ANOVA) + Cohen's kappa (คลาส) + % agreement + Pearson/MAE | `src/interrater.py` | py_compile ผ่าน; ทดสอบต่อเนื่อง ICC=0.700 (ใกล้ Pearson 0.692) / คลาส kappa=0.792 (substantial) agreement 90% |
 > **ใช้ยังไง:** Level A → `python src/mask_metrics.py --pred <sam3/student_masks> --gt data/processed/ground_truth_masks --out levelA --size 512` · inter-rater → `python src/interrater.py --csv gt.csv --cols rA,rB --type continuous|categorical`
 
+## 2026-08-27 — เปลี่ยนชื่อโครงงาน TH/EN (ตามที่ยืนยันจาก SIMS)
+
+| เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |
+|---|---|---|---|
+| เย็น | เปลี่ยนชื่อโครงงานเป็นแบบใหม่ตามที่ยืนยัน: TH = **VitroVision : การประยุกต์ใช้ปัญญาประดิษฐ์เชิงคอมพิวเตอร์วิทัศน์เพื่อวิเคราะห์และทำนายการเจริญของพืชเพาะเลี้ยงเนื้อเยื่อ** · EN = **VitroVision : Application of AI-Based Computer Vision for Analyzing and Predicting the Growth of Tissue Cultured Plants** — แก้ชื่อในทุกจุดที่ใช้เป็นชื่อผลงาน (เดิม: "ระบบคัดกรองความพร้อมอนุบาล...SAM3") | `docs/proposal_th_draft.md`, `docs/PROJECT_FULL_REPORT.md`, `docs/report_th_v1.md`, `docs/YSC_FORMS_CHECKLIST.md`, `research/_orchestration.md` | git grep ยืนยันชื่อเก่า (คัดกรองความพร้อมอนุบาลของพืช / SAM3-Powered Zero-Shot Vision System...) หายหมด เหลือเฉพาะคำบรรยายระบบในเนื้อเรื่อง (ไม่ใช่ชื่อผลงาน) ✓ |
+
+---
+
 ## แม่แบบ entry ใหม่ (คัดลอกไปใช้)
 
 ```md

@@ -6,8 +6,8 @@
 ---
 
 ## 🔒 ตรึงแล้ว (อย่าถกซ้ำ)
-- ชื่อ TH: **VitroVision — ระบบคัดกรองความพร้อมอนุบาลของพืชเพาะเลี้ยงเนื้อเยื่อด้วย Zero-Shot จากโมเดล SAM3** (เปลี่ยนจาก "ตัดย้าย" ตาม grill v3 29/07/2026)
-- ชื่อ EN: **VitroVision: A SAM3-Powered Zero-Shot Vision System for Acclimatization Readiness in Plant Tissue Culture**
+- ชื่อ TH: **VitroVision : การประยุกต์ใช้ปัญญาประดิษฐ์เชิงคอมพิวเตอร์วิทัศน์เพื่อวิเคราะห์และทำนายการเจริญของพืชเพาะเลี้ยงเนื้อเยื่อ** (เปลี่ยนจาก "ตัดย้าย" ตาม grill v3 29/07/2026)
+- ชื่อ EN: **VitroVision : Application of AI-Based Computer Vision for Analyzing and Predicting the Growth of Tissue Cultured Plants**
 - RQ: snapshot เดียว → triage กลุ่ม (ยังไม่พร้อม / พร้อมอนุบาล / ตรวจเอง) แบบ zero-shot ข้ามชนิดพืช (decision-support เท่านั้น) — ระบบราก (root) เป็นตัวชี้วัดอันดับ 1 ของความพร้อมอนุบาล
 - Engineering goal: Native Android app ถ่าย 1 รูป → mask + trait metrics + triage 3-class + confidence + manual override
 - Segmentation engine: **SAM3 PCS text-prompted** (prompt เริ่ม `["plant","leaf"]`) — พิสูจน์ผ่าน spike test 2026-07-05 · **ห้ามใช้ SAM automatic/everything mode เด็ดขาด**
