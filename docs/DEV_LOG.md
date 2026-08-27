@@ -227,6 +227,16 @@
 
 ---
 
+## 2026-08-27 — เตรียมระบบ annotation: คัด 30 ภาพ stratified + workflow หน้าเดียว
+
+| เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |
+|---|---|---|---|
+| เย็น | เขียน `src/prepare_annotation.py` — คัด 30 ภาพแบบ stratified (ครอบคลุม 3 คลาส + สัณฐานหลากหลาย: dense/หลายต้น, ต้นจิ๋ว) + สร้าง manifest + คัดลอกภาพไปโฟลเดอร์ทำงาน | `src/prepare_annotation.py` | รันจริง: ตรวจเอง 2 + ยังไม่พร้อม 14 + พร้อมอนุบาล 14 = 30 · bucket: typical 22 / dense 5 / tiny 3 (สมดุล ไม่ over-sample dense) |
+| เย็น | สร้าง `docs/ANNOTATE_WORKFLOW.md` — หน้าเดียวรูป 5 ขั้นตอน (prepare→seed Colab→annotate tool→Level A mask_metrics→inter-rater) + วิธีป้าย + ข้อซื่อตรง | `docs/ANNOTATE_WORKFLOW.md` | ครบ workflow; ผูกกับ prepare/annotation_tool/mask_metrics/interrater |
+| เย็น | ตรวจจำนวนคลาส GT: พร้อม 60 / ยังไม่พร้อม 38 / ตรวจเอง 2 → ออกแบบ strategy (ตรวจเองบังคับรวม + สุ่ม stratified ต่อคลาส) | `data/work/annotate/annotate_list.csv`, `data/work/annotate/images/` | 30 ภาพคัดแล้ว + manifest |
+
+> **สถานะระบบ annotation:** พร้อมใช้แล้ว (prepar ที่ดี 30 ภาพ + workflow + เครื่องมือ annotate + mask_metrics + interrater) · ที่เหลือ = รัน SAM3 สร้าง seed (Colab) + annotate 30 ภาพ (มือคุณ) · เกต "โมเดลเรา": ได้ Level A mIoU เทียบมือ
+
 ## แม่แบบ entry ใหม่ (คัดลอกไปใช้)
 
 ```md
