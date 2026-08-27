@@ -146,6 +146,17 @@
 | บ่าย | เปลี่ยน rule ในโค้ด: coverage → `height_proxy ≥ READY_HEIGHT(0.275)` (configurable) + ลดคลาส "ตรวจเอง"/"หนาแน่นเกิน" | `src/sam3_growth_pipeline.py` | compile ผ่าน; verdict ใหม่: 75 พร้อมอนุบาล / 25 ยังไม่พร้อม |
 | บ่าย | อัปเดต report/proposal: เกณฑ์/verdict/validation (H₂ ผ่าน / root ยังใช้ไม่ได้) + ยอดย่อ | `docs/report_th_v1.md`, `docs/proposal_th_draft.md` | grep ยืนยันไม่มีเลขเก่า 14/51/35 ค้าง |
 
+## 2026-08-27 — Trait-level baseline benchmark: SAM3 vs classical vs YOLO-COCO (เทียบค่าวัดมือ)
+
+| เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |
+|---|---|---|---|
+| เย็น | เขียน `src/benchmark_traits.py` — เปรียบเทียบ proxy ของ "ขนาดต้น" ที่แต่ละวิธีได้จาก segmentation กับค่าที่วัดมือ (`height_cm`, `area_cm2`) ด้วย Pearson r (scale-free: proxy เป็น px เทียบกับ cm ได้โดยไม่ต้องสอบเทียบหน่วย) + คำนวณอัตราล้มเหลว (mask=0) + เวลาเฉลี่ย/ภาพ | `src/benchmark_traits.py` | compile ผ่าน; รันชุดจริง 100 ภาพ (CPU ~90s) |
+| เย็น | รัน bench กับชุดภาพจริง 100 ขวดพริกจินดา เทียบ SAM3 (จาก summary) vs classical (HSV เขียว) vs YOLO-seg (COCO pretrain = naive reference)
+ | `data/processed/trait_benchmark/trait_benchmark_summary.csv`, `trait_benchmark_merged.csv`, `height_correlation.png`, `trait_compare_bar.png` | **ความสูง (r เทียบมือ): SAM3 0.638 > classical 0.498 > YOLO-COCO 0.133 (n=100)** · พื้นที่ (r, n=80): SAM3 0.398 > classical 0.261 > YOLO-COCO 0.050 · อัตราล้มเหลว mask=0: SAM3 0.01, classical 0.23, YOLO 0.13 |
+| เย็น | อัปเดต report/proposal: เพิ่มผล baseline ระดับค่าวัด ([RESULT]) ใน 4.4 / 7.6.0 + เปลี่ยนจุด [PLAN] ระดับพิกเซลเป็น [OPEN-RESULT บางส่วน] (mIoU/Dice ยังต้อง annotate ground-truth masks) | `docs/report_th_v1.md`, `docs/proposal_th_draft.md` | grep ยืนยันไม่เหลือ baseline เป็น [PLAN] ล้วน — แยกชัด ระดับค่าวัด=[RESULT] / ระดับพิกเซล=[PLAN] |
+
+> **ข้อสรุป (Trait-level):** SAM3 ตรงกับค่าวัดมือมากกว่า baseline อย่างชัดเจนด้านความสูง (r=0.638) และล้มเหลวน้อยกว่า (1% vs 23%/13%) — สนับสนุน Orvati Nia et al. (2026) ที่ SAM3 ดีสุดในโหมด detector-free · YOLO-COCO ไม่มี class "plant" จับทั้งฉากแทนต้น (ต้อง fine-tune) · **หมายเหตุความซื่อตรง:** ค่านี้คือความสอดคล้องกับมือ ไม่ใช่ mIoU/Dice ระดับพิกเซล (Level A) ซึ่งยังต้อง ground-truth masks [OPEN] · รูปถ่ายเป็นมุมเดียว ยังไม่ครอบคลุม 3D/refraction
+
 ## แม่แบบ entry ใหม่ (คัดลอกไปใช้)
 
 ```md

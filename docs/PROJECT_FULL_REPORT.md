@@ -59,11 +59,11 @@
 **วัตถุประสงค์:**
 1. สร้างชุดข้อมูลภาพถ่ายจริงผ่านขวดแก้วชุดแรก (100 ขวด พริกจินดา) พร้อม metadata
 2. สร้าง pipeline แบ่งส่วน + วัดเชิงปริมาณด้วย SAM3 PCS แบบ zero-shot
-3. ประเมินเปรียบเทียบกับวิธีพื้นฐาน (SAM2, YOLO-seg, classical) ด้วย mIoU/Dice/F1 [PLAN]
+3. ประเมินเปรียบเทียบกับวิธีพื้นฐาน (SAM2, YOLO-seg, classical) ด้วย mIoU/Dice/F1 [RESULT บางส่วน — ระดับค่าวัด (trait เทียบมือ) ทำแล้ว · ระดับพิกเซลรอ ground_truth_masks]
 4. ตรวจสอบความถูกต้องของระบบกับค่าอ้างอิงจากผู้ประเมิน (ground truth)
 
 **สมมติฐาน:**
-- **H₁ (segmentation):** SAM3 PCS segment ต้นผ่านขวดแก้วที่มี glare/ฝ้า/ไอน้ำได้ โดย mIoU ≥ 0.65 และสูงกว่า baseline [PLAN — ยังรอ ground_truth_masks]
+- **H₁ (segmentation):** SAM3 PCS segment ต้นผ่านขวดแก้วที่มี glare/ฝ้า/ไอน้ำได้ โดย mIoU ≥ 0.65 และสูงกว่า baseline [PLAN — ยังรอ ground_truth_masks] · หมายเหตุ: ตัวชี้วัดระดับค่าวัด (trait เทียบมือ) ที่ทำได้ตอนนี้สนับสนุน H₁ ในทิศทางว่า SAM3 ตรงกับมือมากกว่า baseline (ความสูง r=0.638 vs classical 0.498 / YOLO-COCO 0.133)
 - **H₂ (การจัดกลุ่ม):** ชุด feature ของ SAM3 จำแนกความพร้อมอนุบาลได้ถูกต้อง ≥ 70% และ sensitivity ของกลุ่มพร้อมอนุบาล ≥ 0.6 เทียบผู้ประเมิน **[RESULT — ผ่านด้วยกฎ height-based]**
 
 ---
@@ -169,7 +169,8 @@
 - [OPEN] ระบบรากตรวจจับไม่ได้ผล (1/100)
 - [OPEN] ยังไม่ calibrate หน่วย cm (canopy_cm = NaN)
 - [OPEN] pilot ชนิดเดียว + ผู้ประเมินคนเดียว
-- [PLAN] ยังไม่มี baseline (SAM2/YOLO-seg/classical) กับ mIoU (Level A)
+- [RESULT] baseline ระดับค่าวัด (trait เทียบมือ) — SAM3 0.638 > classical 0.498 > YOLO-COCO 0.133 (ความสูง); ล้มเหลว mask=0 น้อยกว่า (1% vs 23%/13%)
+- [PLAN] ยังไม่มี baseline (SAM2/YOLO-seg/classical) กับ mIoU (Level A) — ต้อง annotate ground_truth_masks
 
 ---
 
