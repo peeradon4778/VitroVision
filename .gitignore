@@ -14,7 +14,8 @@ venv/
 data/raw/*
 data/processed/*
 data/_staging*
-data/work/   # โฟลเดอร์ทำงาน (สำเนาภาพ/ผล) — เก็บเฉพาะหลักฐานใน docs/assets/
+data/work/
+# โฟลเดอร์ทำงาน (สำเนาภาพ/ผล) — เก็บเฉพาะหลักฐานใน docs/assets/
 models/*
 *.pt
 *.pth
