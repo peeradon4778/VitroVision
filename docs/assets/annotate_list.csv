@@ -1,0 +1,31 @@
+﻿image,expert_verdict,note,bucket,order
+041.jpg,ตรวจเอง,height≈0,tiny,1
+045.jpg,ตรวจเอง,height≈0,tiny,2
+084.jpg,ยังไม่พร้อม,ok,typical,3
+070.jpg,ยังไม่พร้อม,ok,typical,4
+030.jpg,ยังไม่พร้อม,ok,typical,5
+069.jpg,ยังไม่พร้อม,ok,typical,6
+055.jpg,ยังไม่พร้อม,ok,typical,7
+063.jpg,ยังไม่พร้อม,ok,typical,8
+078.jpg,ยังไม่พร้อม,ok,typical,9
+033.jpg,ยังไม่พร้อม,ok,typical,10
+043.jpg,ยังไม่พร้อม,ok,typical,11
+080.jpg,ยังไม่พร้อม,ok,typical,12
+020.jpg,ยังไม่พร้อม,leaf>30/นับไม่ไหว; หลายต้น-วัดกว้างไม่ได้,dense/multi,13
+015.jpg,ยังไม่พร้อม,leaf>30/นับไม่ไหว; หลายต้น-วัดกว้างไม่ได้,dense/multi,14
+014.jpg,ยังไม่พร้อม,leaf>30/นับไม่ไหว; หลายต้น-วัดกว้างไม่ได้,dense/multi,15
+057.jpg,ยังไม่พร้อม,height≈0,tiny,16
+026.jpg,พร้อมอนุบาล,ok,typical,17
+092.jpg,พร้อมอนุบาล,ok,typical,18
+060.jpg,พร้อมอนุบาล,ok,typical,19
+025.jpg,พร้อมอนุบาล,ok,typical,20
+059.jpg,พร้อมอนุบาล,ok,typical,21
+073.jpg,พร้อมอนุบาล,ok,typical,22
+049.jpg,พร้อมอนุบาล,ok,typical,23
+100.jpg,พร้อมอนุบาล,ok,typical,24
+044.jpg,พร้อมอนุบาล,ok,typical,25
+035.jpg,พร้อมอนุบาล,ok,typical,26
+052.jpg,พร้อมอนุบาล,ok,typical,27
+091.jpg,พร้อมอนุบาล,ok,typical,28
+007.jpg,พร้อมอนุบาล,leaf>30/นับไม่ไหว; หลายต้น-วัดกว้างไม่ได้,dense/multi,29
+008.jpg,พร้อมอนุบาล,leaf>30/นับไม่ไหว; หลายต้น-วัดกว้างไม่ได้,dense/multi,30
