@@ -211,6 +211,14 @@
 | เย็น | สร้าง `src/annotation_tool.py` — Flask app ป้าย/แก้ mask มือในเบราว์เซอร์: โหลดภาพ + seed จาก SAM3 (สีเขียว) + ป้ายขาว/ลบ + brush/undo + save เป็น PNG อัตโนมัติ (alpha>40) + progress | `src/annotation_tool.py` | py_compile ผ่าน; test_client: GET / 200, /img/xxx 200, POST /save สร้าง mask PNG ถูก (36px), /stats ทำงานครบ |
 > **ใช้ยังไง:** `python src/annotation_tool.py --data data/raw/20260814_batch --seed <pseudo_masks> --out data/processed/ground_truth_masks --port 5000` → เปิดเบราว์เซอร์ http://localhost:5000 · seed (SAM3) วาดเป็นเขียวให้แก้ ไม่ต้องวาดใหม่
 
+## 2026-08-27 — เพิ่ม validation tools: mask_metrics (Level A) + interrater (T5)
+
+| เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |
+|---|---|---|---|
+| เย็น | เขียน `src/mask_metrics.py` — คำนวณ Level A (mIoU/Dice/F1/precision/recall) ระหว่าง 2 โฟลเดอร์ mask (pred vs GT) แบบ local (CPU) resize ให้เท่ากัน ใช้ `compute_metrics` ของ baseline | `src/mask_metrics.py` | py_compile ผ่าน; ทดสอบ 3 ภาพสังเคราะห์ (identical 1.0 / overlap / all-wrong 0) ได้ mean IoU 0.565, dice 0.607, f1 0.910 ถูกต้อง |
+| เย็น | เขียน `src/interrater.py` — ICC(2,1) (ต่อเนื่อง, implement ANOVA) + Cohen's kappa (คลาส) + % agreement + Pearson/MAE | `src/interrater.py` | py_compile ผ่าน; ทดสอบต่อเนื่อง ICC=0.700 (ใกล้ Pearson 0.692) / คลาส kappa=0.792 (substantial) agreement 90% |
+> **ใช้ยังไง:** Level A → `python src/mask_metrics.py --pred <sam3/student_masks> --gt data/processed/ground_truth_masks --out levelA --size 512` · inter-rater → `python src/interrater.py --csv gt.csv --cols rA,rB --type continuous|categorical`
+
 ## แม่แบบ entry ใหม่ (คัดลอกไปใช้)
 
 ```md
