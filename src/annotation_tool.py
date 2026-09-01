@@ -148,6 +148,7 @@ function resizeCanvas(){
   const s = Math.min(maxSide / iw, maxSide / ih, 1);
   W = Math.round(iw * s); H = Math.round(ih * s);
   cv.width = W; cv.height = H;
+  stroke.width = W; stroke.height = H;
   cv.style.maxWidth = '92vw'; cv.style.maxHeight = '90vh';
   ctx.drawImage(img, 0, 0, W, H);
   if (seedImg && seedImg.complete && seedImg.naturalWidth){ applySeed(); }

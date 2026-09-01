@@ -17,6 +17,7 @@
 | เช้า | **แก้บั๊ก `cmd_generate_pseudo`** — `load_images()` คืน dict `{name: PIL.Image}` แต่โค้ดเดิม slice list (`images[:limit]`) + `Image.open(path)` → `KeyError: slice` บน Colab; แก้เป็น `items=list(imgs.items())`, iterate `(name,pil)`, ใช้ PIL ตรง ๆ + แก้ `len(images)`→`len(items)` | `src/train_unet_distill.py` | py_compile ผ่าน; slice/list dict ถูกต้อง ✓ |
 | เช้า | **แก้ชื่อไฟล์ mask เป็น stem.png** — เดิม `name` = dict key (`008.jpg`) → บันทึก `008.jpg.png` ไม่ตรง `annotation_tool` ที่ค้นหา `008.png`; แก้เป็น `stem=os.path.splitext(name)[0]` | `src/train_unet_distill.py` | compile ผ่าน; ชื่อ=`stem.png` ✓ |
 | เช้า | **แก้บั๊ก `annotation_tool`** — `main()` ไม่ตั้ง `ctx[\"total\"]` ทำให้ `/stats`,`/save` คืน 500 (บันทึก mask ไม่ได้) → เพิ่ม `ctx[\"total\"]=len(images)` + `sys.stdout.reconfigure(utf-8)` กัน print ไทย crash บน cp1252 + import sys | `src/annotation_tool.py` | เปิด server ได้ (ภาพ 30 seed=มี); `/stats` 200 total 30, `/save` 200, `/seed/007.jpg` 200 ✓ |
+| เช้า | **แก้บั๊ก drawing layer** — canvas `stroke` (ชั้นระบาย) ไม่ถูก resize เท่าภาพ (ยัง default 300×150) → วาดแล้วโดน clip/หาย → `ทำอะไรกับภาพไม่ได้`; แก้เป็นตั้ง `stroke.width/height=W,H` ใน `resizeCanvas` | `src/annotation_tool.py` | compile ผ่าน; server ขึ้น, `/stats` 200, `/` 200 ✓ |
 ## 2026-08-07 — วันนี้
 
 | เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |
