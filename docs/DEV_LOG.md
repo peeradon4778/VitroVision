@@ -14,6 +14,7 @@
 | เช้า | ตรวจ pipeline บน CPU: `mask_metrics` / `interrater` / `annotation_tool` รันจริง (ไม่ตรวจคุณภาพโมเดล) | `src/mask_metrics.py`, `src/interrater.py`, `src/annotation_tool.py` | mask_metrics mIoU/Dice ถูก; interrater ICC≈0.99 / Cohen kappa 0.667; annotation_tool GET / 200, /img 200, /save สร้าง PNG ✓ |
 | เช้า | อัปเดต `ANNOTATE_WORKFLOW` STEP 1 ให้อ้าง seed notebook ใหม่ | `docs/ANNOTATE_WORKFLOW.md` | ยืนยันข้อความชี้ไป notebook ✓ |
 | เช้า | **แก้บั๊ก cell 4 ของ seed notebook** — เดิมหาไฟล์แค่ `WORK/images/*.jpg` แต่ zip เก็บภาพที่ root (ไม่ใช่ `images/`) → AssertionError บน Colab; แก้เป็น **find_jpg() recursive** (หาได้ทั้งโฟลเดอร์/zip โครงสร้างไหนก็ได้) + flat-copy | `notebooks/sam3/colab_seed_annotate_30.ipynb` | ยืนยัน cell 4 ครบ 50 บรรทัด, มี find_jpg, JSON เปิดได้ ✓ |
+| เช้า | **แก้บั๊ก `cmd_generate_pseudo`** — `load_images()` คืน dict `{name: PIL.Image}` แต่โค้ดเดิม slice list (`images[:limit]`) + `Image.open(path)` → `KeyError: slice` บน Colab; แก้เป็น `items=list(imgs.items())`, iterate `(name,pil)`, ใช้ PIL ตรง ๆ + แก้ `len(images)`→`len(items)` | `src/train_unet_distill.py` | py_compile ผ่าน; slice/list dict ถูกต้อง ✓ |
 ## 2026-08-07 — วันนี้
 
 | เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |

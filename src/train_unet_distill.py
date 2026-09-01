@@ -169,15 +169,15 @@ def cmd_generate_pseudo(args):
     model = Sam3Model.from_pretrained("facebook/sam3").to(device)
     processor = Sam3Processor.from_pretrained("facebook/sam3")
 
-    images = load_images(args.data)
+    imgs = load_images(args.data)  # dict {name: PIL.Image}
+    items = list(imgs.items())
     if args.limit:
-        images = images[:args.limit]
-    print(f"[INFO] สร้าง pseudo masks {len(images)} ภาพ (prompt plant+leaf union)")
+        items = items[:args.limit]
+    print(f"[INFO] สร้าง pseudo masks {len(items)} ภาพ (prompt plant+leaf union)")
 
     plant_prompts = [p for p in PROMPTS if p in ("plant", "leaf")]
-    for i, path in enumerate(images, 1):
-        name = os.path.splitext(os.path.basename(path))[0]
-        pil = Image.open(path).convert("RGB")
+    for i, (name, pil) in enumerate(items, 1):
+        pil = pil.convert("RGB")
         union = np.zeros((pil.size[1], pil.size[0]), dtype=bool)
         for p in plant_prompts:
             masks, _ = segment_prompt(model, processor, device, pil, p)
@@ -186,7 +186,7 @@ def cmd_generate_pseudo(args):
         cv2.imwrite(os.path.join(mask_dir, name + ".png"),
                     (union * 255).astype(np.uint8))
         if i % 20 == 0:
-            print(f"  ... {i}/{len(images)}")
+            print(f"  ... {i}/{len(items)}")
     print(f"[OK] pseudo masks → {mask_dir}")
 
 
