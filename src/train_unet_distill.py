@@ -177,13 +177,14 @@ def cmd_generate_pseudo(args):
 
     plant_prompts = [p for p in PROMPTS if p in ("plant", "leaf")]
     for i, (name, pil) in enumerate(items, 1):
+        stem = os.path.splitext(name)[0]
         pil = pil.convert("RGB")
         union = np.zeros((pil.size[1], pil.size[0]), dtype=bool)
         for p in plant_prompts:
             masks, _ = segment_prompt(model, processor, device, pil, p)
             if masks is not None and len(masks) > 0:
                 union |= masks.any(axis=0)
-        cv2.imwrite(os.path.join(mask_dir, name + ".png"),
+        cv2.imwrite(os.path.join(mask_dir, stem + ".png"),
                     (union * 255).astype(np.uint8))
         if i % 20 == 0:
             print(f"  ... {i}/{len(items)}")
