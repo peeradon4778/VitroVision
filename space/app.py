@@ -245,7 +245,16 @@ def build_ui():
     return demo
 
 
+# expose demo at module level so HF Gradio Spaces auto-detect it
+try:
+    demo = build_ui()
+except Exception as e:  # noqa: BLE001
+    print("[warn] gradio UI not built:", e)
+    demo = None
+
 if __name__ == "__main__":
     print("[INFO]", MODEL_NOTE)
-    demo = build_ui()
-    demo.launch()
+    if demo is not None:
+        demo.launch()
+    else:
+        print("gradio not ready - run 'python space/app.py' after 'pip install gradio'")
