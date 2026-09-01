@@ -190,6 +190,21 @@ def main():
             set_para(p, after=80, ind_left=720)
             i += 1
             continue
+        # รูปภาพ (flowchart)
+        m = re.match(r'^!\[[^\]]*\]\(([^)]+)\)\s*$', line)
+        if m:
+            rel = m.group(1).replace('\\', '/')
+            img = (HERE.parent / rel) if not rel.startswith(('/', 'C:')) else pathlib.Path(rel)
+            if img.exists():
+                p = doc.add_paragraph()
+                p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                r = p.add_run()
+                r.add_picture(str(img), width=Cm(16))
+                set_para(p, before=120, after=120)
+            else:
+                print(f'[warn] ไม่พบรูป {img}')
+            i += 1
+            continue
         # เนื้อหาว่าง
         if not line.strip():
             i += 1
