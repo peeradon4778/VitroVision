@@ -23,15 +23,15 @@ tissue-culture bottle and estimate its acclimatization readiness — **non-destr
 
 ## 🧠 Model
 - **Our model:** **U-Net + MobileNetV3-Small** (~3.6M params) — replaces SAM3 at the segmentation
-  step of the pipeline. Pretrained on `Project-AgML/greenhouse_leafy_segmentation`, then fine-tuned
-  on our 100 tissue-culture bottle images (teacher = classical-green masks). Weights are pulled
-  from the HF model repo `peeradon4778/vitrovision-unet-small`.
+  step of the pipeline. Trained on `Project-AgML/greenhouse_leafy_segmentation` (public greenhouse
+  dataset, 1200 image/mask pairs). Weights are pulled from the HF model repo
+  `peeradon4778/vitrovision-unet-small`.
 - **Fallback:** while the trained model is not available, the app uses a **classical-green**
   segmentation so the demo is fully usable.
 
 ## ⚠️ Honesty / limits
-- The model is fine-tuned with a **classical-green teacher** (not SAM3, not human ground-truth yet)
-  → reported mIoU/Dice are vs the teacher; it is a **prototype**, not yet a "production" grader.
+- Trained on a **public greenhouse dataset** (human-annotated masks; not SAM3-pseudo, not our 100-bottle
+  labels) → the 100-bottle set is used for **test/eval only**; it is a **prototype**, not yet a "production" grader.
 - Displayed values use the **whole frame as ROI** (no separate bottle ROI) → **demo-scale numbers**,
   not yet calibrated to the 100-bottle validation set.
 - Data: 1 species (bird's-eye chili / *Capsicum*) × 100 images → cross-species generalisation

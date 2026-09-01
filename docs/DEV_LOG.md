@@ -4,6 +4,16 @@
 > รูปแบบ: `yyyy-mm-dd | หมวด | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ`
 
 
+## 2026-09-01 — อัปโหลดโมเดลขึ้น HF + แก้ความสอดคล้อง (space)
+
+| เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |
+|---|---|---|---|
+| ค่ำ | อัปโหลดโมเดล U-Net (best val_dice 0.9817) ขึ้น HF `peeradon4778/vitrovision-unet-small` — package `pytorch_model.bin` (state_dict) + `config.json` + model card | `data/work/hf_upload/` (gitignored) | HTTP 200 ทั้ง 3 ไฟล์; params 3,585,649 ✓ |
+| ค่ำ | แก้ `space/README.md` ให้ตรงจริง — โมเดลเทรนบน greenhouse dataset สาธารณะ (ไม่ใช่ fine-tune 100 ขวด / classical-green teacher); 100 ขวด = test/eval only | `space/README.md` | ข้อความ Model + Honesty ตรงแล้ว ✓ |
+| ค่ำ | อัปเดต `space/app.py` default `READY_HEIGHT` 0.275 → 0.20 (ตรงกับที่ tuning บนชุดประเมิน) | `space/app.py` | py_compile ผ่าน ✓ |
+| ค่ำ | Token ใช้แบบชั่วคราว ไม่ commit ลง repo; model repo สร้างผ่าน UI (token fine-grained สร้าง repo ใหม่ไม่ได้) | (token ไม่ได้เขียนลงไฟล์) | push สำเร็จ ✓ |
+
+**หมายเหตุ:** token fine-grained เขียนได้เฉพาะ repo ที่มีอยู่ → ต้องสร้าง model repo ผ่าน UI ก่อน แล้ว upload. หลังนี้ Space `vitrovision` จะโหลด U-Net ตัวจริงแทน fallback อัตโนมัติ.
 ## 2026-09-01 — เทรน U-Net greenhouse (resume ต่อ) + ประเมิน 100 ขวด + optimize threshold READY_HEIGHT
 
 | เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |

@@ -26,7 +26,7 @@ import torch.nn as nn
 MODEL_REPO = os.environ.get("VV_MODEL_REPO", "peeradon4778/vitrovision-unet-small")
 ENCODER = os.environ.get("VV_ENCODER", "timm-mobilenetv3_small_100")  # MobileNetV3-Small (timm)
 IMG_SIZE = int(os.environ.get("VV_IMG_SIZE", "256"))
-READY_HEIGHT = float(os.environ.get("VV_READY_HEIGHT", "0.275"))
+READY_HEIGHT = float(os.environ.get("VV_READY_HEIGHT", "0.20"))
 BASE_CONFIDENCE = float(os.environ.get("VV_BASE_CONFIDENCE", "0.80"))
 _LOWER_GREEN = np.array([35, 40, 40], dtype=np.int32)
 _UPPER_GREEN = np.array([85, 255, 255], dtype=np.int32)
