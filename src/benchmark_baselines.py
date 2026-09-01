@@ -65,6 +65,9 @@ def load_gt_mask(gt_dir, image_path):
 
 def compute_metrics(pred, gt):
     """IoU, Dice, precision, recall, F1 ที่ระดับพิกเซล (pred/gt เป็น bool mask)"""
+    # รองรับทั้ง bool (0/1) และ uint8 (0/255) — ป้องกัน dice เพี้ยนจาก .sum() ที่นับค่า 255
+    pred = np.asarray(pred, dtype=bool)
+    gt = np.asarray(gt, dtype=bool)
     inter = float(np.logical_and(pred, gt).sum())
     union = float(np.logical_or(pred, gt).sum())
     iou = inter / union if union > 0 else float("nan")

@@ -16,7 +16,11 @@ python src/prepare_annotation.py --gt data/processed/ground_truth.csv \
 - ผมรันไว้ให้แล้ว → อยู่ใน `data/work/annotate/` แล้ว
 
 ## 📤 ขั้น 1 — สร้าง seed จาก SAM3 (ทางเลือก แต่**แนะนำ** — ช่วยประหยัดแรงมาก)
-บน **Colab GPU** (ต้อง token ที่เข้าถึง `facebook/sam3`):
+
+> **ใช้ `notebooks/sam3/colab_seed_annotate_30.ipynb`** (Colab GPU + token) — รันครบในไฟล์เดียว
+> อัปโหลด `VitroVision_colab/seed_images/` (30 ภาพ) + `sam3_growth_pipeline.py` + `train_unet_distill.py` ขึ้น Drive แล้วรันตาม notebook
+
+เทียบเท่าคำสั่ง (ถ้าทำเอง):
 ```bash
 # อัปโหลด data/work/annotate/images ไป Colab (หรือใช้ repo)
 python src/train_unet_distill.py generate-pseudo \

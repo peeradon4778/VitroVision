@@ -3,6 +3,16 @@
 > หลักฐานกระบวนการทำงาน — เขียนทุกครั้งที่แก้โค้ด **ก่อน** commit
 > รูปแบบ: `yyyy-mm-dd | หมวด | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ`
 
+
+## 2026-09-01 — เตรียม Level-A pipeline (seed Colab + แก้ dice bug + verify tools)
+
+| เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |
+|---|---|---|---|
+| เช้า | ตรวจ `data/work/annotate/images/` — พบ**มี 50 ภาพ** (ไฟล์ค้างจากรันเก่า) ไม่ตรง `annotate_list.csv` (30) → ล้างให้เหลือ**เฉพาะ 30 ภาพ**ใน manifest (กัน seed/annotation ผิดภาพ) | `data/work/annotate/images/` | ยืนยัน: เหลือ 30 ภาพ, match `annotate_list` ครบ ✓ |
+| เช้า | **แก้บั๊ก dice** ใน `compute_metrics` — รับ uint8 0/255 แล้ว `pred.sum()/gt.sum()` นับค่า 255 ทำให้ dice เพี้ยน (identical ได้ 0.0039) → cast bool ในฟังก์ชัน ป้องกันทุก caller | `src/benchmark_baselines.py` | เทสต์: identical→IoU 1.0/Dice 1.0, partial→IoU 0.25/Dice 0.4 (ตรง F1) ✓ |
+| เช้า | สร้าง Colab notebook สร้าง seed SAM3 สำหรับ 30 ภาพ (8 cells) — รันบน Colab GPU → pseudo masks | `notebooks/sam3/colab_seed_annotate_30.ipynb` | JSON เปิดได้ (nbformat 4, 8 cells) ✓ |
+| เช้า | ตรวจ pipeline บน CPU: `mask_metrics` / `interrater` / `annotation_tool` รันจริง (ไม่ตรวจคุณภาพโมเดล) | `src/mask_metrics.py`, `src/interrater.py`, `src/annotation_tool.py` | mask_metrics mIoU/Dice ถูก; interrater ICC≈0.99 / Cohen kappa 0.667; annotation_tool GET / 200, /img 200, /save สร้าง PNG ✓ |
+| เช้า | อัปเดต `ANNOTATE_WORKFLOW` STEP 1 ให้อ้าง seed notebook ใหม่ | `docs/ANNOTATE_WORKFLOW.md` | ยืนยันข้อความชี้ไป notebook ✓ |
 ## 2026-08-07 — วันนี้
 
 | เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |
@@ -224,6 +234,7 @@
 | เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |
 |---|---|---|---|
 | เย็น | เปลี่ยนชื่อโครงงานเป็นแบบใหม่ตามที่ยืนยัน: TH = **VitroVision : การประยุกต์ใช้ปัญญาประดิษฐ์เชิงคอมพิวเตอร์วิทัศน์เพื่อวิเคราะห์และทำนายการเจริญของพืชเพาะเลี้ยงเนื้อเยื่อ** · EN = **VitroVision : Application of AI-Based Computer Vision for Analyzing and Predicting the Growth of Tissue Cultured Plants** — แก้ชื่อในทุกจุดที่ใช้เป็นชื่อผลงาน (เดิม: "ระบบคัดกรองความพร้อมอนุบาล...SAM3") | `docs/proposal_th_draft.md`, `docs/PROJECT_FULL_REPORT.md`, `docs/report_th_v1.md`, `docs/YSC_FORMS_CHECKLIST.md`, `research/_orchestration.md` | git grep ยืนยันชื่อเก่า (คัดกรองความพร้อมอนุบาลของพืช / SAM3-Powered Zero-Shot Vision System...) หายหมด เหลือเฉพาะคำบรรยายระบบในเนื้อเรื่อง (ไม่ใช่ชื่อผลงาน) ✓ |
+| เย็น | **ปรับชื่อ TH เพิ่มเติมตามเจ้าของ:** "การเจริญ" → **"การเจริญเติบโต"** (EN คง **AI-Based**, แก้ตัวพิมพ์ `Al`→`AI`) — อัปเดตทุกจุดที่ใช้ชื่อผลงาน | `docs/abstract_sims_final.md`, `docs/abstract_sims_final.txt`, `docs/proposal_th_draft.md`, `docs/report_th_v1.md`, `docs/PROJECT_FULL_REPORT.md`, `research/_orchestration.md`, `docs/YSC_SUBMISSION_TICKETS.md` | grep ยืนยันไม่มีชื่อเก่า "วิเคราะห์และทำนายการเจริญของ" เหลือในไฟล์ผลงาน (คงเหลือเฉพาะ DEV_LOG บันทึกเดิม) ✓ |
 
 ---
 
