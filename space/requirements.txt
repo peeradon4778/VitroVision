@@ -5,3 +5,5 @@ numpy
 opencv-python
 pillow
 huggingface_hub
+segmentation-models-pytorch>=0.4
+timm

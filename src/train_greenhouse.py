@@ -103,7 +103,7 @@ def main():
     model = smp.Unet(encoder_name="timm-mobilenetv3_small_100", encoder_weights="imagenet",
                      in_channels=3, classes=1)
     opt = torch.optim.Adam(model.parameters(), lr=args.lr)
-    bce = nn.BCELoss()
+    bce = nn.BCEWithLogitsLoss()
 
     start_epoch, best = 0, 0.0
     ckpt_path = os.path.join(args.out, "ckpt.pt")
@@ -124,7 +124,7 @@ def main():
         t0 = time.time()
         for img, mask in train_loader:
             pred = model(img)
-            loss = bce(pred, mask) + dice_loss(pred, mask)
+            loss = bce(pred, mask) + dice_loss(torch.sigmoid(pred), mask)
             opt.zero_grad()
             loss.backward()
             opt.step()
@@ -133,7 +133,7 @@ def main():
         vd = 0.0
         with torch.no_grad():
             for img, mask in val_loader:
-                p = model(img) > 0.5
+                p = torch.sigmoid(model(img)) > 0.5
                 inter = (p & mask.bool()).sum().item()
                 vd += (2 * inter / (p.sum().item() + mask.sum().item() + 1e-6)) * len(img)
         vd /= len(val_ds)
@@ -166,7 +166,7 @@ def main():
                 x = cv2.resize(img, (args.img_size, args.img_size))
                 x = cv2.cvtColor(x, cv2.COLOR_BGR2RGB).astype(np.float32) / 255.0
                 t = torch.from_numpy(x.transpose(2, 0, 1)).float().unsqueeze(0)
-                p = model(t)[0, 0].numpy()
+                p = torch.sigmoid(model(t))[0, 0].numpy()
                 m = cv2.resize((p > 0.5).astype(np.uint8) * 255, (W, H),
                                interpolation=cv2.INTER_NEAREST)
                 cv2.imwrite(os.path.join(outdir, _stem(ip) + ".png"), m)

@@ -22,8 +22,9 @@ import cv2
 import torch
 import torch.nn as nn
 
-# ---------------------------------------------------------------- model config (architecture copied from train_unet_distill.py)
+# ---------------------------------------------------------------- model config (U-Net + MobileNetV3-Small — แทน SAM3 ในจุด segmentation)
 MODEL_REPO = os.environ.get("VV_MODEL_REPO", "peeradon4778/vitrovision-unet-small")
+ENCODER = os.environ.get("VV_ENCODER", "timm-mobilenetv3_small_100")  # MobileNetV3-Small (timm)
 IMG_SIZE = int(os.environ.get("VV_IMG_SIZE", "256"))
 READY_HEIGHT = float(os.environ.get("VV_READY_HEIGHT", "0.275"))
 BASE_CONFIDENCE = float(os.environ.get("VV_BASE_CONFIDENCE", "0.80"))
@@ -31,47 +32,18 @@ _LOWER_GREEN = np.array([35, 40, 40], dtype=np.int32)
 _UPPER_GREEN = np.array([85, 255, 255], dtype=np.int32)
 
 
-class DoubleConv(nn.Module):
-    def __init__(self, cin, cout):
-        super().__init__()
-        self.block = nn.Sequential(
-            nn.Conv2d(cin, cout, 3, padding=1), nn.BatchNorm2d(cout), nn.ReLU(inplace=True),
-            nn.Conv2d(cout, cout, 3, padding=1), nn.BatchNorm2d(cout), nn.ReLU(inplace=True))
+def build_unet(encoder=ENCODER):
+    """สร้าง U-Net + MobileNetV3-Small (segmentation_models_pytorch) — ~3.6M params"""
+    import segmentation_models_pytorch as smp
+    m = smp.Unet(encoder_name=encoder, encoder_weights=None, in_channels=3, classes=1)
+    return m
 
-    def forward(self, x):
-        return self.block(x)
-
-
-class UNetSmall(nn.Module):
-    """Small U-Net: channels [16,32,64,128,256] ~2M params"""
-    def __init__(self, in_ch=3, out_ch=1, base=16):
-        super().__init__()
-        c = [base * (2 ** i) for i in range(5)]
-        self.enc = nn.ModuleList([DoubleConv(in_ch, c[0])] +
-                                 [DoubleConv(c[i], c[i + 1]) for i in range(4)])
-        self.pool = nn.MaxPool2d(2)
-        self.up = nn.ModuleList([nn.ConvTranspose2d(c[i + 1], c[i], 2, stride=2) for i in range(4)])
-        self.dec = nn.ModuleList([DoubleConv(c[i] * 2, c[i]) for i in range(4)])
-        self.head = nn.Conv2d(c[0], out_ch, 1)
-
-    def forward(self, x):
-        skips = []
-        for i, block in enumerate(self.enc):
-            x = block(x)
-            if i < 4:
-                skips.append(x)
-                x = self.pool(x)
-        for i in range(4):
-            x = self.up[3 - i](x)
-            x = torch.cat([x, skips[3 - i]], dim=1)
-            x = self.dec[3 - i](x)
-        return torch.sigmoid(self.head(x))
 
 
 # ---------------------------------------------------------------- model loading
 def _try_load_state(path):
     sd = torch.load(path, map_location="cpu")
-    m = UNetSmall()
+    m = build_unet()
     m.load_state_dict(sd)
     m.eval()
     return m
@@ -79,7 +51,7 @@ def _try_load_state(path):
 
 def load_model():
     """Try to load the real model: local .pt -> HF repo. On failure return (None, reason)."""
-    for p in ("./vitrovision_unet.pt", "./unet_model.pt", "./pytorch_model.bin"):
+    for p in ("./vitrovision_unet_small.pt", "./vitrovision_unet.pt", "./pytorch_model.bin"):
         if os.path.exists(p):
             try:
                 return _try_load_state(p), f"Model: local file {p}"
@@ -89,11 +61,10 @@ def load_model():
     try:
         from huggingface_hub import hf_hub_download
         bpath = hf_hub_download(repo_id=MODEL_REPO, filename="pytorch_model.bin")
-        return _try_load_state(bpath), f"Model: HF '{MODEL_REPO}' (distilled from SAM3)"
+        return _try_load_state(bpath), f"Model: HF '{MODEL_REPO}' (U-Net + MobileNetV3-Small, แทน SAM3)"
     except Exception as e:  # noqa: BLE001
         print(f"[warn] no model from HF ({MODEL_REPO}): {e}")
         return None, "Model not found - using temporary classical-green segmentation (train + push the model to go live)"
-
 MODEL, MODEL_NOTE = load_model()
 
 
@@ -116,11 +87,11 @@ def segment_and_analyze(rgb, model=None):
         inp = cv2.resize(rgb, (IMG_SIZE, IMG_SIZE)).astype(np.float32) / 255.0
         x = torch.from_numpy(inp.transpose(2, 0, 1)).float().unsqueeze(0)  # 1,3,S,S
         with torch.no_grad():
-            prob = model(x)[0, 0].numpy()  # S,S
+            prob = torch.sigmoid(model(x))[0, 0].numpy()  # S,S (logits -> prob)
         mask_small = prob > 0.5
         mask = cv2.resize(mask_small.astype(np.uint8) * 255, (W, H),
                           interpolation=cv2.INTER_NEAREST) > 0
-        seg_method = "U-Net (distilled from SAM3)"
+        seg_method = "U-Net + MobileNetV3-Small (แทน SAM3)"
     else:
         # fallback: direct green (classical) - so the Space works while the model is pending
         hsv = cv2.cvtColor(rgb, cv2.COLOR_RGB2HSV)
