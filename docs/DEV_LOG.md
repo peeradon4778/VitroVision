@@ -4,6 +4,21 @@
 > รูปแบบ: `yyyy-mm-dd | หมวด | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ`
 
 
+## 2026-09-01 — เทรน U-Net greenhouse (resume ต่อ) + ประเมิน 100 ขวด + optimize threshold READY_HEIGHT
+
+| เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |
+|---|---|---|---|
+| เย็น | รันเทรน `train_greenhouse.py` ต่อจาก checkpoint (resume epoch 11→15, ~270-280s/epoch, CPU) | `data/work/greenhouse_ds/ckpt.pt` (epoch 15), `final_model.pt`, `best_model.pt` | epoch 12-15 loss 0.0366-0.0442, val_dice 0.977-0.981 (plateau ~0.98); ครบ 15 ✅ |
+| เย็น | **แก้ UnicodeEncodeError ภาษาไทย** — รันเทรน/print ไทยบน Windows ตอน stdout redirect ไฟล์ใช้ cp1252 → crash ที่ `[resume] ต่อจาก epoch...` (charmap can't encode) → รันด้วย `PYTHONUTF8=1 PYTHONIOENCODING=utf-8` | (env var ตอนรัน) | เทรนต่อได้ไม่มี crash; บรรทัดไทย+· แสดงถูกต้อง ✅ |
+| เย็น | ประเมินผลชุดทดสอบ 100 ภาพขวด (ไม่ใช่เทรน) → `test_100.csv` + `pred_100/` (100 masks) | `data/work/greenhouse_ds/test_100.csv`, `data/work/greenhouse_ds/pred_100/` | n=98 (มี expert). coverage_ratio mean 0.0104 (1%), height_proxy mean 0.270, width_proxy 0.276 |
+| เย็น | เทียบ verdict กับ expert ground-truth (98 ภาพ) ด้วย threshold ปัจจุบัน `READY_HEIGHT=0.275` | `src/train_greenhouse.py`, `data/processed/ground_truth.csv` | acc 0.612, sens(พร้อม) 0.583, spec 0.658 — under-predict "พร้อม" (pred 48 vs expert 60) |
+| เย็น | **Optimize threshold** — สแกน height_proxy 0.12–0.55 จาก 98 ภาพ (in-sample) | (analysis) | best-by-acc & best-by-F1 = **0.14**: acc 0.684, sens 0.817, spec 0.474, prec 0.710, F1 0.760 · Youden-balanced = **0.20**: sens 0.717, spec 0.579, J 0.296 |
+| เย็น | ทดสอบ multi-trait (height+width+coverage) logistic — ตรวจว่า 2D projected traits แยก verdict ได้แค่ไหน | (analysis) | in-sample AUC 0.639, ไม่ดีกว่า single proxy → หนุนสมมติฐาน research (2D area proxy จำกัด → 3D) |
+
+**ข้อสรุป:**
+- โมเดล segment **ดีมาก (val_dice 0.98)** แต่ trait ที่ดึงจาก mask (height/width/coverage) แยก verdict "พร้อมอนุบาล" ได้**ปานกลาง** — single proxy acc สูงสุด ~0.68 (threshold 0.14)
+- **ตัดสินใจแล้ว: เปลี่ยน `READY_HEIGHT = 0.20` ลงในโค้ด** (Youden-balanced: sens 0.717 / spec 0.579 / acc 0.653) — เลือกสมดุลมากกว่า 0.14 (acc 0.684 แต่ spec 0.474) · เกณฑ์ 0.275 เดิม acc 0.612/sens 0.583 เก็บไว้เป็นตัวอ้างอิง
+- **ข้อมูล 98 ภาพ = ตัวอย่างน้อย, ผล threshold เป็น preliminary (เสี่ยง overfit)** — ควรใช้เป็นแรงจูงใจในข้อเสนอ ไม่ใช่ข้อสรุปสุดท้าย
 ## 2026-09-01 — เตรียม Level-A pipeline (seed Colab + แก้ dice bug + verify tools)
 
 | เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |

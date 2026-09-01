@@ -24,7 +24,7 @@ from torch.utils.data import DataLoader, Dataset
 
 import segmentation_models_pytorch as smp
 
-READY_HEIGHT = 0.275  # เกณฑ์พร้อมอนุบาล (จากผล validate H2 ของโปรเจกต์)
+READY_HEIGHT = 0.20  # เกณฑ์พร้อมอนุบาล (tuned บนชุดประเมิน 98 ภาพ — Youden-balanced 0.717 sens / 0.579 spec)
 
 
 def _stem(p):
