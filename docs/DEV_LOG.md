@@ -21,6 +21,9 @@
 | บ่าย | **ตรวจ+รีวิว `train`/`eval`** ใน `train_unet_distill.py` — split 85/15, BCE+dice, save best, eval mIoU/Dice, hf-push + model card ✓ ไม่พบบั๊กแบบ generate-pseudo | `src/train_unet_distill.py` | อ่าน+คอมเมนต์ครบ, compile ผ่าน ✓ |
 | บ่าย | สร้าง **Colab distill notebook** (11 cells) — ครบ 4 เฟส (generate-pseudo→train→eval→hf-push) + robust หาภาพ/โหลด token + download ผล | `notebooks/sam3/colab_distill_unet.ipynb` | JSON เปิดได้ (11 cells) ✓ |
 | บ่าย | เตรียมไฟล์ **Gradio Space** (deploy HF) — `app.py`(webcam scan, UI อังกฤษ) + `requirements.txt` + `README.md`(Space card + honesty) | `space/app.py`, `space/requirements.txt`, `space/README.md` | smoke-test core: fallback classical-green + random UNetSmall ได้ overlay/metrics ✓ |
+| บ่าย | **แก้ `space/app.py` expose `demo` ที่ module level** — HF Gradio Space ต้องหา `demo` ได้ (เดิมอยู่ใต้ if __main__) + try/except กัน import ไม่พัง | `space/app.py` | py_compileผ่าน; smoke-test fallback+model path ผ่าน ✓
+| บ่าย | **Rebuild ข้อเสนอ DOCX 3 ตัว** จาก md ใหม่ (ชื่อ 'การเจริญเติบโต') — `proposal_th_draft.docx`/`report_th_v1.docx`/`ysc_proposal_filled.docx` | `docs/*.docx`, `docs/*.md` | ตรวจชื่อใหม่ปรากฏในทุกตัว; 'การเจริญของ' ที่เหลือเป็นภาษาธรรมชาติ (ไม่ใช่ชื่อเก่า) ✓
+| บ่าย | สร้าง `docs/HF_SPACE_RUNBOOK.md` — รวบรวม runbook Colab+Space+ข้อเสนอ (step ที่ผู้ใช้ต้องรัน/เติม) | `docs/HF_SPACE_RUNBOOK.md` | ครบ STEP A–D ✓ |
 ## 2026-08-07 — วันนี้
 
 | เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |

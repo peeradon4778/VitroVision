@@ -6,7 +6,7 @@
 ---
 
 ## 🔒 ตรึงแล้ว (อย่าถกซ้ำ)
-- ชื่อ TH: **VitroVision : การประยุกต์ใช้ปัญญาประดิษฐ์เชิงคอมพิวเตอร์วิทัศน์เพื่อวิเคราะห์และทำนายการเจริญของพืชเพาะเลี้ยงเนื้อเยื่อ** (เปลี่ยนจาก "ตัดย้าย" ตาม grill v3 29/07/2026)
+- ชื่อ TH: **VitroVision : การประยุกต์ใช้ปัญญาประดิษฐ์เชิงคอมพิวเตอร์วิทัศน์เพื่อวิเคราะห์และทำนายการเจริญเติบโตของพืชเพาะเลี้ยงเนื้อเยื่อ** (เปลี่ยนจาก "ตัดย้าย" ตาม grill v3 29/07/2026; ปรับเป็น "การเจริญเติบโต" 27/08)
 - ชื่อ EN: **VitroVision : Application of AI-Based Computer Vision for Analyzing and Predicting the Growth of Tissue Cultured Plants**
 - RQ: snapshot เดียว → triage กลุ่ม (ยังไม่พร้อม / พร้อมอนุบาล / ตรวจเอง) แบบ zero-shot ข้ามชนิดพืช (decision-support เท่านั้น) — ระบบราก (root) เป็นตัวชี้วัดอันดับ 1 ของความพร้อมอนุบาล
 - Engineering goal: Native Android app ถ่าย 1 รูป → mask + trait metrics + triage 3-class + confidence + manual override
