@@ -49,14 +49,15 @@ def para(text, align="j", bold=False, first=0.508, indL=0.0, after=0):
     elif align == "r":
         p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
     else:
-        p.alignment = WD_ALIGN_PARAGRAPH.THAI_JUSTIFY
+        p.alignment = WD_ALIGN_PARAGRAPH.LEFT
     pf = p.paragraph_format
     if first:
         pf.first_line_indent = Cm(first)
     if indL:
         pf.left_indent = Cm(indL)
     if after:
-        pf.space_after = Pt(after)
+        pf.space_after = Pt(after if after else 4)
+    pf.line_spacing = 1.15
     if text:
         r = p.add_run(text)
         set_font(r, bold=bold)
@@ -71,7 +72,7 @@ def image(path, width=15.6):
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     r = p.add_run()
-    r.add_picture(path, width=Cm(width))
+    r.add_picture(path, width=Cm(13.2))
     return p
 
 
@@ -115,7 +116,7 @@ def box_table(lines):
     for text, bold, center in lines:
         p = cell.paragraphs[0] if first else cell.add_paragraph()
         first = False
-        p.alignment = WD_ALIGN_PARAGRAPH.CENTER if center else WD_ALIGN_PARAGRAPH.THAI_JUSTIFY
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER if center else WD_ALIGN_PARAGRAPH.LEFT
         if text:
             r = p.add_run(text)
             set_font(r, bold=bold)
@@ -320,9 +321,11 @@ def _frun(text=None):
 
 r1 = _frun(); f1 = OxmlElement("w:fldChar"); f1.set(qn("w:fldCharType"), "begin"); r1.append(f1)
 r2 = _frun(); it = OxmlElement("w:instrText"); it.set(qn("xml:space"), "preserve"); it.text = " PAGE "; r2.append(it)
-r3 = _frun(); f2 = OxmlElement("w:fldChar"); f2.set(qn("w:fldCharType"), "end"); r3.append(f2)
+r3 = _frun(); f3 = OxmlElement("w:fldChar"); f3.set(qn("w:fldCharType"), "separate"); r3.append(f3)
 r4 = _frun("1")
-fp._p.append(r1); fp._p.append(r2); fp._p.append(r3); fp._p.append(r4)
+r5 = _frun(); f5 = OxmlElement("w:fldChar"); f5.set(qn("w:fldCharType"), "end"); r5.append(f5)
+for rr in (r1, r2, r3, r4, r5):
+    fp._p.append(rr)
 
 doc.save(OUT)
 print("[OK] saved:", OUT)
