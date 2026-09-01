@@ -13,6 +13,7 @@
 | เช้า | สร้าง Colab notebook สร้าง seed SAM3 สำหรับ 30 ภาพ (8 cells) — รันบน Colab GPU → pseudo masks | `notebooks/sam3/colab_seed_annotate_30.ipynb` | JSON เปิดได้ (nbformat 4, 8 cells) ✓ |
 | เช้า | ตรวจ pipeline บน CPU: `mask_metrics` / `interrater` / `annotation_tool` รันจริง (ไม่ตรวจคุณภาพโมเดล) | `src/mask_metrics.py`, `src/interrater.py`, `src/annotation_tool.py` | mask_metrics mIoU/Dice ถูก; interrater ICC≈0.99 / Cohen kappa 0.667; annotation_tool GET / 200, /img 200, /save สร้าง PNG ✓ |
 | เช้า | อัปเดต `ANNOTATE_WORKFLOW` STEP 1 ให้อ้าง seed notebook ใหม่ | `docs/ANNOTATE_WORKFLOW.md` | ยืนยันข้อความชี้ไป notebook ✓ |
+| เช้า | **แก้บั๊ก cell 4 ของ seed notebook** — เดิมหาไฟล์แค่ `WORK/images/*.jpg` แต่ zip เก็บภาพที่ root (ไม่ใช่ `images/`) → AssertionError บน Colab; แก้เป็น **find_jpg() recursive** (หาได้ทั้งโฟลเดอร์/zip โครงสร้างไหนก็ได้) + flat-copy | `notebooks/sam3/colab_seed_annotate_30.ipynb` | ยืนยัน cell 4 ครบ 50 บรรทัด, มี find_jpg, JSON เปิดได้ ✓ |
 ## 2026-08-07 — วันนี้
 
 | เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |
