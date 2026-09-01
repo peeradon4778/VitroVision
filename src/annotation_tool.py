@@ -19,6 +19,7 @@ import base64
 import glob
 import io
 import os
+import sys
 
 import cv2
 import numpy as np
@@ -313,6 +314,11 @@ init();
 
 # ---------------------------------------------------------------- main
 def main():
+    # กัน print ภาษาไทย crash บน console Windows (cp1252)
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
     ap = argparse.ArgumentParser(description="Annotation tool (ground-truth masks)")
     ap.add_argument("--data", required=True, help="โฟลเดอร์ภาพ")
     ap.add_argument("--seed", default=None, help="โฟลเดอร์ seed masks จาก SAM3 (optional)")
@@ -332,6 +338,7 @@ def main():
     ctx["seed"] = os.path.abspath(args.seed) if args.seed else ""
     ctx["out"] = os.path.abspath(args.out)
     ctx["images"] = images
+    ctx["total"] = len(images)
     ctx["has_seed"] = bool(args.seed and os.path.isdir(args.seed))
 
     print(f"[INFO] ภาพ {len(images)} · seed={'มี' if ctx['has_seed'] else 'ไม่มี'} "
