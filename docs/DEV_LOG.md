@@ -18,6 +18,9 @@
 | เช้า | **แก้ชื่อไฟล์ mask เป็น stem.png** — เดิม `name` = dict key (`008.jpg`) → บันทึก `008.jpg.png` ไม่ตรง `annotation_tool` ที่ค้นหา `008.png`; แก้เป็น `stem=os.path.splitext(name)[0]` | `src/train_unet_distill.py` | compile ผ่าน; ชื่อ=`stem.png` ✓ |
 | เช้า | **แก้บั๊ก `annotation_tool`** — `main()` ไม่ตั้ง `ctx[\"total\"]` ทำให้ `/stats`,`/save` คืน 500 (บันทึก mask ไม่ได้) → เพิ่ม `ctx[\"total\"]=len(images)` + `sys.stdout.reconfigure(utf-8)` กัน print ไทย crash บน cp1252 + import sys | `src/annotation_tool.py` | เปิด server ได้ (ภาพ 30 seed=มี); `/stats` 200 total 30, `/save` 200, `/seed/007.jpg` 200 ✓ |
 | เช้า | **แก้บั๊ก drawing layer** — canvas `stroke` (ชั้นระบาย) ไม่ถูก resize เท่าภาพ (ยัง default 300×150) → วาดแล้วโดน clip/หาย → `ทำอะไรกับภาพไม่ได้`; แก้เป็นตั้ง `stroke.width/height=W,H` ใน `resizeCanvas` | `src/annotation_tool.py` | compile ผ่าน; server ขึ้น, `/stats` 200, `/` 200 ✓ |
+| บ่าย | **ตรวจ+รีวิว `train`/`eval`** ใน `train_unet_distill.py` — split 85/15, BCE+dice, save best, eval mIoU/Dice, hf-push + model card ✓ ไม่พบบั๊กแบบ generate-pseudo | `src/train_unet_distill.py` | อ่าน+คอมเมนต์ครบ, compile ผ่าน ✓ |
+| บ่าย | สร้าง **Colab distill notebook** (11 cells) — ครบ 4 เฟส (generate-pseudo→train→eval→hf-push) + robust หาภาพ/โหลด token + download ผล | `notebooks/sam3/colab_distill_unet.ipynb` | JSON เปิดได้ (11 cells) ✓ |
+| บ่าย | เตรียมไฟล์ **Gradio Space** (deploy HF) — `app.py`(webcam scan, UI อังกฤษ) + `requirements.txt` + `README.md`(Space card + honesty) | `space/app.py`, `space/requirements.txt`, `space/README.md` | smoke-test core: fallback classical-green + random UNetSmall ได้ overlay/metrics ✓ |
 ## 2026-08-07 — วันนี้
 
 | เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |

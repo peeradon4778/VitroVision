@@ -1,0 +1,7 @@
+gradio>=4.44.0
+torch>=2.1
+torchvision
+numpy
+opencv-python
+pillow
+huggingface_hub
