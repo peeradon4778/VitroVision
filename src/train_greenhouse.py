@@ -100,7 +100,7 @@ def main():
 
     # ---- โมเดล + resume ----
     os.makedirs(args.out, exist_ok=True)
-    model = smp.Unet(encoder_name="mobilenet_v3_small", encoder_weights="imagenet",
+    model = smp.Unet(encoder_name="timm-mobilenetv3_small_100", encoder_weights="imagenet",
                      in_channels=3, classes=1)
     opt = torch.optim.Adam(model.parameters(), lr=args.lr)
     bce = nn.BCELoss()

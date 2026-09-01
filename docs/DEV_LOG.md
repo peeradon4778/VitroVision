@@ -26,6 +26,7 @@
 | บ่าย | สร้าง `docs/HF_SPACE_RUNBOOK.md` — รวบรวม runbook Colab+Space+ข้อเสนอ (step ที่ผู้ใช้ต้องรัน/เติม) | `docs/HF_SPACE_RUNBOOK.md` | ครบ STEP A–D ✓ |
 | บ่าย | สร้าง `docs/SECTION14_AND_FORMS.md` — template ส่วน 14 (ประวัติ+ที่ปรึกษา) + ตาราง forms (6/3/1A/1B/CoC/PDPA/2A/2C) + ขั้นตอน SIMS + check list ส่ง | `docs/SECTION14_AND_FORMS.md` | ครบ; ชี้ช่องให้ผู้ใช้เติม (ข้อมูลจริง) ✓ |
 | เย็น | เขียน `src/train_greenhouse.py` — เทรน U-Net (MobileNetV3-Small, smp) บน greenhouse dataset แบบ **checkpoint/resume ต่อเนื่อง** + เทสต์บน 100 ภาพขวดในตัว (test_100.csv + pred_100 + เทียบ verdict กับ expert) | `src/train_greenhouse.py` | py_compile ผ่าน ✓ |
+| เย็น | **แก้ encoder name** — smp 0.5.0 ไม่มี `mobilenet_v3_small` (KeyError) → เปลี่ยนเป็น `timm-mobilenetv3_small_100` (ทดสอบแล้ว: instantiate ผ่าน, 3.59M params, imagenet weights) | `src/train_greenhouse.py` | py_compile ผ่าน; smp.Unet(...) สร้างได้จริง ✓ |
 ## 2026-08-07 — วันนี้
 
 | เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |
