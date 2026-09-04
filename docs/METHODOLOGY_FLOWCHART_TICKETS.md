@@ -1,49 +1,54 @@
-# 🔖 Ticket: สร้างภาพประกอบ Flowchart 3 ภาพ (ระเบียบวิธี/สถาปัตยกรรม)
+# 🔖 Ticket: สร้างภาพประกอบ 6 ภาพ (ภาพเยอะแทน text)
 
-> สร้าง 2026-09 · ใช้ควบคู่ `docs/proposal_ysc.md` (มาตรา 5) และ `docs/_make_flowcharts.py`
+> สร้าง 2026-09 · ใช้คู่ `docs/proposal_ysc.md` + `docs/FIGS_MASTER_PLAN.md`
 > เครื่องมือวาด: **Draw.io** (user) · แก้ไข script + commit/push (pi)
-> **ลำดับ:** ทำทั้ง 3 ภาพ → อัปเดต link ใน `proposal_ysc.md` → **commit + push** → ค่อยทำงานอื่นต่อ
+> เป้าหมาย: งาน Tech → **ภาพเยอะ** ลด text · **ทำครบ 6 ภาพ → อัปเดต link → commit + push → ค่อยไปงานถัด**
 
 ---
 
-## ⏱ ขั้นตอนที่ต้องทำ (สั่งได้ทีเดียว)
+## 🖼 STEP 1 — วาดภาพทั้ง 6 (ตาม FIGS_MASTER_PLAN.md)
 
-### [ ] STEP 1 — ตรวจภาพเดิมใน repo (ฐานอ้างอิง)
-- [ ] เปิด `docs/assets/flow_overview.png`, `flow_pipeline.png`, `flow_validation.png` (เดิมมีอยู่) เพื่อดูโครงสร้างที่เคยวาด
-- [ ] เปิด `docs/_make_flowcharts.py` (script เดิมที่ generate flowchart) เผื่อดัดแปลง/นำโครงสร้างมาใช้
-- [ ] ตัดสินใจ: วาดใหม่บน Draw.io หรือ adapt จากเดิม
+### [ ] F1 `fig_system_overview.png` — ภาพรวมระบบ (มาตรา 5.1)
+- ถ่ายภาพขวด → ROI → Segment (U-Net) → feature 6 กลุ่ม → verdict
+- แทรก error path: ภาพไม่ชัด (glare/ฝ้า) → ส่งมนุษย์ตรวจ
 
-### [ ] STEP 2 — วาดภาพที่ 1: ภาพรวมระบบ (System Overview)
-- [ ] Nodes: ถ่ายภาพขวด → ตรวจจับ ROI ขวด → แบ่งส่วนต้น (U-Net) → คำนวณ feature (6 กลุ่ม) → ตัดสินใจ verdict
-- [ ] แทรกกล่อง "ภาพไม่ชัด → ส่งมนุษย์ตรวจ" (อยู่ตรงขั้นประเมิน)
-- [ ] ระบุสถาปัตยกรรม: U-Net + MobileNetV3-Small (~3.6M params, val_dice ≈ 0.98)
+### [ ] F2 `fig_unet_architecture.png` — สถาปัตยกรรม U-Net (มาตรา 5.3) ← ใหม่
+- Encoder: MobileNetV3-Small (ImageNet weights) [B1–B4]
+- Decoder: U-Net [Up1–Up4]
+- **Skip connections (เส้นประ)** จาก encoder แต่ละ level → decoder
+- Output: 1×1 conv + sigmoid → binary mask 256×256
+- ระบุ: ~3.6M params · val_dice ≈ 0.98 · กลั่นจาก SAM3
 
-### [ ] STEP 3 — วาดภาพที่ 2: สถาปัตยกรรม U-Net (Architecture) ← ใหม่
-- [ ] **Encoder:** MobileNetV3-Small (ImageNet weights) — stem → B1 → B2 → B3 → B4 (แยก downsample)
-- [ ] **Decoder:** U-Net decoder — Up1→Up2→Up3→Up4
-- [ ] **Skip connections:** วาดเป็นเส้นประจาก encoder แต่ละ level → decoder (concat)
-- [ ] **Output:** 1×1 conv + sigmoid → binary mask 256×256
-- [ ] ระบุ: กลั่นจาก SAM3 (teacher), params ~3.6M
+### [ ] F3 `fig_data_pipeline.png` — ข้อมูล & การฝึก (มาตรา 5.2–5.3) ← ใหม่
+- greenhouse 1,200 → split 85/15 → train/aug + val
+- SAM3 teacher → pseudo-labels → ฝึก U-Net
+- test ขวดจริง 98 ภาพ (unseen)
 
-### [ ] STEP 4 — วาดภาพที่ 3: ขั้นตอนการตรวจสอบความถูกต้อง (Validation)
-- [ ] ระดับพิกเซล (mIoU/Dice/F1) vs วิธีพื้นฐาน (SAM2, YOLO-seg, classical)
-- [ ] ระดับภาพ (confusion matrix, acc/prec/sens/spec/F1/MCC/kappa) vs ผู้เชี่ยวชาญ
-- [ ] inter-rater (ICC / Cohen's kappa)
-- [ ] cross-species
+### [ ] F4 `fig_validation_levels.png` — ระดับการตรวจสอบ (มาตรา 5.5)
+- pixel (mIoU/Dice/F1/P/R) · ค่าวัด (r/MAE/RMSE) · verdict (acc/sens/spec/MCC/kappa) · inter-rater (ICC/kappa)
 
-### [ ] STEP 5 — บันทึก + อัปเดต link ในเอกสาร
-- [ ] บันทึกเป็น `docs/assets/*.png` (คงชื่อเดิม `flow_overview`, `flow_pipeline`, `flow_validation` หรือตั้งใหม่ชัดเจน)
-- [ ] ตรวจว่า `proposal_ysc.md` อ้าง path รูปถูกต้อง (`docs/assets/...`)
-- [ ] ตรวจขนาด/คุณภาพรูป (DPI พอ พื้นหลังขาว)
+### [ ] F5 `fig_verdict_threshold.png` — เกณฑ์ verdict (มาตรา 6) ← ใหม่
+- สแกน 0.12–0.55 → Youden = 0.20 → acc 0.653/sens 0.717/spec 0.579
+- multi-trait AUC 0.639 (ไม่ดีกว่า single → หนุน 3D)
 
-### [ ] STEP 6 — COMMIT + PUSH
-- [ ] `git add` ภาพใหม่ + ไฟล์ docs ที่แก้
-- [ ] `git commit -m "docs: เพิ่ม flowchart สถาปัตยกรรม U-Net + อัปเดตภาพระเบียบวิธี"`
-- [ ] `git push` (ใช้ token) → **เสร็จแล้วค่อยไปทำงานอื่นทีเดียว**
+### [ ] F6 `fig_results.png` — ผล (มาตรา 6)
+- bar: mIoU/Dice เทียบวิธีพื้นฐาน · scatter: height vs expert · error/box
+
+---
+
+## 🖥 STEP 2 — บันทึก + อัปเดต link
+- [ ] บันทึกเป็น `docs/assets/*.png` (ใช้ชื่อตาม FIGS_MASTER_PLAN)
+- [ ] ตรวจ `proposal_ysc.md` อ้าง path ถูกต้องทุกภาพ (`docs/assets/...`)
+- [ ] ตรวจขนาด/DPI/พื้นหลังขาว · label อังกฤษ
+
+## 📤 STEP 3 — COMMIT + PUSH
+- [ ] `git add` ภาพ 6 ไฟล์ + `proposal_ysc.md` + `.md` ที่แก้
+- [ ] `git commit -m "docs: เพิ่ม flowchart 6 ภาพ + อัปเดตข้อเสนอ (ภาพเยอะแทน text)"`
+- [ ] `git push` (ใช้ token) → **เสร็จแล้วค่อยไปงานถัดไปทีเดียว**
 
 ---
 
 ## 📌 หมายเหตุ
-- **รูปแบบ flow** ยึดโครงจาก `proposal_ysc.md` มาตรา 5 เท่านั้น อย่าใส่รายละเอียดโค้ด/epoch (ข้อเสนอ ≠ รายงาน)
-- ใช้ 3 รูปให้ครบตามที่ข้อเสนออ้าง (โปรเจกต์ปัจจุบันมี flowchart 3 ตัว: overview / pipeline / validation → เพิ่ม architecture เป็นตัวแยก)
-- ไม่ commit โมเดล/ไฟล์ใหญ่/data/secret ลง repo
+- ยึดโครง `proposal_ysc.md` มาตรา 5–6 เท่านั้น อย่าใส่รายละเอียดโค้ด/epoch (ข้อเสนอ ≠ รายงาน)
+- 1 ภาพ = 1 message · ภาพก่อน text · ใช้ตารางแทนย่อหน้า
+- ไม่ commit โมเดล/ไฟล์ใหญ่/data/secret
