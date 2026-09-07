@@ -10,6 +10,14 @@
 
 ---
 
+## 2026-09-01 — ลบ docs/deliverables/ysc_proposal_filled.pdf (คง .docx ไว้)
+
+| เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |
+|---|---|---|---|
+| กลางคืน | ลบ `docs/deliverables/ysc_proposal_filled.pdf` ตามสั่ง (คง `.docx` ไว้เป็น source) — ลบทั้ง local + GitHub | `docs/deliverables/ysc_proposal_filled.pdf` | `git rm` สำเร็จ; ไม่มี reference `.pdf` ใน repo ✓ |
+
+---
+
 ## 2026-09-01 — จัดระเบียบ research/ เหลือ 2 ไฟล์ (ความรู้ + Literature)
 
 | เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |
