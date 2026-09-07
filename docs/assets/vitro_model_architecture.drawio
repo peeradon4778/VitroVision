@@ -1,0 +1,125 @@
+<mxfile host="app.diagrams.net" modified="2026-09-07T23:42:00.000Z" agent="pi" version="24.0.0" type="device">
+  <diagram name="Model Architecture" id="model-architecture">
+    <mxGraphModel dx="1400" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- Title -->
+        <mxCell id="title" value="สถาปัตยกรรมแบบจำลอง — กลั่น SAM3 (teacher) → U-Net (student)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=20;fontStyle=1;fontColor=#1565C0;" vertex="1" parent="1">
+          <mxGeometry x="300" y="20" width="800" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="sub" value="Distillation: SAM3 (Promptable Concept Segmentation) → small U-Net (MobileNetV3-Small encoder, ~3.6M params, CPU-runnable)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=12;fontStyle=2;fontColor=#616161;" vertex="1" parent="1">
+          <mxGeometry x="250" y="60" width="900" height="24" as="geometry"/>
+        </mxCell>
+
+        <!-- Teacher column -->
+        <mxCell id="tHdr" value="TEACHER (บน GPU)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontStyle=1;fontSize=14;fontColor=#1565C0;" vertex="1" parent="1">
+          <mxGeometry x="80" y="120" width="560" height="40" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="tIn" value="ภาพขวด (input)\nRGB 512×512 (original)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="120" y="190" width="220" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="tIn2" value="+ text prompt\n(plant · leaf · shoot · stem · root)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="360" y="190" width="240" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="tEnc" value="SAM3 Encoder\n(ViT-H image encoder · 0.9B)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="120" y="290" width="340" height="56" as="geometry"/>
+        </mxCell>
+        <mxCell id="tPromptEnc" value="Prompt Encoder\n(ข้อความ → embedding)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="480" y="290" width="180" height="56" as="geometry"/>
+        </mxCell>
+        <mxCell id="tMaskDec" value="Mask Decoder\n(concept-aware, หลาย instance)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="120" y="386" width="340" height="56" as="geometry"/>
+        </mxCell>
+        <mxCell id="tOut" value="&#8594; binary masks ต่อ prompt + confidence + bbox\n&#8594; นับใบแบบ merged, ROI ขวด, feature 6 กลุ่ม" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontSize=12;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="80" y="470" width="560" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- pseudo-labels bridge -->
+        <mxCell id="pseudo" value="&#8594; pseudo-labels (mask ฝึก)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF8E1;strokeColor=#F9A825;fontSize=13;fontStyle=1;fontColor=#8D6E63;" vertex="1" parent="1">
+          <mxGeometry x="250" y="560" width="240" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- Student column -->
+        <mxCell id="sHdr" value="STUDENT — U-Net (บน CPU)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E7D32;fontStyle=1;fontSize=14;fontColor=#2E7D32;" vertex="1" parent="1">
+          <mxGeometry x="760" y="120" width="560" height="40" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="sIn" value="ภาพขวด (input)\nRGB 256×256 (resize)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E7D32;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="800" y="190" width="220" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="sEnc" value="Encoder — MobileNetV3-Small\n(timm-mobilenetv3_small_100, ImageNet weights)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E7D32;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="800" y="290" width="420" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="sBridge" value="Bridge / bottleneck\n(จุดเชื่อม encoder→decoder)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E7D32;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="800" y="386" width="420" height="56" as="geometry"/>
+        </mxCell>
+        <mxCell id="sDec" value="Decoder — U-Net (skip connections)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E7D32;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="800" y="470" width="420" height="56" as="geometry"/>
+        </mxCell>
+        <mxCell id="sHead" value="Head — 1×1 conv + sigmoid\n&#8594; binary mask (1 channel)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E7D32;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="800" y="556" width="420" height="56" as="geometry"/>
+        </mxCell>
+        <mxCell id="sOut" value="&#8594; mask 256×256 &#8594; resize กลับต้นฉบับ\n&#8594; feature 6 กลุ่ม + verdict (rule-based)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E7D32;fontSize=12;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="760" y="640" width="560" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- training params -->
+        <mxCell id="trainHdr" value="พารามิเตอร์การฝึก (Distillation)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECEFF1;strokeColor=#455A64;fontStyle=1;fontSize=13;fontColor=#455A64;" vertex="1" parent="1">
+          <mxGeometry x="80" y="760" width="1400" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="p1" value="Loss: BCE + Dice" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECEFF1;strokeColor=#455A64;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="806" width="200" height="46" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2" value="Input: 256×256 · batch 4" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECEFF1;strokeColor=#455A64;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="300" y="806" width="200" height="46" as="geometry"/>
+        </mxCell>
+        <mxCell id="p3" value="lr: 1e-3" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECEFF1;strokeColor=#455A64;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="520" y="806" width="200" height="46" as="geometry"/>
+        </mxCell>
+        <mxCell id="p4" value="Epochs: 15 (resume)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECEFF1;strokeColor=#455A64;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="740" y="806" width="200" height="46" as="geometry"/>
+        </mxCell>
+        <mxCell id="p5" value="Split: 1,080 / 120" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECEFF1;strokeColor=#455A64;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="960" y="806" width="200" height="46" as="geometry"/>
+        </mxCell>
+        <mxCell id="p6" value="val_dice (best): 0.9817" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#2E7D32;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1180" y="806" width="220" height="46" as="geometry"/>
+        </mxCell>
+        <mxCell id="p7" value="loss: 0.037–0.044" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECEFF1;strokeColor=#455A64;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="862" width="200" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="p8" value="Params: ~3.6M" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECEFF1;strokeColor=#455A64;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="300" y="862" width="200" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="p9" value="Model: final_model.pt (14.5MB)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECEFF1;strokeColor=#455A64;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="520" y="862" width="240" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="p10" value="HF: peeradon4778/vitrovision-unet-small" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#2E7D32;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="780" y="862" width="340" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="p11" value="เกณฑ์ ready (Youden): height_proxy ≥ 0.20" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#2E7D32;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1140" y="862" width="340" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- arrows: teacher chain -->
+        <mxCell id="t1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#1565C0;" edge="1" parent="1" source="tIn" target="tEnc"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="t2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#1565C0;" edge="1" parent="1" source="tIn2" target="tPromptEnc"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="t3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#1565C0;" edge="1" parent="1" source="tEnc" target="tMaskDec"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="t4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#1565C0;" edge="1" parent="1" source="tPromptEnc" target="tMaskDec"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="t5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#1565C0;" edge="1" parent="1" source="tMaskDec" target="tOut"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <!-- bridge -->
+        <mxCell id="pbridge" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;strokeColor=#F9A825;strokeWidth=2;dashed=1;" edge="1" parent="1" source="tOut" target="pseudo"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="pbridge2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;strokeColor=#F9A825;strokeWidth=2;dashed=1;" edge="1" parent="1" source="pseudo" target="sHdr"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <!-- student chain -->
+        <mxCell id="s1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#2E7D32;" edge="1" parent="1" source="sIn" target="sEnc"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="s2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#2E7D32;" edge="1" parent="1" source="sEnc" target="sBridge"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="s3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#2E7D32;" edge="1" parent="1" source="sBridge" target="sDec"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="s4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#2E7D32;" edge="1" parent="1" source="sDec" target="sHead"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="s5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#2E7D32;" edge="1" parent="1" source="sHead" target="sOut"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

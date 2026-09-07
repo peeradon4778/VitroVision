@@ -1,0 +1,141 @@
+<mxfile host="app.diagrams.net" modified="2026-09-07T23:40:00.000Z" agent="pi" version="24.0.0" type="device">
+  <diagram name="Methodology Overview" id="methodology-overview">
+    <mxGraphModel dx="1400" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- Title -->
+        <mxCell id="title" value="ระเบียบวิธีการทดลอง (Methodology Overview) — VitroVision" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=22;fontStyle=1;fontColor=#1B5E20;" vertex="1" parent="1">
+          <mxGeometry x="450" y="20" width="700" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="subtitle" value="Non-destructive growth analysis of in vitro plants through sealed glass jars" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=13;fontStyle=2;fontColor=#616161;" vertex="1" parent="1">
+          <mxGeometry x="450" y="60" width="700" height="24" as="geometry"/>
+        </mxCell>
+
+        <!-- STAGE 1: Capture -->
+        <mxCell id="s1" value="STEP 1 — การเก็บข้อมูล (Data Collection)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#E65100;fontStyle=1;fontSize=14;fontColor=#E65100;" vertex="1" parent="1">
+          <mxGeometry x="100" y="120" width="1400" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="s1a" value="ถ่ายภาพขวดเพาะเลี้ยงเนื้อเยื่อ\n(สมาร์ตโฟน + ขาตั้ง · ระยะคงที่ 20–30 ซม.)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#E65100;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="120" y="170" width="300" height="56" as="geometry"/>
+        </mxCell>
+        <mxCell id="s1b" value="จัดแสงด้านข้าง ~45° หลีกเลี่ยงแสงตรง\n(ลด glare บนผิวแก้ว)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#E65100;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="440" y="170" width="300" height="56" as="geometry"/>
+        </mxCell>
+        <mxCell id="s1c" value="ถ่ายซ้ำ 2–3 ครั้ง/ขวด\n(กันภาพเบลอ/สะท้อน)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#E65100;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="760" y="170" width="300" height="56" as="geometry"/>
+        </mxCell>
+        <mxCell id="s1d" value="บันทึก metadata: วันที่ · days_since_last_subculture · ชนิดพืช · ground truth ผู้เชี่ยวชาญ" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#E65100;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1080" y="170" width="400" height="56" as="geometry"/>
+        </mxCell>
+        <mxCell id="s1e" value="ชุดข้อมูล: 1,200 ภาพ greenhouse (train 1,080 / val 120) + 100 ขวดจริง (98 expert)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#E65100;fontSize=12;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="120" y="240" width="1360" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- STAGE 2: Segmentation -->
+        <mxCell id="s2" value="STEP 2 — การแบ่งส่วนภาพ (Segmentation)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontStyle=1;fontSize=14;fontColor=#1565C0;" vertex="1" parent="1">
+          <mxGeometry x="100" y="320" width="1400" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="s2a" value="ตรวจจับขอบเขตขวด\n(Bottle ROI detection)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="120" y="370" width="320" height="48" as="geometry"/>
+        </mxCell>
+        <mxCell id="s2b" value="SAM3 PCS (teacher)\nfacebook/sam3 · GPU headless batch\nพรอมป์ 5 คำ: plant · leaf · shoot · stem · root" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="460" y="370" width="420" height="72" as="geometry"/>
+        </mxCell>
+        <mxCell id="s2c" value="สร้าง pseudo-labels\n(ใช้เป็น ground truth ในการฝึก)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="900" y="370" width="320" height="48" as="geometry"/>
+        </mxCell>
+        <mxCell id="s2d" value="กลั่นเป็น U-Net ขนาดเล็ก\n(MobileNetV3-Small · ~3.6M params · ทำงานบน CPU)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1240" y="370" width="260" height="72" as="geometry"/>
+        </mxCell>
+        <mxCell id="s2e" value="ผลการฝึก: loss 0.037–0.044 · val_dice สูงสุด 0.9817 · 15 epochs · ภาพ 256×256" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontSize=12;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="120" y="456" width="1380" height="32" as="geometry"/>
+        </mxCell>
+
+        <!-- STAGE 3: Feature -->
+        <mxCell id="s3" value="STEP 3 — การคำนวณ Feature เชิงปริมาณ" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E7D32;fontStyle=1;fontSize=14;fontColor=#2E7D32;" vertex="1" parent="1">
+          <mxGeometry x="100" y="520" width="1400" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="s3a" value="โครงสร้าง\ncoverage_ratio · height_proxy · width_proxy · hull_ratio" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E7D32;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="120" y="570" width="260" height="56" as="geometry"/>
+        </mxCell>
+        <mxCell id="s3b" value="อวัยวะ\nleaf_count · shoot_count · root_count · mean_leaf_area" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E7D32;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="400" y="570" width="260" height="56" as="geometry"/>
+        </mxCell>
+        <mxCell id="s3c" value="ความซับซ้อน\ncompactness · perimeter_ratio" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E7D32;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="680" y="570" width="260" height="56" as="geometry"/>
+        </mxCell>
+        <mxCell id="s3d" value="สี\ngreen_pct · greenness · yellow_ratio · brown_ratio" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E7D32;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="960" y="570" width="260" height="56" as="geometry"/>
+        </mxCell>
+        <mxCell id="s3e" value="คุณภาพภาพ\nglare_score · condensation_score" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E7D32;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1240" y="570" width="260" height="56" as="geometry"/>
+        </mxCell>
+
+        <!-- STAGE 4: Decision -->
+        <mxCell id="s4" value="STEP 4 — การตัดสินใจ / จัดกลุ่มความพร้อม (Rule-based)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#1B5E20;fontStyle=1;fontSize=14;fontColor=#1B5E20;" vertex="1" parent="1">
+          <mxGeometry x="100" y="670" width="1400" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="s4dec" value="ความสูงของต้น (height_proxy)" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFF8E1;strokeColor=#F9A825;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="620" y="720" width="360" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="s4yes" value="height_proxy ≥ เกณฑ์" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=12;fontColor=#2E7D32;" vertex="1" parent="1">
+          <mxGeometry x="1000" y="742" width="140" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="s4no" value="height_proxy &lt; เกณฑ์" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=12;fontColor=#B71C1C;" vertex="1" parent="1">
+          <mxGeometry x="260" y="742" width="160" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="s4ready" value="พร้อมอนุบาล\n(Ready for acclimatization)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#A5D6A7;strokeColor=#2E7D32;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1130" y="716" width="260" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="s4not" value="ยังไม่พร้อม\n(Not ready)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFCDD2;strokeColor=#B71C1C;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="120" y="716" width="260" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="s4check" value="ภาพไม่ชัด (glare &gt; 40 หรือ condensation &gt; 40 หรือไม่พบขวด)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#E65100;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="620" y="840" width="360" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="s4checkout" value="→ ส่งผู้เชี่ยวชาญตรวจ (ตรวจเอง) — ไม่ตัดสินใจอัตโนมัติ" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#E65100;fontSize=12;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="1000" y="840" width="400" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- STAGE 5: Output -->
+        <mxCell id="s5" value="STEP 5 — ผลลัพธ์ (Output)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECEFF1;strokeColor=#455A64;fontStyle=1;fontSize=14;fontColor=#455A64;" vertex="1" parent="1">
+          <mxGeometry x="100" y="930" width="1400" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="s5a" value="plant_growth_summary.csv / .xlsx\n(feature หลายมิติทุกภาพ)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECEFF1;strokeColor=#455A64;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="120" y="980" width="420" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="s5b" value="verdict + confidence per bottle\n(พร้อมอนุบาล / ยังไม่พร้อม / ตรวจเอง)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECEFF1;strokeColor=#455A64;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="560" y="980" width="440" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="s5c" value="แผนภาพ/สรุป + ภาพ mask ที่บันทึก\n(ต่อยอดใช้กับงานอัตโนมัติ)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECEFF1;strokeColor=#455A64;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="980" width="480" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- arrows: stage1 -->
+        <mxCell id="e1ab" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#E65100;" edge="1" parent="1" source="s1a" target="s1b"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e1bc" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#E65100;" edge="1" parent="1" source="s1b" target="s1c"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e1cd" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#E65100;" edge="1" parent="1" source="s1c" target="s1d"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <!-- stage1 -> stage2 -->
+        <mxCell id="e1s2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#455A64;strokeWidth=2;" edge="1" parent="1" source="s1e" target="s2"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <!-- stage2 chain -->
+        <mxCell id="e2ab" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#1565C0;" edge="1" parent="1" source="s2a" target="s2b"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e2bc" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#1565C0;" edge="1" parent="1" source="s2b" target="s2c"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e2cd" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#1565C0;" edge="1" parent="1" source="s2c" target="s2d"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <!-- stage2 -> stage3 -->
+        <mxCell id="e2s3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#455A64;strokeWidth=2;" edge="1" parent="1" source="s2e" target="s3"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <!-- stage3 -> stage4 -->
+        <mxCell id="e3s4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#455A64;strokeWidth=2;" edge="1" parent="1" source="s3" target="s4"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <!-- stage4 decision -->
+        <mxCell id="e4in" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#1B5E20;" edge="1" parent="1" source="s4" target="s4dec"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e4yes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#2E7D32;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="s4dec" target="s4ready"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e4no" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#B71C1C;exitX=0;exitY=0.5;entryX=1;entryY=0.5;" edge="1" parent="1" source="s4dec" target="s4not"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e4check" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#E65100;" edge="1" parent="1" source="s4dec" target="s4check"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e4checkout" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#E65100;" edge="1" parent="1" source="s4check" target="s4checkout"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <!-- stage4 -> stage5 -->
+        <mxCell id="e4s5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#455A64;strokeWidth=2;" edge="1" parent="1" source="s4" target="s5"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

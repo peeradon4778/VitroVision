@@ -6,6 +6,7 @@
 
 | เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |
 |---|---|---|---|
+| กลางคืน | สร้าง flowchart 3 ภาพ (Draw.io) + เอกสารข้อมูล methodology — (1) `vitro_methodology_overview.drawio` ภาพรวม 5 ขั้นตอนพร้อมค่าจริง (dice 0.98, 1200 ภาพ) (2) `vitro_model_architecture.drawio` สถาปัตยกรรม SAM3 teacher → U-Net student (3) `vitro_selection_flow.drawio` ระบบคัดเลือก: quality gate → height threshold → verdict + เอกสาร `METHODOLOGY_DATA.md` รวมตัวเลขจริงที่ใส่ข้อเสนอได้ (val_dice 0.9817, height r 0.638, acc/sens/SAM3 0.755/0.917, U-Net acc/sens/spec 0.653/0.717/0.579) | `docs/assets/vitro_*.drawio`, `docs/METHODOLOGY_DATA.md` | XML valid ทั้ง 3 ไฟล์ (xml.dom.minidom parse ผ่าน) ✓; ตัวเลขอ้างจาก data/processed/*.csv และ DEV_LOG จริง ✓ |
 | กลางคืน | ลบ `make_proposal_docx.py` (orphan — สร้าง `proposal_th_draft.docx` ที่ลบไปแล้ว; ไม่มี script/เอกสารอ้างยืนยัน) | `docs/scripts/make_proposal_docx.py` | `git rm` สำเร็จ ✓; เหลือ 6 scripts; ไม่มี reference ใช้งานเหลือ ✓ (มีแต่ DEV_LOG ประวัติ) |
 
 ---
