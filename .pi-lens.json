@@ -1,0 +1,29 @@
+{
+  "$schema": "https://raw.githubusercontent.com/apmantza/pi-lens/master/docs/schema/pi-lens-config-v1.json",
+  "ignore": [
+    "data/raw/**",
+    "data/processed/**",
+    "data/work/**",
+    "models/**",
+    "*.pt",
+    "*.pth",
+    "notebooks/**",
+    "*.ipynb",
+    ".ipynb_checkpoints/**",
+    ".venv/**",
+    "venv/**",
+    "__pycache__/**",
+    ".ruff_cache/**",
+    "wandb/**",
+    "runs/**",
+    "*.mp4",
+    "*.mov",
+    "*.ply",
+    "*.obj",
+    ".git/**"
+  ],
+  "maxProjectFiles": 3000,
+  "reviewGraph": {
+    "maxFiles": 1500
+  }
+}
