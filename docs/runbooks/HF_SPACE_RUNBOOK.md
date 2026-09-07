@@ -18,10 +18,12 @@
 ## 🟦 STEP A — รัน Colab เทรนโมเดล (ต้อง GPU + WRITE token)
 
 **เตรียมบน Google Drive** ให้ได้ `MyDrive/VitroVision_colab/`:
+
 - `batch_images/` — ภาพชุด 100 ขวด (`001.jpg`...`100.jpg`)
 - `sam3_growth_pipeline.py`, `train_unet_distill.py`
 
 **Colab:**
+
 1. Runtime → **GPU (T4)**
 2. Cell token → วาง **WRITE** token (`hf_...`)
 3. รันทุก cell ตามลำดับ → 4 เฟส:
@@ -67,6 +69,7 @@ _(ไม่บังคับก่อนส่งข้อเสนอ — ร�
 ---
 
 ## 🔐 หมายเหตุความปลอดภัย
+
 - อย่าแชร์ **write_token** (ถ้าปรากฏใน log ให้ถือว่าเสี่ยง → **สร้าง token ใหม่** แล้ววางใหม่)
 - โมเดลกลั่นจาก **facebook/sam3 (gated)** → model card ระบุที่มาไว้แล้ว
 

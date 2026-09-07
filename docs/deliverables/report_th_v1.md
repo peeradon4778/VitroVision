@@ -117,7 +117,7 @@
 ### 3.4 การคำนวณลักษณะเชิงปริมาณ (feature)
 
 | กลุ่ม | ตัวอย่างตัวแปร |
-|---|---|
+| --- | --- |
 | โครงสร้าง | พื้นที่ฉายภาพ (projected area), ความสูง/ความกว้างโดยประมาณ, coverage_ratio เทียบขวด |
 | อวัยวะ | จำนวน shoot, จำนวนใบ (นับแบบ merged ลดการแบ่งเกิน), จำนวน stem, จำนวน root |
 | ความซับซ้อน | hull_ratio (ความซับซ้อนของรูปร่าง) |
@@ -156,7 +156,7 @@
 รัน SAM3 บนภาพ 51 ขวด ได้ตารางสรุป 40 คอลัมน์ต่อภาพ ตรวจสอบความสมเหตุผลเชิงชีววิทยา:
 
 | การตรวจ | ผล | การตีความ |
-|---|---|---|
+| --- | --- | --- |
 | จำนวน shoot ↔ ความสูงของต้น | r = 0.853 | ต้นที่สูงกว่ามีจำนวนหน่อมากกว่า — สอดคล้องกับความคาดหมายทางชีววิทยา |
 | สัดส่วนสีเขียว ↔ สัดส่วนสีเหลือง | r = −0.597 | ต้นที่เขียวมากมีส่วนเหลืองน้อย — สอดคล้องกับสถานะสุขภาพต้น |
 
@@ -173,7 +173,7 @@
 **ผลการจัดกลุ่ม verdict (100 ขวด):**
 
 | Verdict | จำนวน | ร้อยละ |
-|---|---|---|
+| --- | --- | --- |
 | พร้อมอนุบาล | 75 | 75% |
 | ยังไม่พร้อม | 25 | 25% |
 
@@ -182,7 +182,7 @@
 **ค่าสหสัมพันธ์เพียร์สัน (sanity check):**
 
 | คู่ตัวแปร | r |
-|---|---|
+| --- | --- |
 | coverage ↔ projected area | 0.949 |
 | ใบ ↔ coverage | 0.852 |
 | สัดส่วนเขียว ↔ healthy_color | 0.910 |
@@ -192,7 +192,7 @@
 **ผลการตรวจสอบกับค่าอ้างอิงจากผู้ประเมิน (validation):** เปรียบเทียบ verdict ของระบบกับ `expert_verdict` ที่ผู้ประเมินให้ (เกณฑ์ "ต้นสมบูรณ์/โตพอ/พร้อมย้าย") ด้วยกฎ `height_proxy ≥ 0.275`:
 
 | เมตริก | ค่า |
-|---|---|
+| --- | --- |
 | Accuracy | 0.755 |
 | Sensitivity (ความไว-พร้อมอนุบาล) | **0.917** |
 | F1 | 0.821 |
@@ -205,7 +205,7 @@
 **การเปรียบเทียบกับวิธีพื้นฐาน (baseline) — ระดับค่าวัด (trait/measurement; `src/benchmark_traits.py`):** เปรียบเทียบ proxy ของ "ขนาดต้น" ที่แต่ละวิธีได้จาก segmentation กับค่าที่วัดมือ (`height_cm`, `area_cm2`) ด้วย Pearson r (scale-free — proxy เป็น px แต่เทียบกับ cm ได้โดยไม่ต้องสอบเทียบหน่วย ตัดปัญหาหน่วย):
 
 | วิธี | ความสูง (r เทียบมือ, n=100) | พื้นที่ (r เทียบมือ, n=80) | อัตราล้มเหลว (mask=0) | เวลาเฉลี่ย/ภาพ | ความสูง MAE/RMSE (cm, calibrated) |
-|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- |
 | **SAM3 PCS** | **0.638** | **0.398** | 0.01 | — | **1.15 / 1.41 cm** |
 | classical (HSV เขียว) | 0.498 | 0.261 | **0.23** | 0.27 s | 1.28 / 1.58 cm |
 | YOLO-seg (COCO pretrain) | 0.133 | 0.050 | 0.13 | 0.33 s | 1.50 / 1.81 cm |
@@ -252,40 +252,39 @@
 
 > เฉพาะงานที่ถูกอ้างในเนื้อหา ทุกตัวตรวจถึง paper จริงและ DOI/URL ที่เข้าถึงได้ ตามกฎ citation ของโครงงาน (งานอายุไม่เกิน 5 ปี)
 
-Bethge, H., Winkelmann, T., Lüdeke, P., & Rath, T. (2023). Low-cost and automated phenotyping system "Phenomenon" for multi-sensor in situ monitoring in plant in vitro culture. *Plant Methods, 19*, Article 42. https://doi.org/10.1186/s13007-023-01018-w
+Bethge, H., Winkelmann, T., Lüdeke, P., & Rath, T. (2023). Low-cost and automated phenotyping system "Phenomenon" for multi-sensor in situ monitoring in plant in vitro culture. *Plant Methods, 19*, Article 42. <https://doi.org/10.1186/s13007-023-01018-w>
 
-Carion, N., Gustafson, L., Hu, Y.-T., Debnath, S., Hu, R., Suris, D., Ryali, C., Alwade, K. V., Khedr, H., Huang, A., Lei, J., Ma, T., Guo, B., Kalla, A., Marks, M., Greer, J., Wang, M., Sun, P., Rädle, R., … Feichtenhofer, C. (2025). *SAM 3: Segment anything with concepts* (arXiv:2511.16719). arXiv. https://arxiv.org/abs/2511.16719
+Carion, N., Gustafson, L., Hu, Y.-T., Debnath, S., Hu, R., Suris, D., Ryali, C., Alwade, K. V., Khedr, H., Huang, A., Lei, J., Ma, T., Guo, B., Kalla, A., Marks, M., Greer, J., Wang, M., Sun, P., Rädle, R., … Feichtenhofer, C. (2025). *SAM 3: Segment anything with concepts* (arXiv:2511.16719). arXiv. <https://arxiv.org/abs/2511.16719>
 
-Bao, Q.-Z., Yang, Y.-X., Li, Q., & Yang, H.-C. (2025). Zero-shot instance segmentation for plant phenotyping in vertical farming with foundation models and VC-NMS. *Frontiers in Plant Science, 16*, Article 1536226. https://doi.org/10.3389/fpls.2025.1536226
+Bao, Q.-Z., Yang, Y.-X., Li, Q., & Yang, H.-C. (2025). Zero-shot instance segmentation for plant phenotyping in vertical farming with foundation models and VC-NMS. *Frontiers in Plant Science, 16*, Article 1536226. <https://doi.org/10.3389/fpls.2025.1536226>
 
-Diningrat, D. S., et al. (2024). Design of artificial intelligence for evaluation of in vitro potato (Solanum tuberosum) microtuber growth from tissue culture based on digital imagery. *Journal of Physics: Conference Series, 2908*, Article 012001. https://doi.org/10.1088/1742-6596/2908/1/012001
+Diningrat, D. S., et al. (2024). Design of artificial intelligence for evaluation of in vitro potato (Solanum tuberosum) microtuber growth from tissue culture based on digital imagery. *Journal of Physics: Conference Series, 2908*, Article 012001. <https://doi.org/10.1088/1742-6596/2908/1/012001>
 
-Dubois, R., Bousset, L., Jumel, S., Leclerc, M., Parisey, N., & Joly, A. (2026). *Text guidance is powerful but prompt-sensitive for weakly-supervised leaf symptom segmentation* (preprint). bioRxiv. https://doi.org/10.64898/2026.07.10.737680
+Dubois, R., Bousset, L., Jumel, S., Leclerc, M., Parisey, N., & Joly, A. (2026). *Text guidance is powerful but prompt-sensitive for weakly-supervised leaf symptom segmentation* (preprint). bioRxiv. <https://doi.org/10.64898/2026.07.10.737680>
 
-Abbey, A., & Meroz, Y. (2026). *Segment any plant (SAP): Foundation-model segmentation for plant time-series phenotyping* (preprint). bioRxiv. https://doi.org/10.64898/2026.03.11.711099
+Abbey, A., & Meroz, Y. (2026). *Segment any plant (SAP): Foundation-model segmentation for plant time-series phenotyping* (preprint). bioRxiv. <https://doi.org/10.64898/2026.03.11.711099>
 
-Hasnain, A., Naqvi, S. A. H., Ayesha, S. I., Khalid, F., Ellahi, M., Iqbal, S., Hassan, M. Z., Abbas, A., Adamski, R., Markowska, D., Baazeem, A., Mustafa, G., Moustafa, M., Hasan, M. E., & Abdelhamid, M. M. A. (2022). Plants in vitro propagation with its applications in food, pharmaceuticals and cosmetic industries; current scenario and future approaches. *Frontiers in Plant Science, 13*, Article 1009395. https://doi.org/10.3389/fpls.2022.1009395
+Hasnain, A., Naqvi, S. A. H., Ayesha, S. I., Khalid, F., Ellahi, M., Iqbal, S., Hassan, M. Z., Abbas, A., Adamski, R., Markowska, D., Baazeem, A., Mustafa, G., Moustafa, M., Hasan, M. E., & Abdelhamid, M. M. A. (2022). Plants in vitro propagation with its applications in food, pharmaceuticals and cosmetic industries; current scenario and future approaches. *Frontiers in Plant Science, 13*, Article 1009395. <https://doi.org/10.3389/fpls.2022.1009395>
 
-Murphy, K. M., & Adelberg, J. W. (2024). Image-based high-throughput phenotyping: A review of the state of the art and future directions for plant biology. *Annual Review of Plant Biology, 75*, 771–794. https://doi.org/10.1146/annurev-arplant-070523-042828
+Murphy, K. M., & Adelberg, J. W. (2024). Image-based high-throughput phenotyping: A review of the state of the art and future directions for plant biology. *Annual Review of Plant Biology, 75*, 771–794. <https://doi.org/10.1146/annurev-arplant-070523-042828>
 
-Nguyen, T. H., et al. (2025). High-throughput phenotyping for plant breeding: Advances and challenges. *Plants, 14*(6), Article 907. https://doi.org/10.3390/plants14060907
+Nguyen, T. H., et al. (2025). High-throughput phenotyping for plant breeding: Advances and challenges. *Plants, 14*(6), Article 907. <https://doi.org/10.3390/plants14060907>
 
-Orvati Nia, F., Peeples, J., Murray, S. C., McFarland, A., Vann, T., Salehi, S., Hardin, R., Baltensperger, D. D., Ibrahim, A. M. H., Thomasson, J. A., Fadamiro, H., Subramanian, N. K., Pillai, S. D., Roston, R., Ishimwe, J., Basak, D., Oladepo, N., & Vysyaraju, U. (2026). *A data-driven image extraction and analysis pipeline for plant phenotyping in controlled environments* (preprint). bioRxiv. https://doi.org/10.64898/2026.02.25.707797
+Orvati Nia, F., Peeples, J., Murray, S. C., McFarland, A., Vann, T., Salehi, S., Hardin, R., Baltensperger, D. D., Ibrahim, A. M. H., Thomasson, J. A., Fadamiro, H., Subramanian, N. K., Pillai, S. D., Roston, R., Ishimwe, J., Basak, D., Oladepo, N., & Vysyaraju, U. (2026). *A data-driven image extraction and analysis pipeline for plant phenotyping in controlled environments* (preprint). bioRxiv. <https://doi.org/10.64898/2026.02.25.707797>
 
-Peters, R., et al. (2023). A CNN-based approach for root segmentation comparable to human experts. *Scientific Reports, 13*, Article 28400. https://doi.org/10.1038/s41598-023-28400-x
+Peters, R., et al. (2023). A CNN-based approach for root segmentation comparable to human experts. *Scientific Reports, 13*, Article 28400. <https://doi.org/10.1038/s41598-023-28400-x>
 
-Regni, L., et al. (2025). Micropropagation of blackberry and blueberry: Assessing the effects of subculture duration and explant density through the integration of traditional measurements and smartphone 3D imaging. *Plant Cell, Tissue and Organ Culture*. https://doi.org/10.1007/s11240-025-03267-0 [OPEN — ตรวจชื่อผู้แต่งครบก่อนยื่น]
+Regni, L., et al. (2025). Micropropagation of blackberry and blueberry: Assessing the effects of subculture duration and explant density through the integration of traditional measurements and smartphone 3D imaging. *Plant Cell, Tissue and Organ Culture*. <https://doi.org/10.1007/s11240-025-03267-0> [OPEN — ตรวจชื่อผู้แต่งครบก่อนยื่น]
 
-Rippner, D. A., et al. (2022). Automatic root and soil segmentation from X-ray computed tomography using a fully convolutional network and Google Colab. *Frontiers in Plant Science, 13*, Article 893140. https://doi.org/10.3389/fpls.2022.893140
+Rippner, D. A., et al. (2022). Automatic root and soil segmentation from X-ray computed tomography using a fully convolutional network and Google Colab. *Frontiers in Plant Science, 13*, Article 893140. <https://doi.org/10.3389/fpls.2022.893140>
 
-von Chamier, L., Lahnemann, D., et al. (2021). Democratising deep learning for microscopy with ZeroCostDL4Mic. *Nature Communications, 12*, Article 2276. https://doi.org/10.1038/s41467-021-22518-0
+von Chamier, L., Lahnemann, D., et al. (2021). Democratising deep learning for microscopy with ZeroCostDL4Mic. *Nature Communications, 12*, Article 2276. <https://doi.org/10.1038/s41467-021-22518-0>
 
-Zhang, Y., et al. (2026). Observer bias in phenotypic assessment and the consistency of AI-based evaluation. *Scientific Data, 13*(1). https://doi.org/10.1038/s41597-026-06926-9
+Zhang, Y., et al. (2026). Observer bias in phenotypic assessment and the consistency of AI-based evaluation. *Scientific Data, 13*(1). <https://doi.org/10.1038/s41597-026-06926-9>
 
 ---
 
 > สถานะเอกสาร: v1 ร่างแรก — เนื้อหาส่วนผลการทดลองชุดใหม่รอข้อมูลจริง [OPEN] · การตรวจภาษา 3 รอบ (ตามคู่มือ ระยะที่ 4) ดำเนินการแล้ว 2026-08-25 (รอบที่ 1–3) · รูป/flowchart ยังไม่แทรก [ผู้จัดทำจัดทำภายหลัง]
-
 
 ---
 

@@ -17,7 +17,6 @@
 import argparse
 import base64
 import glob
-import io
 import os
 import sys
 
@@ -28,64 +27,65 @@ from flask import Flask, jsonify, render_template_string, request, send_from_dir
 app = Flask(__name__)
 ctx = {}
 
+
 # ---------------------------------------------------------------- helpers
 def binary_from_b64(b64img):
-    """ถอด base64 PNG data-url → binary mask (uint8 0/255) ตาม alpha>40"""
-    if b64img.startswith("data:"):
-        b64img = b64img.split(",", 1)[1]
-    raw = base64.b64decode(b64img)
-    arr = cv2.imdecode(np.frombuffer(raw, np.uint8), cv2.IMREAD_UNCHANGED)
-    if arr is None:
-        return None
-    if arr.ndim == 3:
-        alpha = arr[..., 3] if arr.shape[2] == 4 else arr[..., 0]
-    else:
-        alpha = arr
-    mask = (alpha > 40).astype(np.uint8) * 255
-    return mask
+  """ถอด base64 PNG data-url → binary mask (uint8 0/255) ตาม alpha>40"""
+  if b64img.startswith("data:"):
+    b64img = b64img.split(",", 1)[1]
+  raw = base64.b64decode(b64img)
+  arr = cv2.imdecode(np.frombuffer(raw, np.uint8), cv2.IMREAD_UNCHANGED)
+  if arr is None:
+    return None
+  if arr.ndim == 3:
+    alpha = arr[..., 3] if arr.shape[2] == 4 else arr[..., 0]
+  else:
+    alpha = arr
+  mask = (alpha > 40).astype(np.uint8) * 255
+  return mask
 
 
 # ---------------------------------------------------------------- routes
 @app.route("/")
 def index():
-    return render_template_string(HTML, images=ctx["images"],
-                                  has_seed=ctx["has_seed"],
-                                  total=len(ctx["images"]))
+  return render_template_string(
+    HTML, images=ctx["images"], has_seed=ctx["has_seed"], total=len(ctx["images"])
+  )
 
 
 @app.route("/img/<path:name>")
 def img(name):
-    return send_from_directory(ctx["data"], name)
+  return send_from_directory(ctx["data"], name)
 
 
 @app.route("/seed/<path:name>")
 def seed(name):
-    stem = os.path.splitext(name)[0] + ".png"
-    p = os.path.join(ctx["seed"], stem)
-    if os.path.exists(p):
-        return send_from_directory(ctx["seed"], stem)
-    return ("", 404)
+  stem = os.path.splitext(name)[0] + ".png"
+  p = os.path.join(ctx["seed"], stem)
+  if os.path.exists(p):
+    return send_from_directory(ctx["seed"], stem)
+  return ("", 404)
 
 
 @app.route("/save/<path:name>", methods=["POST"])
 def save(name):
-    data = request.get_json() or {}
-    b64 = data.get("image")
-    mask = binary_from_b64(b64) if b64 else None
-    if mask is None:
-        return jsonify({"ok": False, "error": "no image"}), 400
-    stem = os.path.splitext(name)[0]
-    os.makedirs(ctx["out"], exist_ok=True)
-    out_path = os.path.join(ctx["out"], stem + ".png")
-    cv2.imwrite(out_path, mask)
-    done = len(glob.glob(os.path.join(ctx["out"], "*.png")))
-    return jsonify({"ok": True, "saved": stem, "done": done, "total": ctx["total"]})
+  data = request.get_json() or {}
+  b64 = data.get("image")
+  mask = binary_from_b64(b64) if b64 else None
+  if mask is None:
+    return jsonify({"ok": False, "error": "no image"}), 400
+  stem = os.path.splitext(name)[0]
+  os.makedirs(ctx["out"], exist_ok=True)
+  out_path = os.path.join(ctx["out"], stem + ".png")
+  cv2.imwrite(out_path, mask)
+  done = len(glob.glob(os.path.join(ctx["out"], "*.png")))
+  return jsonify({"ok": True, "saved": stem, "done": done, "total": ctx["total"]})
 
 
 @app.route("/stats")
 def stats():
-    done = len(glob.glob(os.path.join(ctx["out"], "*.png")))
-    return jsonify({"done": done, "total": ctx["total"]})
+  done = len(glob.glob(os.path.join(ctx["out"], "*.png")))
+  return jsonify({"done": done, "total": ctx["total"]})
 
 
 # ---------------------------------------------------------------- index page
@@ -315,38 +315,42 @@ init();
 
 # ---------------------------------------------------------------- main
 def main():
-    # กัน print ภาษาไทย crash บน console Windows (cp1252)
-    try:
-        sys.stdout.reconfigure(encoding="utf-8")
-    except Exception:
-        pass
-    ap = argparse.ArgumentParser(description="Annotation tool (ground-truth masks)")
-    ap.add_argument("--data", required=True, help="โฟลเดอร์ภาพ")
-    ap.add_argument("--seed", default=None, help="โฟลเดอร์ seed masks จาก SAM3 (optional)")
-    ap.add_argument("--out", default="data/processed/ground_truth_masks", help="โฟลเดอร์ผล mask")
-    ap.add_argument("--host", default="127.0.0.1")
-    ap.add_argument("--port", type=int, default=5000)
-    ap.add_argument("--debug", action="store_true")
-    args = ap.parse_args()
+  # กัน print ภาษาไทย crash บน console Windows (cp1252)
+  try:
+    sys.stdout.reconfigure(encoding="utf-8")
+  except Exception:
+    pass
+  ap = argparse.ArgumentParser(description="Annotation tool (ground-truth masks)")
+  ap.add_argument("--data", required=True, help="โฟลเดอร์ภาพ")
+  ap.add_argument("--seed", default=None, help="โฟลเดอร์ seed masks จาก SAM3 (optional)")
+  ap.add_argument(
+    "--out", default="data/processed/ground_truth_masks", help="โฟลเดอร์ผล mask"
+  )
+  ap.add_argument("--host", default="127.0.0.1")
+  ap.add_argument("--port", type=int, default=5000)
+  ap.add_argument("--debug", action="store_true")
+  args = ap.parse_args()
 
-    ext = ("*.jpg", "*.jpeg", "*.png", "*.JPG")
-    images = sorted({f for e in ext for f in glob.glob(os.path.join(args.data, e))})
-    images = [os.path.basename(p) for p in images]
-    if not images:
-        raise SystemExit(f"ไม่พบภาพใน {args.data}")
+  ext = ("*.jpg", "*.jpeg", "*.png", "*.JPG")
+  images = sorted({f for e in ext for f in glob.glob(os.path.join(args.data, e))})
+  images = [os.path.basename(p) for p in images]
+  if not images:
+    raise SystemExit(f"ไม่พบภาพใน {args.data}")
 
-    ctx["data"] = os.path.abspath(args.data)
-    ctx["seed"] = os.path.abspath(args.seed) if args.seed else ""
-    ctx["out"] = os.path.abspath(args.out)
-    ctx["images"] = images
-    ctx["total"] = len(images)
-    ctx["has_seed"] = bool(args.seed and os.path.isdir(args.seed))
+  ctx["data"] = os.path.abspath(args.data)
+  ctx["seed"] = os.path.abspath(args.seed) if args.seed else ""
+  ctx["out"] = os.path.abspath(args.out)
+  ctx["images"] = images
+  ctx["total"] = len(images)
+  ctx["has_seed"] = bool(args.seed and os.path.isdir(args.seed))
 
-    print(f"[INFO] ภาพ {len(images)} · seed={'มี' if ctx['has_seed'] else 'ไม่มี'} "
-          f"· out={ctx['out']}")
-    print(f"[INFO] เปิด http://{args.host}:{args.port} ในเบราว์เซอร์")
-    app.run(host=args.host, port=args.port, debug=args.debug)
+  print(
+    f"[INFO] ภาพ {len(images)} · seed={'มี' if ctx['has_seed'] else 'ไม่มี'} "
+    f"· out={ctx['out']}"
+  )
+  print(f"[INFO] เปิด http://{args.host}:{args.port} ในเบราว์เซอร์")
+  app.run(host=args.host, port=args.port, debug=args.debug)
 
 
 if __name__ == "__main__":
-    main()
+  main()

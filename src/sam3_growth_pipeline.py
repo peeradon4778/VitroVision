@@ -28,6 +28,7 @@ import time
 
 import cv2
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
@@ -66,7 +67,12 @@ def load_config(cfg_path=None):
     """โหลด config.json มาแทนค่าคงที่ (PIXEL_TO_CM, threshold, prompts, species thresholds)
     โดยไม่ต้องแก้โค้ด — ใช้คู่กับ docs/runbooks/CALIBRATION_GUIDE.md"""
     global PROMPTS, SCORE_THRESHOLD, MASK_THRESHOLD, DETECT_BOTTLE, PIXEL_TO_CM
-    global USE_SPECIES_THRESHOLDS, SPECIES_THRESHOLDS, COVERAGE_READY, COVERAGE_OVERDENSE, READY_HEIGHT
+    global \
+        USE_SPECIES_THRESHOLDS, \
+        SPECIES_THRESHOLDS, \
+        COVERAGE_READY, \
+        COVERAGE_OVERDENSE, \
+        READY_HEIGHT
     if not cfg_path or not os.path.exists(cfg_path):
         print(f"[INFO] ไม่พบ --config ({cfg_path}) — ใช้ค่าเริ่มต้นในโค้ด")
         return
@@ -77,7 +83,9 @@ def load_config(cfg_path=None):
     MASK_THRESHOLD = float(cfg.get("mask_threshold", MASK_THRESHOLD))
     DETECT_BOTTLE = bool(cfg.get("detect_bottle", DETECT_BOTTLE))
     PIXEL_TO_CM = float(cfg["pixel_to_cm"]) if cfg.get("pixel_to_cm") else PIXEL_TO_CM
-    USE_SPECIES_THRESHOLDS = bool(cfg.get("use_species_thresholds", USE_SPECIES_THRESHOLDS))
+    USE_SPECIES_THRESHOLDS = bool(
+        cfg.get("use_species_thresholds", USE_SPECIES_THRESHOLDS)
+    )
     if cfg.get("species_thresholds"):
         SPECIES_THRESHOLDS = cfg["species_thresholds"]
     if cfg.get("coverage"):
@@ -85,12 +93,15 @@ def load_config(cfg_path=None):
         COVERAGE_OVERDENSE = float(cfg["coverage"].get("overdense", COVERAGE_OVERDENSE))
     READY_HEIGHT = float(cfg.get("height_ready", READY_HEIGHT))
     print(f"[INFO] โหลด config: {cfg_path}")
-    print(f"  prompts={PROMPTS} · pixel_to_cm={PIXEL_TO_CM} · "
-          f"species_thresholds={'เปิด' if USE_SPECIES_THRESHOLDS else 'ปิด'}")
+    print(
+        f"  prompts={PROMPTS} · pixel_to_cm={PIXEL_TO_CM} · "
+        f"species_thresholds={'เปิด' if USE_SPECIES_THRESHOLDS else 'ปิด'}"
+    )
 
 
 def extract_zips(data_dir):
     import zipfile
+
     for z in glob.glob(os.path.join(data_dir, "*.zip")):
         print(f"พบ zip: {os.path.basename(z)} — กำลังแตก...")
         with zipfile.ZipFile(z) as zf:
@@ -145,8 +156,11 @@ def segment_prompt(model, processor, device, image, prompt):
     with torch.no_grad():
         outputs = model(**inputs)
     result = processor.post_process_instance_segmentation(
-        outputs, threshold=SCORE_THRESHOLD, mask_threshold=MASK_THRESHOLD,
-        target_sizes=inputs.get("original_sizes").tolist())[0]
+        outputs,
+        threshold=SCORE_THRESHOLD,
+        mask_threshold=MASK_THRESHOLD,
+        target_sizes=inputs.get("original_sizes").tolist(),
+    )[0]
     return masks_to_numpy(result)
 
 
@@ -178,21 +192,27 @@ def _merged_count(mask, dilate_k=7, min_area_frac=0.01):
     merged = np.zeros_like(mask)
     for i in range(1, num):
         if comps[i - 1] >= min_area:
-            merged |= (labels == i)
+            merged |= labels == i
     return len(areas), areas, merged
 
 
 def draw_overlay(img, masks, color=(0, 200, 0)):
     img_rgb = np.array(img).copy()
     for m in masks:
-        contours, _ = cv2.findContours((m.astype(np.uint8)) * 255,
-                                       cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        contours, _ = cv2.findContours(
+            (m.astype(np.uint8)) * 255, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+        )
         cv2.drawContours(img_rgb, contours, -1, color, 2)
     return img_rgb
 
 
-COLORS = {"plant": (0, 200, 0), "leaf": (0, 120, 255), "shoot": (255, 120, 0),
-          "stem": (120, 60, 200), "root": (200, 0, 200)}
+COLORS = {
+    "plant": (0, 200, 0),
+    "leaf": (0, 120, 255),
+    "shoot": (255, 120, 0),
+    "stem": (120, 60, 200),
+    "root": (200, 0, 200),
+}
 
 
 def extract_features(img, masks_by_prompt, roi=None):
@@ -237,8 +257,11 @@ def extract_features(img, masks_by_prompt, roi=None):
     hull_ratio = 0.0
     perimeter_px = 0.0
     if area > 0:
-        contours, _ = cv2.findContours((mask_in_roi.astype(np.uint8)) * 255,
-                                       cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        contours, _ = cv2.findContours(
+            (mask_in_roi.astype(np.uint8)) * 255,
+            cv2.RETR_EXTERNAL,
+            cv2.CHAIN_APPROX_SIMPLE,
+        )
         if contours:
             cnt = max(contours, key=cv2.contourArea)
             hull_ratio = safe_div(area, cv2.contourArea(cv2.convexHull(cnt)))
@@ -263,7 +286,11 @@ def extract_features(img, masks_by_prompt, roi=None):
     else:
         leaf_count, leaf_areas = 0, []
     mean_leaf_area = float(np.mean(leaf_areas)) if leaf_areas else 0.0
-    leaf_area_cv = safe_div(float(np.std(leaf_areas)), max(np.mean(leaf_areas), 1e-6)) if leaf_areas else 0.0
+    leaf_area_cv = (
+        safe_div(float(np.std(leaf_areas)), max(np.mean(leaf_areas), 1e-6))
+        if leaf_areas
+        else 0.0
+    )
     max_leaf_area = float(max(leaf_areas)) if leaf_areas else 0.0
 
     hsv = cv2.cvtColor(rgb, cv2.COLOR_RGB2HSV)
@@ -274,8 +301,12 @@ def extract_features(img, masks_by_prompt, roi=None):
         green_pct = 100.0 * int((green & mask_in_roi).sum()) / area
         yellow_pct = 100.0 * int((yellow & mask_in_roi).sum()) / area
         brown_pct = 100.0 * int((brown & mask_in_roi).sum()) / area
-        dark_green_ratio = 100.0 * int(((hsv[..., 2] < 90) & green & mask_in_roi).sum()) / area
-        g_ratio = rgb[..., 1].astype(np.float32) / (rgb.sum(axis=2).astype(np.float32) + 1e-6)
+        dark_green_ratio = (
+            100.0 * int(((hsv[..., 2] < 90) & green & mask_in_roi).sum()) / area
+        )
+        g_ratio = rgb[..., 1].astype(np.float32) / (
+            rgb.sum(axis=2).astype(np.float32) + 1e-6
+        )
         greenness = float(g_ratio[mask_in_roi].mean())
         mean_hue = float(hsv[..., 0][mask_in_roi].mean())
         mean_sat = float(hsv[..., 1][mask_in_roi].mean())
@@ -287,13 +318,21 @@ def extract_features(img, masks_by_prompt, roi=None):
 
     v = hsv[..., 2].astype(np.float32) / 255.0
     s = hsv[..., 1].astype(np.float32) / 255.0
-    glare_score = 100.0 * int(((v > GLARE_V) & (s < GLARE_S) & roi).sum()) / max(roi_area, 1)
-    condensation_score = 100.0 * int(((v > CONDENSE_V) & (s < CONDENSE_S) & roi).sum()) / max(roi_area, 1)
+    glare_score = (
+        100.0 * int(((v > GLARE_V) & (s < GLARE_S) & roi).sum()) / max(roi_area, 1)
+    )
+    condensation_score = (
+        100.0
+        * int(((v > CONDENSE_V) & (s < CONDENSE_S) & roi).sum())
+        / max(roi_area, 1)
+    )
     gray = cv2.cvtColor(rgb, cv2.COLOR_RGB2GRAY).astype(np.float32)[roi]
     brightness_mean = float(gray.mean()) if len(gray) else 0.0
     brightness_std = float(gray.std()) if len(gray) else 0.0
 
-    score_list = [s for _, s in masks_by_prompt.values() if s is not None and len(s) > 0]
+    score_list = [
+        s for _, s in masks_by_prompt.values() if s is not None and len(s) > 0
+    ]
     if score_list:
         all_scores = np.concatenate(score_list)
         mean_score = float(all_scores.mean())
@@ -309,8 +348,12 @@ def extract_features(img, masks_by_prompt, roi=None):
         "width_proxy": round(width_proxy, 6),
         "aspect_ratio": round(aspect_ratio, 6),
         "compactness": round(compactness, 6),
-        "canopy_h_cm": round(bh * PIXEL_TO_CM, 2) if (bb is not None and PIXEL_TO_CM) else None,
-        "canopy_w_cm": round(bw * PIXEL_TO_CM, 2) if (bb is not None and PIXEL_TO_CM) else None,
+        "canopy_h_cm": round(bh * PIXEL_TO_CM, 2)
+        if (bb is not None and PIXEL_TO_CM)
+        else None,
+        "canopy_w_cm": round(bw * PIXEL_TO_CM, 2)
+        if (bb is not None and PIXEL_TO_CM)
+        else None,
         "hull_ratio": round(hull_ratio, 6),
         "perimeter_px": round(perimeter_px, 2),
         "perimeter_ratio": round(perimeter_ratio, 6),
@@ -351,8 +394,10 @@ def analyze_image(model, processor, device, img, filename, species=None):
             bb = union_bbox(b_masks.any(axis=0))
             if bb is not None:
                 x, y, bw, bh = bb
-                roi = np.zeros((np.array(img).shape[0], np.array(img).shape[1]), dtype=bool)
-                roi[y:y + bh, x:x + bw] = True
+                roi = np.zeros(
+                    (np.array(img).shape[0], np.array(img).shape[1]), dtype=bool
+                )
+                roi[y : y + bh, x : x + bw] = True
     for prompt in PROMPTS:
         masks_by_prompt[prompt] = segment_prompt(model, processor, device, img, prompt)
 
@@ -362,7 +407,10 @@ def analyze_image(model, processor, device, img, filename, species=None):
     if USE_SPECIES_THRESHOLDS and species in SPECIES_THRESHOLDS:
         th = SPECIES_THRESHOLDS[species]
     else:
-        th = {"ready": COVERAGE_READY, "overdense": COVERAGE_OVERDENSE}  # ค่ากลาง generic
+        th = {
+            "ready": COVERAGE_READY,
+            "overdense": COVERAGE_OVERDENSE,
+        }  # ค่ากลาง generic
 
     # เกณฑ์ความพร้อม = "ต้นสมบูรณ์/โตพอ" — ใช้ความสูง (height_proxy) ตามมุมผู้เชี่ยวชาญ
     # (validation กับมือ 2026-08-26: coverage/ความแน่น ใช้ไม่ได้; height_proxy≥READY_HEIGHT
@@ -373,9 +421,11 @@ def analyze_image(model, processor, device, img, filename, species=None):
         verdict = "ยังไม่พร้อม"
 
     confidence = max(BASE_CONFIDENCE * (1.0 - feat["glare_score"] / 100.0), 0.0)
-    readiness_index = (0.5 * min(feat["height_proxy"], 1.0)
-                       + 0.3 * min(feat["width_proxy"], 1.0)
-                       + 0.2 * min(feat["green_pct"] / 100.0, 1.0))
+    readiness_index = (
+        0.5 * min(feat["height_proxy"], 1.0)
+        + 0.3 * min(feat["width_proxy"], 1.0)
+        + 0.2 * min(feat["green_pct"] / 100.0, 1.0)
+    )
 
     notes = []
     if DETECT_BOTTLE and roi is None:
@@ -398,15 +448,17 @@ def analyze_image(model, processor, device, img, filename, species=None):
         warnings.append("condensation")
     quality_warning = "|".join(warnings)
 
-    feat.update({
-        "image": filename,
-        "species": species,
-        "verdict": verdict,
-        "readiness_index": round(readiness_index, 4),
-        "confidence": round(confidence, 4),
-        "quality_warning": quality_warning,
-        "note": " | ".join(notes),
-    })
+    feat.update(
+        {
+            "image": filename,
+            "species": species,
+            "verdict": verdict,
+            "readiness_index": round(readiness_index, 4),
+            "confidence": round(confidence, 4),
+            "quality_warning": quality_warning,
+            "note": " | ".join(notes),
+        }
+    )
     return feat, masks_by_prompt
 
 
@@ -416,14 +468,18 @@ def draw_synthetic_plant(n_leaves, H=400, W=400, seed=0):
     gt_mask = np.zeros((H, W), dtype=bool)
     base_y = H - 60
     cv2.line(canvas, (W // 2, base_y), (W // 2, 120), (40, 110, 40), 6)
-    gt_mask[110:base_y + 3, W // 2 - 3:W // 2 + 4] = True
+    gt_mask[110 : base_y + 3, W // 2 - 3 : W // 2 + 4] = True
     for i in range(n_leaves):
         cx = int(W // 2 + rng.integers(-90, 90))
         cy = int(130 + rng.integers(0, 190))
         rx = int(rng.integers(20, 45))
         ry = int(rng.integers(14, 30))
         angle = float(rng.integers(0, 180))
-        col = (int(rng.integers(30, 60)), int(rng.integers(140, 190)), int(rng.integers(30, 60)))
+        col = (
+            int(rng.integers(30, 60)),
+            int(rng.integers(140, 190)),
+            int(rng.integers(30, 60)),
+        )
         em = np.zeros((H, W), dtype=np.uint8)
         cv2.ellipse(em, (cx, cy), (rx, ry), angle, 0, 360, 255, -1)
         canvas[em > 0] = col
@@ -444,9 +500,14 @@ def synthetic_benchmark(model, processor, device, data_dir, out_dir, n=5):
         name = f"synth_{i:03d}_leaf{nl}.png"
         img.save(os.path.join(syn_dir, name))
         ys, xs = np.where(gt)
-        syn_rows.append({"image": name, "true_leaf_count": nl,
-                         "true_area_px": int(gt.sum()),
-                         "true_height_px": int(ys.max() - ys.min()) + 1})
+        syn_rows.append(
+            {
+                "image": name,
+                "true_leaf_count": nl,
+                "true_area_px": int(gt.sum()),
+                "true_height_px": int(ys.max() - ys.min()) + 1,
+            }
+        )
     syn_gt = pd.DataFrame(syn_rows)
 
     rows = []
@@ -467,7 +528,9 @@ def synthetic_benchmark(model, processor, device, data_dir, out_dir, n=5):
     for idx, r in bm.iterrows():
         union = np.zeros((400, 400), dtype=bool)
         for p in ("plant", "leaf"):
-            m = masks_store[r["image"]].get(p, (np.zeros((0, 400, 400), dtype=bool), None))[0]
+            m = masks_store[r["image"]].get(
+                p, (np.zeros((0, 400, 400), dtype=bool), None)
+            )[0]
             if len(m) > 0:
                 union |= m.any(axis=0)
         _, gt = draw_synthetic_plant(int(r["true_leaf_count"]), seed=idx * 7 + 1)
@@ -478,16 +541,31 @@ def synthetic_benchmark(model, processor, device, data_dir, out_dir, n=5):
         dices.append(dice)
 
     bm["area_ratio"] = bm["total_area_px"] / bm["true_area_px"].clip(lower=1)
-    report = bm[["image", "true_leaf_count", "leaf_count", "leaf_err",
-                 "true_area_px", "total_area_px", "area_ratio"]].copy()
+    report = bm[
+        [
+            "image",
+            "true_leaf_count",
+            "leaf_count",
+            "leaf_err",
+            "true_area_px",
+            "total_area_px",
+            "area_ratio",
+        ]
+    ].copy()
     report["iou"] = np.round(ious, 4)
     report["dice"] = np.round(dices, 4)
-    report.loc["MEAN"] = report[["leaf_err", "area_ratio", "iou", "dice"]].mean().round(4)
+    report.loc["MEAN"] = (
+        report[["leaf_err", "area_ratio", "iou", "dice"]].mean().round(4)
+    )
     out_csv = os.path.join(out_dir, "benchmark_IoU_Dice_MAE.csv")
     report.to_csv(out_csv, index=False, encoding="utf-8-sig")
-    print("=== SYNTHETIC BENCHMARK (ภาพจำลอง known-truth — พิสูจน์ pipeline ไม่ใช่ข้อมูลแล็บจริง) ===")
+    print(
+        "=== SYNTHETIC BENCHMARK (ภาพจำลอง known-truth — พิสูจน์ pipeline ไม่ใช่ข้อมูลแล็บจริง) ==="
+    )
     print(report.to_string())
-    print(f"Leaf count MAE = {count_mae:.2f} / RMSE = {count_rmse:.2f} | mIoU = {np.mean(ious):.3f} | mDice = {np.mean(dices):.3f}")
+    print(
+        f"Leaf count MAE = {count_mae:.2f} / RMSE = {count_rmse:.2f} | mIoU = {np.mean(ious):.3f} | mDice = {np.mean(dices):.3f}"
+    )
     print(f"บันทึก: {out_csv}")
     DETECT_BOTTLE = _db
 
@@ -495,6 +573,7 @@ def synthetic_benchmark(model, processor, device, data_dir, out_dir, n=5):
 def _setup_thai_font():
     """ลงทะเบียนฟองต์ไทยให้ matplotlib (Noto Sans Thai บน Colab / Tahoma บน Windows)"""
     import matplotlib.font_manager as fm
+
     cands = []
     for f in fm.findSystemFonts():
         if "thai" in os.path.basename(f).lower():
@@ -585,8 +664,19 @@ def build_report(df, images, all_masks, out_dir):
     plt.close(fig2)
     plot_paths.append(p2)
 
-    sel = ["coverage_ratio", "height_proxy", "width_proxy", "compactness", "leaf_count",
-           "shoot_count", "root_count", "green_pct", "yellow_ratio", "hull_ratio", "readiness_index"]
+    sel = [
+        "coverage_ratio",
+        "height_proxy",
+        "width_proxy",
+        "compactness",
+        "leaf_count",
+        "shoot_count",
+        "root_count",
+        "green_pct",
+        "yellow_ratio",
+        "hull_ratio",
+        "readiness_index",
+    ]
     cm = df[sel].corr()
     fig3, ax3 = plt.subplots(figsize=(10, 8))
     im = ax3.imshow(cm, cmap="coolwarm", vmin=-1, vmax=1)
@@ -607,8 +697,13 @@ def build_report(df, images, all_masks, out_dir):
 
     fig4, axes4 = plt.subplots(1, 2, figsize=(13, 5))
     vc = df["verdict"].value_counts()
-    axes4[0].pie(vc.values, labels=vc.index, autopct="%1.0f%%", startangle=90,
-                 colors=["#d9534f", "#5cb85c", "#f0ad4e"])
+    axes4[0].pie(
+        vc.values,
+        labels=vc.index,
+        autopct="%1.0f%%",
+        startangle=90,
+        colors=["#d9534f", "#5cb85c", "#f0ad4e"],
+    )
     axes4[0].set_title("สัดส่วน verdict")
     axes4[1].hist(df["readiness_index"], bins=15, color="steelblue", edgecolor="white")
     axes4[1].axvline(0.5, color="red", ls="--", lw=1.5)
@@ -624,26 +719,45 @@ def build_report(df, images, all_masks, out_dir):
         with open(path, "rb") as f:
             return "data:image/png;base64," + base64.b64encode(f.read()).decode()
 
-    main_cols = ["image", "verdict", "readiness_index", "coverage_ratio", "leaf_count",
-                 "shoot_count", "green_pct", "yellow_ratio", "confidence", "note"]
+    main_cols = [
+        "image",
+        "verdict",
+        "readiness_index",
+        "coverage_ratio",
+        "leaf_count",
+        "shoot_count",
+        "green_pct",
+        "yellow_ratio",
+        "confidence",
+        "note",
+    ]
     thead = "<tr><th>#</th>" + "".join(f"<th>{c}</th>" for c in main_cols) + "</tr>"
     trows = ""
-    for k, (_, r) in enumerate(df.sort_values("readiness_index", ascending=False).iterrows(), 1):
+    for k, (_, r) in enumerate(
+        df.sort_values("readiness_index", ascending=False).iterrows(), 1
+    ):
         trows += "<tr><td>{}</td>{}</tr>".format(
-            k, "".join("<td>{}</td>".format("" if pd.isna(r[c]) else r[c]) for c in main_cols))
+            k,
+            "".join(
+                "<td>{}</td>".format("" if pd.isna(r[c]) else r[c]) for c in main_cols
+            ),
+        )
 
     html = (
         '<html><head><meta charset="utf-8"><title>รายงานวิเคราะห์การเจริญพืช (SAM3)</title>'
-        '<style>body{font-family:Tahoma,sans-serif;margin:30px}h1{color:#1a7a4f}'
-        'table{border-collapse:collapse}td,th{border:1px solid #999;padding:3px 8px;font-size:12px}'
-        'img{max-width:100%;border:1px solid #ccc;margin:6px 0}'
-        'h2{border-bottom:2px solid #1a7a4f;padding-bottom:4px;margin-top:40px}</style></head><body>'
+        "<style>body{font-family:Tahoma,sans-serif;margin:30px}h1{color:#1a7a4f}"
+        "table{border-collapse:collapse}td,th{border:1px solid #999;padding:3px 8px;font-size:12px}"
+        "img{max-width:100%;border:1px solid #ccc;margin:6px 0}"
+        "h2{border-bottom:2px solid #1a7a4f;padding-bottom:4px;margin-top:40px}</style></head><body>"
         f"<h1>รายงานวิเคราะห์การเจริญพืชเพาะเลี้ยงเนื้อเยื่อ (SAM3)</h1>"
         f"<p>จำนวนภาพ: {len(df)} | สร้างเมื่อ: {time.strftime('%Y-%m-%d %H:%M:%S')}</p>"
         f"<p><b>verdict:</b> {df['verdict'].value_counts().to_dict()}</p>"
         "<table>" + thead + trows + "</table>"
         "<h2>ภาพ overlay ตัวอย่าง</h2>"
-        + "".join(f'<p><b>{os.path.basename(p)}</b></p><img src="{img_b64(p)}">' for p in overlay_paths)
+        + "".join(
+            f'<p><b>{os.path.basename(p)}</b></p><img src="{img_b64(p)}">'
+            for p in overlay_paths
+        )
         + "<h2>กราฟวิเคราะห์</h2>"
         + "".join(f'<img src="{img_b64(p)}">' for p in plot_paths)
         + "</body></html>"
@@ -660,11 +774,19 @@ def build_report(df, images, all_masks, out_dir):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="SAM3 plant tissue culture growth analysis (multi-dim)")
+    parser = argparse.ArgumentParser(
+        description="SAM3 plant tissue culture growth analysis (multi-dim)"
+    )
     parser.add_argument("--data", default="/content/data", help="โฟลเดอร์ภาพต้นฉบับ")
     parser.add_argument("--out", default="/content/results", help="โฟลเดอร์ผลลัพธ์")
-    parser.add_argument("--synthetic", action="store_true", help="รัน synthetic benchmark เพิ่ม (ไม่ต้องมี ground truth)")
-    parser.add_argument("--config", default=None, help="ไฟล์ config.json (PIXEL_TO_CM/threshold/prompts)")
+    parser.add_argument(
+        "--synthetic",
+        action="store_true",
+        help="รัน synthetic benchmark เพิ่ม (ไม่ต้องมี ground truth)",
+    )
+    parser.add_argument(
+        "--config", default=None, help="ไฟล์ config.json (PIXEL_TO_CM/threshold/prompts)"
+    )
     args = parser.parse_args()
 
     load_config(args.config)
@@ -674,7 +796,8 @@ def main():
     if device == "cpu":
         raise SystemExit("ต้องใช้ GPU — facebook/sam3 ไม่รองรับ CPU")
 
-    from transformers import Sam3Processor, Sam3Model
+    from transformers import Sam3Model, Sam3Processor
+
     start = time.time()
     model = Sam3Model.from_pretrained("facebook/sam3").to(device)
     processor = Sam3Processor.from_pretrained("facebook/sam3")
@@ -700,15 +823,19 @@ def main():
     progress_path = os.path.join(args.out, "_progress.csv")
     total = len(images)
     for i, (name, img) in enumerate(images.items(), 1):
-        feat, mbp = analyze_image(model, processor, device, img, name, species=species_map.get(name))
+        feat, mbp = analyze_image(
+            model, processor, device, img, name, species=species_map.get(name)
+        )
         if i <= KEEP_MASK_FIRST:
             all_masks[name] = mbp
         del mbp  # ปล่อย mask ของภาพนี้ทันที — ไม่เก็บครบ 100 ภาพ
         rows.append(feat)
         # checkpoint รายภาพ — กัน Colab timeout/ค้าง กลางทาง
         pd.DataFrame(rows).to_csv(progress_path, index=False, encoding="utf-8-sig")
-        print(f"  [{i}/{total}] {name} — leaf={feat['leaf_count']} shoot={feat['shoot_count']} "
-              f"cov={feat['coverage_ratio']:.2f} green={feat['green_pct']:.0f}% {feat['verdict']}")
+        print(
+            f"  [{i}/{total}] {name} — leaf={feat['leaf_count']} shoot={feat['shoot_count']} "
+            f"cov={feat['coverage_ratio']:.2f} green={feat['green_pct']:.0f}% {feat['verdict']}"
+        )
     df = pd.DataFrame(rows)
 
     csv_path = os.path.join(args.out, "plant_growth_summary.csv")
@@ -719,31 +846,53 @@ def main():
 
     # สรุปแยกชนิดพืช (งานหลายชนิด — ดูค่าเฉลี่ย/การกระจาย verdict ต่อชนิด)
     if "species" in df.columns and df["species"].nunique() > 1:
-        sp_sum = df.groupby("species").agg(
-            n=("image", "count"),
-            coverage_mean=("coverage_ratio", "mean"),
-            leaf_mean=("leaf_count", "mean"),
-            shoot_mean=("shoot_count", "mean"),
-            green_mean=("green_pct", "mean"),
-            ready_pct=("verdict", lambda s: (s == "พร้อมอนุบาล").mean() * 100),
-        ).reset_index()
+        sp_sum = (
+            df.groupby("species")
+            .agg(
+                n=("image", "count"),
+                coverage_mean=("coverage_ratio", "mean"),
+                leaf_mean=("leaf_count", "mean"),
+                shoot_mean=("shoot_count", "mean"),
+                green_mean=("green_pct", "mean"),
+                ready_pct=("verdict", lambda s: (s == "พร้อมอนุบาล").mean() * 100),
+            )
+            .reset_index()
+        )
         sp_path = os.path.join(args.out, "species_summary.csv")
         sp_sum.to_csv(sp_path, index=False, encoding="utf-8-sig")
         print("=== สรุปแยกชนิด ===")
         print(sp_sum.to_markdown(index=False))
         print(f"บันทึก: {sp_path}")
 
-
     build_report(df, images, all_masks, args.out)
 
-    show_cols = ["image", "species", "leaf_count", "shoot_count", "root_count", "stem_count",
-                 "coverage_ratio", "height_proxy", "green_pct", "yellow_ratio", "hull_ratio",
-                 "readiness_index", "confidence", "quality_warning", "verdict", "note"]
+    show_cols = [
+        "image",
+        "species",
+        "leaf_count",
+        "shoot_count",
+        "root_count",
+        "stem_count",
+        "coverage_ratio",
+        "height_proxy",
+        "green_pct",
+        "yellow_ratio",
+        "hull_ratio",
+        "readiness_index",
+        "confidence",
+        "quality_warning",
+        "verdict",
+        "note",
+    ]
     print(df[show_cols].to_markdown(index=False))
 
-    pairs = [("leaf_count", "coverage_ratio"), ("leaf_count", "shoot_count"),
-             ("coverage_ratio", "height_proxy"), ("green_pct", "healthy_color"),
-             ("coverage_ratio", "total_area_px")]
+    pairs = [
+        ("leaf_count", "coverage_ratio"),
+        ("leaf_count", "shoot_count"),
+        ("coverage_ratio", "height_proxy"),
+        ("green_pct", "healthy_color"),
+        ("coverage_ratio", "total_area_px"),
+    ]
     print("=== SANITY CHECK (Pearson r บนภาพจริง — ค่าบวกสมเหตุผล = ข้อมูลสอดคล้อง) ===")
     for a, b in pairs:
         r = df[a].astype(float).corr(df[b].astype(float))
@@ -753,9 +902,14 @@ def main():
     if os.path.exists(gt_path):
         gt = pd.read_csv(gt_path)
         m = df.merge(gt, on="image", suffixes=("_sam3", "_manual"))
-        feature_map = {"leaf_count": "leaf_count", "shoot_count": "shoot_count",
-                       "root_count": "root_count", "height_proxy": "height_cm",
-                       "width_proxy": "width_cm", "total_area_px": "area_cm2"}
+        feature_map = {
+            "leaf_count": "leaf_count",
+            "shoot_count": "shoot_count",
+            "root_count": "root_count",
+            "height_proxy": "height_cm",
+            "width_proxy": "width_cm",
+            "total_area_px": "area_cm2",
+        }
         results = []
         for f_sam, f_manual in feature_map.items():
             if f_manual not in m.columns:
@@ -765,9 +919,16 @@ def main():
             r = a.corr(b)
             if pd.isna(r):
                 r = 0.0
-            results.append({"feature_SAM3": f_sam, "manual_GT": f_manual,
-                            "pearson_r": round(r, 4), "MAE": round(float((a - b).abs().mean()), 4),
-                            "RMSE": round(float((((a - b) ** 2).mean()) ** 0.5), 4), "n": len(m)})
+            results.append(
+                {
+                    "feature_SAM3": f_sam,
+                    "manual_GT": f_manual,
+                    "pearson_r": round(r, 4),
+                    "MAE": round(float((a - b).abs().mean()), 4),
+                    "RMSE": round(float((((a - b) ** 2).mean()) ** 0.5), 4),
+                    "n": len(m),
+                }
+            )
         val = pd.DataFrame(results)
         val_path = os.path.join(args.out, "validation_metrics.csv")
         val.to_csv(val_path, index=False, encoding="utf-8-sig")
