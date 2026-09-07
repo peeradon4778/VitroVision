@@ -106,7 +106,7 @@ flowchart TD
 ## 3. Decision Tree
 
 ```mermaid
-%% ตรรกะ rule-based triage ตาม subculture_criteria.md
+%% ตรรกะ rule-based triage ตาม research/RESEARCH.md
 %% threshold เป็นค่าเริ่มต้น cross-species — รอ lab validate
 flowchart TD
     START(["📥 Input: FeatureMetrics + days"]) --> Q1{"days < 21?"}
@@ -299,7 +299,7 @@ block-beta
     end
 ```
 
-### Feature Definitions (from `_orchestration.md`)
+### Feature Definitions (from `docs/planning/_orchestration.md`)
 
 | Feature | Formula | Unit | Range | Purpose |
 |---------|---------|------|-------|---------|
@@ -451,4 +451,4 @@ classDiagram
 
 | Date | Version | Changes |
 |------|---------|---------|
-| 2026-07-06 | v1.0 | Initial diagrams from Designer (Wave 1). Matches `_orchestration.md` v2026-07-06 and `subculture_criteria.md` thresholds. |
+| 2026-07-06 | v1.0 | Initial diagrams from Designer (Wave 1). Matches `docs/planning/_orchestration.md` v2026-07-06 and `research/RESEARCH.md` thresholds. |

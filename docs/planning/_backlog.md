@@ -12,7 +12,7 @@
 **เลิกแล้ว:** Android app · การประเมิน "ความพร้อม sub-culture"
 **vision ปลายทาง (ไม่ใช่ scope ที่สร้างรอบนี้):** แพลตฟอร์มแบบ Fastwork ที่เชื่อม **แล็บเพาะเลี้ยง ↔ เกษตรกร/ผู้ซื้อ** (เลือกพืชไปปลูก + สั่งให้แล็บเพาะให้) โดย VitroVision เป็น **ชั้นความน่าเชื่อถือ** ที่บอกว่าต้นพร้อมส่งจริง — **ห้ามเริ่มสร้าง auth 2 บทบาท/listing/order/chat/review รอบนี้**
 **เป้าหมายเฉพาะหน้า:** exhibition งานสัปดาห์วิทยาศาสตร์ (พักเรื่องกำหนดการตามคำสั่ง)
-**การออกแบบ + คำถามที่ยัง grill ค้างอยู่:** → `research/_grill_v3.md`
+**การออกแบบ + คำถามที่ยัง grill ค้างอยู่:** → `docs/planning/_grill_v3.md`
 
 <details><summary>🔒 (ตกรุ่น) DIRECTION เดิม RQ 2026-07-05 — subculture triage</summary>
 
@@ -27,7 +27,7 @@
 **เส้นทางเดิมที่เลิกแล้ว (อย่าลากกลับ):** full 3D reconstruction / COLMAP / refraction-mitigation / multisensor rig / SAM 3 gated / species-ID เป็นแกน — เหตุผลคือ user ประเมินแล้วว่าซับซ้อนเกินเวลา 2 เดือนที่เหลือ และไม่ตรง engineering goal ที่ต้องส่งงานได้จริง รายละเอียดเต็มอยู่ใน memory `project-vitrovision-v2`
 
 **Pipeline ปัจจุบัน:** Capture (Android, มุม/แสงคงที่) → Preprocess (crop, glare est., polarized pair ถ้ามี) → Segment (**SAM3 PCS text-prompted `["plant","leaf"]`** — พิสูจน์ผ่าน spike test 2026-07-05 · ห้าม automatic/everything mode) → Extract features (coverage ratio, height proxy, shoot count, glare score) → Decision (rule-based ก่อน → lightweight classifier ทีหลัง) → Output 3-class + confidence + manual override
-> หมายเหตุ: `_orchestration.md` (2026-07-06) ตรึง engine เป็น SAM3 PCS แล้ว (ต่างจากบรรทัดเก่าที่เขียน SAM2 backbone) — ยึด _orchestration.md เป็นหลัก
+> หมายเหตุ: `docs/planning/_orchestration.md` (2026-07-06) ตรึง engine เป็น SAM3 PCS แล้ว (ต่างจากบรรทัดเก่าที่เขียน SAM2 backbone) — ยึด docs/planning/_orchestration.md เป็นหลัก
 
 </details>
 
@@ -35,9 +35,9 @@
 
 ## ✅✅ FIRST PASS เสร็จครบ (2026-07-06 — one-shot Fable 5 orchestrator)
 รัน `/vitro <บรีฟ>` แตกงาน 3 waves เสร็จ deliverable ครบ (ยังไม่ commit อยู่ใน working tree):
-- `research/_orchestration.md` · `research/citation_gate.md` (18 refs verified + 3 flag) · `research/subculture_criteria.md` (rough threshold)
+- `docs/planning/_orchestration.md` · `research/RESEARCH.md` (18 refs verified + 3 flag) · `research/RESEARCH.md` (rough threshold)
 - `docs/proposal_th_draft.md` (YSC ส่วน 1 ครบ 13 ส่วน) · `docs/diagrams.md` (6 diagram EN)
-- `src/android/` (app skeleton 15 ไฟล์ Kotlin) · `research/audit_report.md` (self-audit เจอ 2 HIGH code bug)
+- `src/android/` (app skeleton 15 ไฟล์ Kotlin) · `research/RESEARCH.md` (self-audit เจอ 2 HIGH code bug)
 - **target ตรึงแล้ว = YSC 2027 สาขา CSBI**
 
 ### ✅ แก้ตาม audit เสร็จ (2026-07-06 รอบต่อ — verify จากไฟล์จริงแล้ว)
@@ -108,7 +108,7 @@ Colab ตัด session เมื่อ idle/ครบเวลา · ngrok free
 - `vitrovison_cascade_api.ipynb` (15:41) — **cascade ใหม่:** tap บนรูป → `detect_bottles("glass jar bottle")` → match tap กับขวด → crop ROI อัตโนมัติ → segment `["leaf","plant","stem"]` ใน ROI → คืน coverage/height/width/greenness/hue + mask + overlay ผ่าน `POST /cascade`
 
 ### ⚠️ Drift ที่ต้องเคาะ (โค้ดใหม่ ≠ เอกสาร ≠ แอป) — 3 จุด
-1. **Inference path:** เอกสาร (`proposal_th_draft.md` วัสดุ/วิธี/Gantt/Gen-AI disclosure, `diagrams.md`, `_orchestration.md:14`) = **Roboflow cloud** · โค้ดใหม่ = **self-hosted Colab+ngrok** · `RoboflowRepository.kt:34` ยังชี้ `https://detect.roboflow.com/` → แอปเรียก API ที่ backend ใหม่ไม่ได้ให้บริการ (`/segment`, `/cascade`)
+1. **Inference path:** เอกสาร (`proposal_th_draft.md` วัสดุ/วิธี/Gantt/Gen-AI disclosure, `diagrams.md`, `docs/planning/_orchestration.md:14`) = **Roboflow cloud** · โค้ดใหม่ = **self-hosted Colab+ngrok** · `RoboflowRepository.kt:34` ยังชี้ `https://detect.roboflow.com/` → แอปเรียก API ที่ backend ใหม่ไม่ได้ให้บริการ (`/segment`, `/cascade`)
 2. **ROI:** `proposal_th_draft.md:167` เขียนชัดว่า "crop คงที่ — **ไม่ใช้ automatic detection ในเวอร์ชันแรก**" (ตรงกับที่ปิด audit HIGH #1 แบบ "ไม่สร้าง detector") · แต่ cascade notebook **สร้าง bottle detector จริง** + เพิ่ม interaction ใหม่ (tap เลือกขวดจากหลายขวด) ที่ wireframe/diagram ยังไม่มี
 3. **หน่วยวัด:** cascade คืน `height_cm`/`width_cm` จาก `PIXEL_TO_CM = 0.1  # placeholder` → เป็นตัวเลขที่ยัง**ไม่ calibrate** ห้ามให้ขึ้น UI หรือเข้าเอกสารในฐานะ "เซนติเมตร" (ผูกกับข้อค้าง "เขียน feature-extraction spec" ด้านล่าง)
 

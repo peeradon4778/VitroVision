@@ -1,7 +1,7 @@
 # 🎯 VitroVision — Orchestration Tracker (Fable 5 = หัวหน้าออฟฟิศ)
 
 > เริ่มรอบ: 2026-07-06 · target: **YSC 2027** สาขา CSBI
-> อ่านคู่กับ `_backlog.md` (สถานะจริง) — ไฟล์นี้ = แผนแจกงาน + สถานะ deliverable
+> อ่านคู่กับ `docs/planning/_backlog.md` (สถานะจริง) — ไฟล์นี้ = แผนแจกงาน + สถานะ deliverable
 
 ---
 

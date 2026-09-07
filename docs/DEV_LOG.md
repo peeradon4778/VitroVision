@@ -10,6 +10,14 @@
 
 ---
 
+## 2026-09-01 — จัดระเบียบ research/ เหลือ 2 ไฟล์ (ความรู้ + Literature)
+
+| เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |
+|---|---|---|---|
+| กลางคืน | รวม research/ 15 ไฟล์ → 2: `RESEARCH.md` (ความรู้ที่สืบค้น: keywords+subculture_criteria+citation_gate+audit_data+audit_report) · `LITERATURE.md` (อ้างอิง: citations_* 5 ไฟล์) · ย้ายโน้ตกระบวนการ (_backlog/_orchestration/_scope_lock/_grill_v3/_tool_matrix) → `docs/planning/` | `research/RESEARCH.md`, `research/LITERATURE.md`, `docs/planning/*` | ผสาน content ตรงต้นฉบับ (ตัดหัวข้อ #→##, ##→###) 574+325 บรรทัด; ลบต้นทาง 10 ไฟล์; แก้ reference ทุกจุด (report_th_v1, diagrams, YSC_SUBMISSION_TICKETS, planning, RESEARCH.md) — ไม่มี path เก่าค้าง (ยกเว้น DEV_LOG ประวัติ) ✓ |
+
+---
+
 ## 2026-09-01 — จัดระเบียบโครงสร้าง repo (reorg: docs/runbooks|deliverables|scripts + notebooks/sam3)
 
 | เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |

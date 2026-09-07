@@ -125,7 +125,7 @@
 | คุณภาพภาพ | คะแนนแสงสะท้อน (glare) และไอน้ำ (condensation) |
 | การตัดสินใจ | คลาส verdict + คะแนนความมั่นใจ |
 
-นิยามตัวแปรตรึงไว้ในเอกสาร `research/_orchestration.md` [FACT — เอกสารโปรเจกต์]
+นิยามตัวแปรตรึงไว้ในเอกสาร `docs/planning/_orchestration.md` [FACT — เอกสารโปรเจกต์]
 
 ### 3.5 การตัดสินใจแบบกฎ (rule-based verdict)
 
@@ -291,7 +291,7 @@ Zhang, Y., et al. (2026). Observer bias in phenotypic assessment and the consist
 
 ## งานค้างก่อนยื่น (ตามกฎ citation)
 
-- [ ] ตรวจชื่อผู้แต่งเต็ม (แทน et al.) ให้ครบ: Diningrat 2024, Nguyen 2025, Peters 2023, Regni 2025, Rippner 2022, Zhang 2026 (ดูไฟล์ `research/citations_*.md`)
+- [ ] ตรวจชื่อผู้แต่งเต็ม (แทน et al.) ให้ครบ: Diningrat 2024, Nguyen 2025, Peters 2023, Regni 2025, Rippner 2022, Zhang 2026 (ดูไฟล์ `research/LITERATURE.md`)
 - [x] ตรวจภาษา 3 รอบ (คู่มือ ระยะที่ 4) — แก้ภาษาแล้ว 2026-08-25 (รอบที่ 1–3)
 - [ ] ตรวจ render ใน Microsoft Word
 - [ ] แทรกรูป/flowchart จริง [ผู้จัดทำจัดทำภายหลัง]

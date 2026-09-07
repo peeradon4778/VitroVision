@@ -19,11 +19,11 @@
 
 ## 🎟️ A. เอกสาร/ชื่อ (ต้องตรงกันทุกจุดก่อนส่ง)
 
-- [x] เปลี่ยนชื่อโครงงาน TH/EN ทุกจุดใน `docs/*.md` + `research/_orchestration.md` → `03b8604`
+- [x] เปลี่ยนชื่อโครงงาน TH/EN ทุกจุดใน `docs/*.md` + `docs/planning/_orchestration.md` → `03b8604`
 - [!!] **Rebuild docx จาก md ใหม่** — `docs/deliverables/proposal_ysc.docx`, `docs/deliverables/report_th_v1.docx`, `docs/deliverables/ysc_proposal_filled.docx` สร้างไว้ 24–26 ส.ค. (ก่อนเปลี่ยนชื่อ) → **ยังมีชื่อเก่า + เนื้อหาเก่า** ต้องรัน `make_*_docx.py` / `build_ysc_proposal.py` ใหม่
   - ไฟล์ที่ต้องอัปเดต: `proposal_th_draft.docx`, `report_th_v1.docx`, `ysc_proposal_filled.docx`
 - [ ] ตรวจว่า `PROJECT_OVERVIEW.md` / `README.md` (หัวข้อ) ไม่มีชื่อ/ถ้อยคำที่ขัดกับชื่อใหม่ (README ยังเป็นแนวคิด v2 เก่า — อาจไม่ใช่ deliverable)
-- [ ] ตรวจ citation กับ `research/citation_gate.md` / `citations_new_20260817.md` (ดึงอ้างอิง ≤5 ปีที่ verify แล้ว)
+- [ ] ตรวจ citation กับ `research/RESEARCH.md` / `research/LITERATURE.md` (ดึงอ้างอิง ≤5 ปีที่ verify แล้ว)
 
 ## 🎟️ B. Framing: ชื่อใหม่ ↔ ผลที่ validate (สำคัญต่อกรรมการ)
 
