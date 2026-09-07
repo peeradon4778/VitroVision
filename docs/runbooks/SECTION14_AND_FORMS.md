@@ -25,7 +25,7 @@
 
 ---
 
-## 🟪 แบบฟอร์มที่ต้องเตรียม (ดู `docs/YSC_FORMS_CHECKLIST.md` เพิ่ม)
+## 🟪 แบบฟอร์มที่ต้องเตรียม (ดู `docs/runbooks/YSC_FORMS_CHECKLIST.md` เพิ่ม)
 
 | Form | เนื้อหา | ผมเตรียมได้ |
 |---|---|---|

@@ -1,6 +1,6 @@
 # 🔖 Ticket: สร้างภาพประกอบ 6 ภาพ (ภาพเยอะแทน text)
 
-> สร้าง 2026-09 · ใช้คู่ `docs/proposal_ysc.md` + `docs/FIGS_MASTER_PLAN.md`
+> สร้าง 2026-09 · ใช้คู่ `docs/deliverables/proposal_ysc.md` + `docs/FIGS_MASTER_PLAN.md`
 > เครื่องมือวาด: **Draw.io** (user) · แก้ไข script + commit/push (pi)
 > เป้าหมาย: งาน Tech → **ภาพเยอะ** ลด text · **ทำครบ 6 ภาพ → อัปเดต link → commit + push → ค่อยไปงานถัด**
 

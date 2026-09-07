@@ -19,8 +19,8 @@
 
 ## 📝 3. ข้อเสนอ YSC (deadline 10 ก.ย. — เหลือ ~9 วัน)
 
-- **สถานะ:** clone ไฟล์รุ่นพี่ (`docs/VitroVision_Proposal_YSC.docx` → Desktop `VitroVision_ข้อเสนอ_YSC_clone.docx`) เนื้อหา VitroVision + flowchart 3 รูป + ชิดซ้าย + เลขหน้ากลาง — **รอคุณเปิด Word ตรวจ**
-- ไฟล์ build: `docs/build_clone.py` (แก้+รันใหม่ได้), flowchart: `docs/_make_flowcharts.py`, header/footer: `docs/_copy_hf.py` + `docs/_fix_footer.py`
+- **สถานะ:** clone ไฟล์รุ่นพี่ (`docs/deliverables/VitroVision_Proposal_YSC.docx` → Desktop `VitroVision_ข้อเสนอ_YSC_clone.docx`) เนื้อหา VitroVision + flowchart 3 รูป + ชิดซ้าย + เลขหน้ากลาง — **รอคุณเปิด Word ตรวจ**
+- ไฟล์ build: `docs/scripts/build_clone.py` (แก้+รันใหม่ได้), flowchart: `docs/scripts/_make_flowcharts.py`, header/footer: `docs/scripts/_copy_hf.py` + `docs/scripts/_fix_footer.py`
 - **ต่อครั้งหน้า:**
   - [ ] คุณตรวจ docx (จัดวาง/เนื้อหา/รูป) → บอกจุดแก้ → ผมปรับ `build_clone.py` แล้ว rebuild
   - [ ] เติมส่วน 14 (ประวัติผู้พัฒนา + อาจารย์ที่ปรึกษา — ข้อมูลจริงของคุณ)

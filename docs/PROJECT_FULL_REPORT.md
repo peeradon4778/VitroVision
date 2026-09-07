@@ -84,7 +84,7 @@
 
 ## 5. วิธีดำเนินการ (Methodology / Pipeline)
 
-### 5.1 ภาพรวมระบบ (diagram เต็มใน `docs/diagrams.md`)
+### 5.1 ภาพรวมระบบ (diagram เต็มใน `docs/runbooks/diagrams.md`)
 ```
 ภาพขวด → [SAM3: detect ขวด (ROI)] → [SAM3 PCS: 5 prompts] → [extract 6 กลุ่ม feature] → [rule verdict] → [CSV/XLSX + report.html]
 ```
@@ -196,10 +196,10 @@
 | ผลรัน 100 ขวด | `data/processed/plant_growth_summary.csv` | [RESULT] |
 | ค่าอ้างอิงจากมือ | `data/processed/ground_truth.csv` | [RESULT] |
 | Confusion matrix | `data/processed/verdict_confusion_full.csv` | [RESULT] |
-| รายงาน (แยก) | `docs/report_th_v1.md` | [RESULT] |
-| ข้อเสนอ | `docs/proposal_th_draft.md` | [RESULT/PLAN] |
-| แผน validation | `docs/VALIDATION_PLAN.md` | [PLAN] |
+| รายงาน (แยก) | `docs/deliverables/report_th_v1.md` | [RESULT] |
+| ข้อเสนอ | `docs/deliverables/proposal_ysc.md` | [RESULT/PLAN] |
+| แผน validation | `docs/runbooks/VALIDATION_PLAN.md` | [PLAN] |
 | เทมเพลต GT | `docs/assets/ground_truth_template.xlsx` | [RESULT] |
 | ประวัติงาน | `docs/DEV_LOG.md` | [RESULT] |
 
-> เอกสารนี้เป็น**ภาพรวมสังเคราะห์** — สำหรับรายละเอียดเชิงลึกแต่ละส่วน ดูไฟล์ต้นทางตามตาราง/§5 diagram ใน `docs/diagrams.md`
+> เอกสารนี้เป็น**ภาพรวมสังเคราะห์** — สำหรับรายละเอียดเชิงลึกแต่ละส่วน ดูไฟล์ต้นทางตามตาราง/§5 diagram ใน `docs/runbooks/diagrams.md`

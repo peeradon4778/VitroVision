@@ -10,10 +10,10 @@ from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
 from docx.text.paragraph import Paragraph
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-IN = os.path.join(HERE, "_ysc_template", "YSC-Proposal_Template_200726.docx")
-OUT = os.path.join(HERE, "ysc_proposal_filled.docx")
-FIG = os.path.join(HERE, "assets", "vitro_architecture.png")
+REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+IN = os.path.join(REPO, "docs", "deliverables", "_ysc_template", "YSC-Proposal_Template_200726.docx")
+OUT = os.path.join(REPO, "docs", "deliverables", "ysc_proposal_filled.docx")
+FIG = os.path.join(REPO, "docs", "assets", "vitro_architecture.png")
 FONT = "TH Sarabun PSK"
 BODY = 16
 J = {None: None, "c": 1, "l": 0, "r": 2, "j": 3}
@@ -130,7 +130,7 @@ SECTION_HEADINGS = [
     "บรรณานุกรม (Bibliography)",
 ]
 
-# ---- เนื้อหาแต่ละ section (real จาก proposal_th_draft) ----
+# ---- เนื้อหาแต่ละ section (real จาก proposal_ysc) ----
 C = {
 "หลักการและเหตุผล (Rationale)": [
     ("p", "การเพาะเลี้ยงเนื้อเยื่อพืช (plant tissue culture / micropropagation) เป็นเทคโนโลยีการขยายพันธุ์พืชที่ใช้ชิ้นส่วนขนาดเล็กเพาะเลี้ยงในสภาพปลอดเชื้อบนอาหารสังเคราะห์ และถูกใช้ในเชิงพาณิชย์ครอบคลุมพืชเกษตร อาหาร เภสัชกรรม และเครื่องสำอางทั่วโลก (Hasnain et al., 2022; Chandran et al., 2020) แม้เทคโนโลยีจะพัฒนาไปมาก แต่กระบวนการที่ยังพึ่งพาแรงงานคนสูงคือการตัดสินใจว่าเมื่อใดจึงควรย้ายต้นกล้าออกจากขวดไปยังสภาพอนุบาล (acclimatization/hardening) ซึ่งต้องพิจารณารายขวดทุก 3–8 สัปดาห์ ขึ้นกับชนิดพืช (Pastelín Solano et al., 2019; Regni et al., 2025)"),
@@ -363,7 +363,7 @@ def ensure_doc_font():
 
 # 8) เพิ่ม section เครื่องมือที่ใช้ & Gen-AI (ก่อนแผนการดำเนินงาน)
 import os as _os
-LOGO_DIR = os.path.join(HERE, "assets", "logos")
+LOGO_DIR = os.path.join(REPO, "docs", "assets", "logos")
 
 def logo_path(k):
     if not k:
@@ -423,13 +423,13 @@ if plan_h is not None:
     # ย้ายตารางไปวางก่อนแผนงาน (หลังเนื้อหา)
     anchor = move_after(anchor, tbl._tbl)
 
-# 9) เติมบรรณานุกรม (จาก docs/proposal_th_draft.md §13)
+# 9) เติมบรรณานุกรม (จาก docs/deliverables/proposal_ysc.md §10)
 import re as _re2
-SRC = os.path.join(HERE, "proposal_th_draft.md")
+SRC = os.path.join(REPO, "docs", "deliverables", "proposal_ysc.md")
 refs = []
 if os.path.exists(SRC):
     src_text = open(SRC, encoding="utf-8").read()
-    i = src_text.find("## 13. บรรณานุกรม")
+    i = src_text.find("## 10. บรรณานุกรม (Bibliography)")
     block = ""
     if i != -1:
         rest = src_text[i:]

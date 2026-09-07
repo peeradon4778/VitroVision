@@ -30,13 +30,13 @@
 
 ### T2 — รัน distillation บน Colab → เอา unet_model.pt [⚙️ รอคอมพิวเตอร์]
 - ทำไม: G1 + G4 — ได้ตัวโมเดลจริง + อัปโหลด HF
-- ทำอะไร: ตาม `docs/DISTILL_RUNBOOK.md` 4 เฟส (generate-pseudo→train→eval→hf-push)
+- ทำอะไร: ตาม `docs/runbooks/DISTILL_RUNBOOK.md` 4 เฟส (generate-pseudo→train→eval→hf-push)
 - ความยาก: ต่ำ (โค้ด+runbook พร้อม) · ต้อง Colab GPU + HF token (เข้าถึง SAM3 gated)
 - ออก: `unet_model.pt` (~2M params) + `unet_eval.csv` + repo บน HF
 
 ### T3 — Cross-species (G3) — [!!] ต้องมีภาพชนิดอื่น
 - ทำไม: จุดขาย #1 "ใช้ข้ามชนิดได้โดยไม่ต้องฝึกใหม่" — ต้องพิสูจน์ด้วยชนิดใหม่
-- ทำอะไร: ถ่าย 2–3 ชนิด (≥5 ขวด/ชนิด) ตาม `docs/CROSS_SPECIES_PROTOCOL.md` ในแล็บ → รัน `benchmark_cross_species.py`
+- ทำอะไร: ถ่าย 2–3 ชนิด (≥5 ขวด/ชนิด) ตาม `docs/runbooks/CROSS_SPECIES_PROTOCOL.md` ในแล็บ → รัน `benchmark_cross_species.py`
 - ความยาก: กลาง (งานมือถ่ายภาพ) · บุคคล: คุณ · โค้ด+protocol พร้อมแล้ว
 
 > **ถ้าทำได้แค่ T1+T2 (ยังไม่ทำ cross-species):** เรียกว่า "โมเดลของเรา" ได้ **แบบจำกัด** — อ้างได้ว่าเป็นโมเดลกลั่นจาก SAM3 ที่ train+valid กับข้อมูลเรา แต่**ยังไม่พิสูจน์ข้ามชนิด** (ต้องบอกข้อจำกัดนี้ตรง ๆ)

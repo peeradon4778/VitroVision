@@ -18,7 +18,7 @@ from docx.oxml.ns import qn
 from docx.shared import Cm, Pt
 
 FONT = 'TH SarabunPSK'
-HERE = pathlib.Path(__file__).resolve().parent
+REPO = pathlib.Path(__file__).resolve().parents[1]  # docs/scripts → repo root
 W = '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}'
 
 
@@ -106,8 +106,8 @@ def build_table(doc, rows):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('--in', dest='src', default=HERE / 'report_th_v1.md')
-    ap.add_argument('--out', dest='out', default=HERE / 'report_th_v1.docx')
+    ap.add_argument('--in', dest='src', default=REPO / 'docs' / 'deliverables' / 'report_th_v1.md')
+    ap.add_argument('--out', dest='out', default=REPO / 'docs' / 'deliverables' / 'report_th_v1.docx')
     args = ap.parse_args()
 
     src = pathlib.Path(args.src)

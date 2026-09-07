@@ -65,7 +65,7 @@ python src/interrater.py --csv ground_truth.csv --cols rA_height,rB_height --typ
 ## 📦 หลักฐานที่ต้องเก็บ (ใส่ repo — ตามกฎ "evidence ใน repo")
 - `data/processed/ground_truth_masks/*.png` (30 mask) → พิจารณา commit (หรือรายงานตัวเลข mIoU ลง report)
 - `annotate_list.csv` (manifest 30 ภาพ) → เก็บเป็นหลักฐาน
-- ตัวเลข mIoU/Dice → เขียน `docs/report_th_v1.md` §4.4 / `DEV_LOG`
+- ตัวเลข mIoU/Dice → เขียน `docs/deliverables/report_th_v1.md` §4.4 / `DEV_LOG`
 
 ## ⚠️ หมายเหตุความซื่อตรง
 - ถ้า annotate **มี seed** → mask เป็นแบบ "แก้จาก SAM3" ถือเป็น human GT ได้ แต่ควร **inter-rater/คนละรอบ** กัน bias

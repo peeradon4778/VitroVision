@@ -5,7 +5,7 @@ from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.shared import Pt
 
-TARGET = "docs/proposal_ysc.docx"
+TARGET = "docs/deliverables/proposal_ysc.docx"
 d = Document(TARGET)
 footer = d.sections[0].footer
 fel = footer._element

@@ -97,7 +97,7 @@
 
 ### 5.1 ภาพรวมการทำงานของระบบ
 
-![flowchart](docs/assets/flow_overview.png)
+![flowchart](../assets/flow_overview.png)
 
 ระบบทำงานเป็น 5 ขั้นตอนหลัก: ถ่ายภาพขวด → ตรวจจับขอบเขตขวด → แบ่งส่วนภาพด้วยแบบจำลอง (SAM3 เป็นต้นแบบ → กลั่นเป็น U-Net ขนาดเล็ก) → คำนวณ feature → ตัดสินใจด้วยกฎ ภาพที่ประมวลผลไม่ชัด (glare/ฝ้า/ไม่พบขวด) จะถูกส่งให้ผู้เชี่ยวชาญตรวจแทนการตัดสินใจอัตโนมัติ เพื่อป้องกันความผิดพลาด
 
@@ -109,7 +109,7 @@
 
 ### 5.3 ขั้นตอนการประมวลผลภาพ (Image Processing Pipeline)
 
-![flowchart](docs/assets/flow_pipeline.png)
+![flowchart](../assets/flow_pipeline.png)
 
 1. รวบรวมภาพถ่ายขวดจากชุดข้อมูล
 2. ตรวจจับขอบเขตขวด (bottle ROI detection) เพื่อใช้เป็นกรอบอ้างอิงของพื้นที่ปกคลุม
@@ -173,7 +173,7 @@
 
 ### 6.4 ผังการตรวจสอบความถูกต้อง
 
-![flowchart](docs/assets/flow_validation.png)
+![flowchart](../assets/flow_validation.png)
 
 ---
 

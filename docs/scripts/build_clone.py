@@ -16,7 +16,7 @@ from docx.oxml.ns import qn
 from docx.shared import Cm, Pt
 
 SRC = r"C:\Users\User\Downloads\editedYSC-Proposal_fractalwall.docx"
-OUT = "docs/VitroVision_Proposal_YSC.docx"
+OUT = "docs/deliverables/VitroVision_Proposal_YSC.docx"
 FONT = "TH SarabunPSK"
 
 doc = Document(SRC)

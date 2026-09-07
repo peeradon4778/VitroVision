@@ -4,6 +4,15 @@
 > รูปแบบ: `yyyy-mm-dd | หมวด | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ`
 
 
+## 2026-09-01 — จัดระเบียบโครงสร้าง repo (reorg: docs/runbooks|deliverables|scripts + notebooks/sam3)
+
+| เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |
+|---|---|---|---|
+| กลางคืน | จัดระเบียบใหม่ — `docs/` แยกเป็น `deliverables/` (ข้อเสนอ/รายงาน/ส่ง YSC), `runbooks/` (คู่มือ/workflow/tickets), `scripts/` (build scripts), `assets/` (คงที่); `notebooks/` รวมไฟล์ sam3 ลอยเข้าหมวด; คง `src/` flat (import กันเอง, ย้ายแล้วพัง) | `docs/deliverables/*`, `docs/runbooks/*`, `docs/scripts/*`, `docs/assets`, `notebooks/sam3/*` | `git mv` สำเร็จ; ไม่มี path ซับซ้อน/อ้างเก่าเหลือ; build scripts `py_compile` ผ่าน 6/6 ✓ |
+| กลางคืน | แก้ path อ้างอิงหลังย้าย — `proposal_ysc.md` asset links → `../assets/`; build scripts ใช้ `REPO` root แทน `HERE`, ชี้ `docs/deliverables|runbooks|scripts`; บรรณานุกรม `build_ysc_proposal.py` เปลี่ยน source จาก `proposal_th_draft.md`(ลบ) → `proposal_ysc.md` §10 | `docs/deliverables/proposal_ysc.md`, `docs/scripts/{build_ysc_proposal,make_report_docx,build_clone,_copy_hf,_fix_footer}.py`, `docs/{NEXT_SESSION,PROJECT_FULL_REPORT,PROJECT_OVERVIEW}.md`, `docs/runbooks/*.md` | ไฟล์ที่ scripts อ้างมีจริงทุกตัว ✓; §10 บรรณานุกรมอยู่ ✓; no stale reference ✓ |
+
+---
+
 ## 2026-09-01 — จัดการ repo ให้ตรง github + ลบ docx รุ่นเก่า
 
 | เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |

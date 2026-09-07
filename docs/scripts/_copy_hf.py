@@ -8,8 +8,8 @@ from docx.opc.constants import RELATIONSHIP_TYPE as RT
 from docx.opc.packuri import PackURI
 from docx.opc.part import Part
 
-TEMPLATE = "docs/_ysc_template/YSC-Proposal_Template_200726.docx"
-TARGET = "docs/proposal_ysc.docx"
+TEMPLATE = "docs/deliverables/_ysc_template/YSC-Proposal_Template_200726.docx"
+TARGET = "docs/deliverables/proposal_ysc.docx"
 
 
 def copy_hf(src_sec, dst_sec, which):

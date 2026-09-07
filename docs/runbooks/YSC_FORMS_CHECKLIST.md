@@ -24,7 +24,7 @@
 ### กลุ่ม A — ต้องส่งทุกโครงงาน
 - [ ] **1. ข้อเสนอโครงงาน** — `YSC-Proposal_Template_200726.docx` ⚠️*(template ใหม่ 20/07/26 — ต้องเช็คกับของเดิม 040825)*
   - ไฟล์: [ดาวน์โหลด template](https://www.nstda.or.th/ysc/wp-content/uploads/2026/08/YSC-Proposal_Template_200726.docx)
-  - 📄 ใน repo: `docs/proposal_th_draft.md` / `.docx` · หน้าปกต้องสร้างจากระบบ SIMS
+  - 📄 ใน repo: `docs/deliverables/proposal_ysc.md` / `.docx` · หน้าปกต้องสร้างจากระบบ SIMS
 - [ ] **2. Code of Conduct / PDPA** (ทุกคนในทีม) — [ไฟล์](https://drive.google.com/file/d/1xipl-A42kSo4WEWyvNL_Owq1O9Uxhxi-/view?usp=sharing)
 - [ ] **3. Checklist for Adult Sponsor** (อาจารย์ที่ปรึกษา) — [ไฟล์](https://www.nstda.or.th/ysc/wp-content/uploads/2026/08/1-Checklist-for-Adult-Sponsor_2027.pdf)
 - [ ] **4. 1A — Student Checklist** (นักเรียน) — [ไฟล์](https://www.nstda.or.th/ysc/wp-content/uploads/2026/08/1A-Student-Checklist-Research-Plan-Instructions_2027.pdf)
@@ -43,7 +43,7 @@
 ## 🟩 รอบชิงชนะเลิศระดับภูมิภาค/ประเทศ (เตรียมไว้ — หลังผ่านข้อเสนอ)
 
 - [ ] **รายงานฉบับสมบูรณ์** — `YSC-Report_Template_200726.docx` → [ไฟล์](https://www.nstda.or.th/ysc/wp-content/uploads/2026/08/YSC-Report_Template_200726.docx)
-  - 📄 ใน repo: `docs/report_th_v1.md` (ปรับตาม template ใหม่ เช็ค version 200726)
+  - 📄 ใน repo: `docs/deliverables/report_th_v1.md` (ปรับตาม template ใหม่ เช็ค version 200726)
 - [ ] **2A — Student Support Disclosure** ⚠️ **Gen-AI disclosure ที่นี่** — [ไฟล์](https://www.nstda.or.th/ysc/wp-content/uploads/2026/08/2A-Student-Support-Disclosure-Form_2027.pdf)
 - [ ] 2C — Regulated Research Institution (เช็คว่าทำใน RRI) — [ไฟล์](https://www.nstda.or.th/ysc/wp-content/uploads/2026/08/2C-Regulated-Research-Institution_2027.pdf)
 - [ ] 4 — Human Participants (ไม่น่าใช้) — [ไฟล์](https://www.nstda.or.th/ysc/wp-content/uploads/2026/08/4-Human-Participants_2027.pdf)
@@ -53,5 +53,5 @@
 ## ⚠️ หมายเหตุสำคัญ
 
 1. **Template อัปเดต** — เอกสารใน repo อ้าง `YSC-Proposal_Template_040825.docx` / `YSC-Report_Template_...?` ต้องเช็คว่าตรงโครงสร้าง template ล่าสุด `*_200726` หรือไม่
-2. **Gen-AI disclosure** — proposal เขียนว่า "ใช้ Gen-AI เต็มระบบ" → ต้องเปิดเผยใน 2A อย่างตรงไปตรงมา (สอดคล้องกับ `docs/proposal_th_draft.md`)
+2. **Gen-AI disclosure** — proposal เขียนว่า "ใช้ Gen-AI เต็มระบบ" → ต้องเปิดเผยใน 2A อย่างตรงไปตรงมา (สอดคล้องกับ `docs/deliverables/proposal_ysc.md`)
 3. **Form 6 (Continuation)** — เป็นความเสี่ยงที่มากที่สุด ควรเตรียม early เพราะเจาะลึก v1 vs v2 + เวทีอื่น
