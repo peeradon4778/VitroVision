@@ -4,6 +4,15 @@
 > รูปแบบ: `yyyy-mm-dd | หมวด | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ`
 
 
+## 2026-09-01 — จัดการ repo ให้ตรง github + ลบ docx รุ่นเก่า
+
+| เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |
+|---|---|---|---|
+| กลางคืน | Merge `origin/master` เข้า local (commit `2b9b3a5`) — ดึงการลบ `src/android/` + เอกสารสถาปัตยกรรมใหม่จาก github, รวม conflict `proposal_ysc.md` §5.4 (รวมเกณฑ์ SAM3 0.275 + U-Net 0.20/Youden/metrics) โดยไม่สูญเสีย commit local `4d9336d` | `src/android/*`, `docs/proposal_ysc.md`, `docs/ARCHITECTURE_*`, `docs/FIGS_MASTER_PLAN.md`, อื่นๆ | `git merge-base --is-ancestor origin/master master` = YES ✓; ไม่มี conflict marker เหลือ ✓ |
+| กลางคืน | ลบ draft ข้อเสนอรุ่นเก่า (ชื่อเก่า ก่อนเปลี่ยนชื่อ) ที่ถูกแทนที่โดย `proposal_ysc` แล้ว (มีในประวัติ, ย้อนได้) | `docs/proposal_th_draft.md`, `docs/proposal_th_draft.docx`, `docs/proposal_th_draft_acclimatization.docx`, `docs/proposal_3chap.md`, `docs/proposal_3chap.docx`, `docs/proposal_th_submit.docx` | `git rm` สำเร็จ 6 ไฟล์ ✓; no conflict |
+
+---
+
 ## 2026-09-01 — แก้ข้อเสนอ YSC: แยกแยะโมเดล SAM3 vs U-Net
 
 | เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |
