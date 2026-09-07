@@ -1,54 +1,71 @@
-# 🎯 VitroVision — Orchestration Tracker (Fable 5 = หัวหน้าออฟฟิศ)
+# 🎯 VitroVision — สถาปัตยกรรม & ทิศทางปัจจุบัน (Orchestration Tracker)
 
-> เริ่มรอบ: 2026-07-06 · target: **YSC 2027** สาขา CSBI
-> อ่านคู่กับ `docs/planning/_backlog.md` (สถานะจริง) — ไฟล์นี้ = แผนแจกงาน + สถานะ deliverable
+> อัปเดต 2026-09-01 · เขียนใหม่ให้ตรงสถานะจริง (ลบส่วนที่ pivot ไปแล้วออก)
+> จุดหมาย: **YSC 2027** · รหัสโครงการ `29YCSE00054T` · สาขา **CSAI — Computer Science / AI-ML** · deadline ข้อเสนอ 10 ก.ย. 2026
 
 ---
 
-## 🔒 ตรึงแล้ว (อย่าถกซ้ำ)
-- ชื่อ TH: **VitroVision : การประยุกต์ใช้ปัญญาประดิษฐ์เชิงคอมพิวเตอร์วิทัศน์เพื่อวิเคราะห์และทำนายการเจริญเติบโตของพืชเพาะเลี้ยงเนื้อเยื่อ** (เปลี่ยนจาก "ตัดย้าย" ตาม grill v3 29/07/2026; ปรับเป็น "การเจริญเติบโต" 27/08)
-- ชื่อ EN: **VitroVision : Application of AI-Based Computer Vision for Analyzing and Predicting the Growth of Tissue Cultured Plants**
-- RQ: snapshot เดียว → triage กลุ่ม (ยังไม่พร้อม / พร้อมอนุบาล / ตรวจเอง) แบบ zero-shot ข้ามชนิดพืช (decision-support เท่านั้น) — ระบบราก (root) เป็นตัวชี้วัดอันดับ 1 ของความพร้อมอนุบาล
-- Engineering goal: Native Android app ถ่าย 1 รูป → mask + trait metrics + triage 3-class + confidence + manual override
-- Segmentation engine: **SAM3 PCS text-prompted** (prompt เริ่ม `["plant","leaf"]`) — พิสูจน์ผ่าน spike test 2026-07-05 · **ห้ามใช้ SAM automatic/everything mode เด็ดขาด**
-- สถาปัตยกรรม: cloud-primary (app → Roboflow SAM3 PCS API → mask/ผล → on-device feature extract + decision)
+## 🧭 ทิศทาง (Locked)
 
-## 📐 นิยาม feature (ให้ fullstack + writer ตรงกัน)
-- ROI = บริเวณขวด (crop จากระยะถ่ายคงที่ หรือ detect)
-- `coverage_ratio` = area(plant∪leaf masks) / area(ROI)
-- `height_proxy` = bbox_height(plant mask) / ROI_height
-- `leaf_count` = จำนวน instance "leaf" (conf ≥ 0.5)
-- `shoot_count` = จำนวน "plant"/"shoot" detections
-- `glare_score` = สัดส่วน pixel ใน ROI ที่ V(HSV)>~0.95 & saturation ต่ำ (specular)
-- Decision (rule-based, threshold รอ lab validate): ยังไม่พร้อม / พร้อมอนุบาล / ตรวจเอง (ROI ไม่ชัดหรือหนาแน่นเกิน) + confidence (ลดเมื่อ glare สูง) + manual override เสมอ
+- **ชื่อ TH:** VitroVision : การประยุกต์ใช้ปัญญาประดิษฐ์เชิงคอมพิวเตอร์วิทัศน์เพื่อวิเคราะห์และทำนายการเจริญเติบโตของพืชเพาะเลี้ยงเนื้อเยื่อ
+- **ชื่อ EN:** VitroVision : Application of AI-Based Computer Vision for Analyzing and Predicting the Growth of Tissue Cultured Plants
+- **เป้าหมาย:** ประเมินฟีโนไทป์เชิงสรีระของพืชเพาะเลี้ยงเนื้อเยื่อแบบ **non-destructive ผ่านขวดแก้ว** โดยไม่จำกัดชนิดพืช → ช่วยตัดสินความพร้อมย้ายออกอนุบาล (acclimatization readiness)
+- **Research Question:** ด้วยการประมวลผลภาพขวดเพียงภาพเดียว สามารถแบ่งส่วนต้นออกจากแก้ว/glare แล้วจัดกลุ่มความพร้อม (ยังไม่พร้อม / พร้อมอนุบาล / ตรวจเอง) ได้ถูกต้องเพียงพอหรือไม่ — แบบ decision-support ข้ามชนิดพืช โดยไม่ต้องฝึกชุดข้อมูลเฉพาะชนิด
+- **หลักการ:** decision-support เท่านั้น ไม่ใช่ระบบตัดสินทางชีววิทยาขั้นสุดท้าย · มี "ตรวจเอง" เป็นทางออก (manual override เสมอ)
 
-## 📄 เอกสารเป้าหมาย
-- YSC Proposal **ส่วน 1 เท่านั้น** (ภาษาไทยก่อน) = บทคัดย่อ → บทนำ(พีระมิด กว้าง→แคบ→gap→RQ) → วัตถุประสงค์ → สมมติฐาน → วัสดุอุปกรณ์ → **Methodology (เด่นพิเศษ + รูป pipeline/architecture)** → การวิเคราะห์ข้อมูล → แผนงาน(Gantt 2-3 เดือน) → ความเสี่ยง → ประโยชน์ → **Gen-AI disclosure (สำคัญ ใช้เต็มระบบ)** → บรรณานุกรม APA7
-- ส่วน 2 (ประวัติผู้พัฒนา/อาจารย์) = เจ้าของโครงการกรอกเอง — **ไม่ต้องทำ**
-- Diagram/infographic = **ภาษาอังกฤษเท่านั้น** + ต้องมี citation
-- เทมเพลต: `ForFable/เทมเพลต YSC/YSC-Proposal_Template_040825.docx`
-- ตัวอย่าง CS + guide: `ForFable/ตัวอย่างและวิธีการเขียน/*.pdf`
+---
 
-## 👥 คลื่นงาน
-**Wave 1 (parallel — launch พร้อมกัน):**
-- [ ] Researcher — citation pool ใหม่ (verify Consensus/PubMed) + เกณฑ์ความพร้อมอนุบาลจาก lit (แทนเกณฑ์ subculture ที่ตกรุ่น) + ยืนยัน ส่วน1/2 จาก NSTDA + งานวิจัย optimize
-- [ ] Designer — architecture + pipeline diagram (EN, ระดับตีพิมพ์) + design system + wireframe แอป
-- [ ] Fullstack — Android skeleton + Roboflow SAM3 PCS integration + feature extract + rule decision + result screen + regenerate spike overlay
+## 🏗️ สถาปัตยกรรมปัจจุบัน
 
-**Wave 2 (หลัง Researcher ส่ง citation pool):**
-- [ ] Writer — ร่าง Proposal ส่วน 1 (ไทย) ใช้ citation ที่ verify แล้วเท่านั้น + engineering spec doc
+```
+ภาพขวด (สมาร์ตโฟน)
+  → ตรวจจับขอบเขตขวด (bottle ROI)
+  → แบ่งส่วนต้นออกจากแก้ว/glare/ไอน้ำ
+       └─ แบบจำลองหลัก: U-Net + MobileNetV3-Small (~3.6M params) กลั่นจาก SAM3
+          (SAM3 zero-shot = ต้นแบบ/teacher สร้าง pseudo-labels)
+  → คำนวณค่าลักษณะ (feature) เชิงปริมาณ
+  → ตัดสินใจด้วยกฎ (rule-based) → ยังไม่พร้อม / พร้อมอนุบาล / ตรวจเอง
+```
 
-**Wave 3 (หลัง Writer+Fullstack+Designer):**
-- [ ] Auditor — ตรวจ citation, โค้ด (SAM3 text-prompted compliance), ภาษาเอกสาร, UX/UI + สรุปสถานะ + สิ่งที่เจ้าของต้องตัดสินใจ
+### แบบจำลอง (Segmentation)
+- **Main engine:** **U-Net + MobileNetV3-Small** (`src/train_greenhouse.py`, smp) — เทรนบนชุด greenhouse แล้ว · val_dice ≈ **0.98** · `src/train_unet_distill.py`
+- **Teacher / ต้นแบบ:** **SAM3 PCS** (`facebook/sam3`) text-prompted (5 คำ: `plant`,`leaf`,`shoot`,`stem`,`root`) — ใช้ทำ pseudo-labels + เปรียบเทียบ baseline
+- **ห้ามใช้** SAM automatic/everything mode (พิสูจน์แล้วว่าล้มเหลวกับกระจก/glare)
+- **เหตุผลกลั่น:** SAM3 ต้อง GPU/ใหญ่ → กลั่นเป็น U-Net เล็กให้ทำงานบนอุปกรณ์ทั่วไป
+
+### เกณฑ์ตัดสินใจ (rule-based, interpretable)
+- SAM3 (ต้นแบบ): `height_proxy ≥ 0.275` → พร้อมอนุบาล
+- U-Net (ใช้งานจริง): ปรับด้วย **Youden scan 0.12–0.55** → `height_proxy ≥ 0.20` → พร้อมอนุบาล
+- ภาพประมวลผลไม่ชัด (glare/ฝ้า/ไม่พบขวด) → **ตรวจเอง** (ให้มนุษย์ตรวจ)
+
+### การ deploy
+- **HF Space Gradio** (`space/app.py`) — เว็บแอปสแกนขวดผ่านกล้อง/อัปโหลดภาพ
+- โหลดโมเดล `<name>.pt` local → HF repo `peeradon4778/vitrovision-unet-small` (fallback classical-green ระหว่างรอ)
+
+---
+
+## 📐 นิยาม feature (หลัก)
+
+| feature | นิยาม / สูตร |
+|---|---|
+| `coverage_ratio` | area(plant∪leaf masks) / area(ROI) |
+| `height_proxy` | bbox_height(plant mask) / ROI_height |
+| `leaf_count` | จำนวน instance "leaf" (conf ≥ 0.5) |
+| `shoot_count` | จำนวน "plant"/"shoot" detections |
+| `green_pct` | สัดส่วน pixel เขียว |
+| `glare_score` / `condensation_score` | คุณภาพภาพ (ลด confidence เท่านั้น) |
+| `verdict` / `confidence` | ผลตัดสิน + ความมั่นใจ |
+
+> *ความหมายกลับทิศ: `coverage_ratio` สูง = แน่นขวด (ดีสำหรับ subculture แต่อาจแย่สำหรับอนุบาล) — ใช้แสดงข้อมูลได้ แต่ไม่ใช้ตัดสินใจโดยตรง*
+
+---
+
+## งานค้าง (อัปเดต — ดูรายละเอียดใน `docs/planning/_backlog.md`)
+- [ ] อัปเดต HF Space เป็น Gradio + push โมเดลขึ้น `vitrovision-unet-small`
+- [ ] ปิด Level A: annotate ground-truth masks ≥ 30 ภาพ → mIoU/Dice
+- [ ] สอบเทียบหน่วยจริง px→cm (ทำได้บางส่วน)
+- [ ] ทดสอบข้ามชนิดพืช
+- [ ] ประกอบเอกสารส่ง YSC (ดู `docs/runbooks/YSC_SUBMISSION_TICKETS.md`)
 
 ## ⛔ กติกา
-ไม่ commit/push โดยไม่สั่ง · ทุก claim วิชาการ verify ก่อนเข้าเอกสาร · prose ไทย, diagram EN · ติดปัญหา → ทำ Ticket
-
-## 🎫 Tickets (ปัญหาที่ต้องให้เจ้าของโครงการช่วย)
-*(ยังไม่มี)*
-
-## ❓ 4 จุดต้องถามเจ้าของโครงการ (ห้ามเดา)
-1. ภาพขวดจริงเพิ่ม (high-density / ชนิดพืชอื่น)
-2. เกณฑ์ "พร้อมอนุบาล" ต้องยืนยันกับคนแล็บจริง (researcher หา rough จาก lit ไปก่อน — ระบบราก = ตัวชี้วัดอันดับ 1)
-3. ยืนยัน target = YSC 2027
-4. ทดสอบแอปจริงในแล็บด้วย Samsung S24 FE (mobile data)
+- ทุก claim วิชาการ verify ก่อนเข้าเอกสาร · prose ไทย, diagram EN · ไม่ commit/push โดยไม่สั่ง

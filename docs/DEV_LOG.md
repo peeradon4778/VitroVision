@@ -10,6 +10,14 @@
 
 ---
 
+## 2026-09-01 — เขียนใหม่ docs/planning/ ให้ตรงสถานะจริง (ลบสิ่งที่ pivot/ล้าสมัย)
+
+| เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |
+|---|---|---|---|
+| กลางคืน | เขียนใหม่ 5 ไฟล์ planning ให้สะท้อนสถานะจริง — `_orchestration` (สถาปัตยกรรม U-Net กลั่น + HF Space, สาขา CSAI), `_backlog` (สถานะ/งานค้าง), `_scope_lock_new_round` (ขอบเขตตามจริง, ข้อมูล 100 ขวด+greenhouse), `_grill_v3` (เหลือเฉพาะบันทึกการตัดสินใจ), `_tool_matrix` (อัปเดตผลจริง U-Net val_dice 0.98/acc 0.653) — ตัด Android/SAM3-only/Roboflow/CSBI/exhibition ที่ไม่จริงออก | `docs/planning/_*.md` | ลด ~530→~245 บรรทัด; ไม่มี reference ล้าสมัย/ขัดแย้งเหลือ; อ้าง path ใหม่ถูกต้อง (research/RESEARCH + LITERATURE, deliverables, runbooks) ✓ |
+
+---
+
 ## 2026-09-01 — ลบ docs/deliverables/ysc_proposal_filled.pdf (คง .docx ไว้)
 
 | เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |
