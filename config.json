@@ -1,9 +1,10 @@
 {
-  "_comment": "Config กลางชุด 100 ขวดพริกจินดา (20260814_batch) — สร้าง 2026-08 เพื่อ rerun บน Colab ให้ได้ผลหลักฐานจริง ใช้คู่กับ notebooks/sam3/colab_run_v2_evidence.ipynb. ค่าอ้างอิง: CALIBRATION_GUIDE.md / DEV_LOG 2026-08-18",
+  "_comment": "Config กลางของ pipeline (src/sam3_growth_pipeline.py ผ่าน load_config) — ใช้กับชุด 100 ขวดพริกจินดา (20260814_batch) + ร่วมกับ notebooks/sam3/colab_run_v2_evidence.ipynb. ค่า height_ready (=threshold height_proxy ของ U-Net ทั่วไป) = 0.20 (Youden-tuned → acc 0.653/sens 0.717/spec 0.579). ค่าอ้างอิง: docs/runbooks/CALIBRATION_GUIDE.md · docs/DEV_LOG.md 2026-08-18",
   "prompts": ["plant", "leaf", "shoot", "stem", "root"],
   "score_threshold": 0.5,
   "mask_threshold": 0.5,
   "detect_bottle": true,
+  "height_ready": 0.20,
   "pixel_to_cm": null,
   "use_species_thresholds": false,
   "species_thresholds": {

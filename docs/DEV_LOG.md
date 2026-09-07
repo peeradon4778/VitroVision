@@ -10,6 +10,14 @@
 
 ---
 
+## 2026-09-01 — จัดการ config.json (เพิ่ม height_ready ที่โค้ดอ่านแต่ไม่มี)
+
+| เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |
+|---|---|---|---|
+| กลางคืน | เพิ่ม key `height_ready: 0.20` (threshold height_proxy ของ U-Net) ที่ `load_config` ใน `src/sam3_growth_pipeline.py` อ่านแต่ไฟล์ไม่เคยมี — เดิมพึ่งค่า default ในโค้ด · อัปเดต `_comment` ให้ชัด (ชี้ CALIBRATION_GUIDE + เกณฑ์ 0.20) | `config.json` | จัด JSON valid ✓ · `load_config` รับ `height_ready=0.2` ✓ (ตัว import torch ล้มเป็นเรื่อง env ไม่มี torch ไม่ใช่ config) |
+
+---
+
 ## 2026-09-01 — อัปเดต requirements.txt ให้ตรงโค้ดจริง
 
 | เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |
