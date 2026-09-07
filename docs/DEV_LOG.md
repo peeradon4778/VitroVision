@@ -4,6 +4,12 @@
 > รูปแบบ: `yyyy-mm-dd | หมวด | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ`
 
 
+| เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |
+|---|---|---|---|
+| กลางคืน | ลบ `make_proposal_docx.py` (orphan — สร้าง `proposal_th_draft.docx` ที่ลบไปแล้ว; ไม่มี script/เอกสารอ้างยืนยัน) | `docs/scripts/make_proposal_docx.py` | `git rm` สำเร็จ ✓; เหลือ 6 scripts; ไม่มี reference ใช้งานเหลือ ✓ (มีแต่ DEV_LOG ประวัติ) |
+
+---
+
 ## 2026-09-01 — จัดระเบียบโครงสร้าง repo (reorg: docs/runbooks|deliverables|scripts + notebooks/sam3)
 
 | เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |
