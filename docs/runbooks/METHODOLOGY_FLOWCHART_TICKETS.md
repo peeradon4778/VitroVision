@@ -38,17 +38,17 @@
 
 ## 🖥 STEP 2 — บันทึก + อัปเดต link
 - [ ] บันทึกเป็น `docs/assets/*.png` (ใช้ชื่อตาม FIGS_MASTER_PLAN)
-- [ ] ตรวจ `proposal_ysc.md` อ้าง path ถูกต้องทุกภาพ (`docs/assets/...`)
+- [ ] ตรวจ `docs/deliverables/proposal_ysc.md` อ้าง path ถูกต้องทุกภาพ (`docs/assets/...`)
 - [ ] ตรวจขนาด/DPI/พื้นหลังขาว · label อังกฤษ
 
 ## 📤 STEP 3 — COMMIT + PUSH
-- [ ] `git add` ภาพ 6 ไฟล์ + `proposal_ysc.md` + `.md` ที่แก้
+- [ ] `git add` ภาพ 6 ไฟล์ + `docs/deliverables/proposal_ysc.md` + `.md` ที่แก้
 - [ ] `git commit -m "docs: เพิ่ม flowchart 6 ภาพ + อัปเดตข้อเสนอ (ภาพเยอะแทน text)"`
 - [ ] `git push` (ใช้ token) → **เสร็จแล้วค่อยไปงานถัดไปทีเดียว**
 
 ---
 
 ## 📌 หมายเหตุ
-- ยึดโครง `proposal_ysc.md` มาตรา 5–6 เท่านั้น อย่าใส่รายละเอียดโค้ด/epoch (ข้อเสนอ ≠ รายงาน)
+- ยึดโครง `docs/deliverables/proposal_ysc.md` มาตรา 5–6 เท่านั้น อย่าใส่รายละเอียดโค้ด/epoch (ข้อเสนอ ≠ รายงาน)
 - 1 ภาพ = 1 message · ภาพก่อน text · ใช้ตารางแทนย่อหน้า
 - ไม่ commit โมเดล/ไฟล์ใหญ่/data/secret

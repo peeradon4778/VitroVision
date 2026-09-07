@@ -59,7 +59,7 @@ _(ไม่บังคับก่อนส่งข้อเสนอ — ร�
 
 ## 🟪 STEP D — ข้อเสนอ (deadline 10 ก.ย.)
 
-- ✅ ผม rebuild DOCX แล้ว (`proposal_th_draft.docx` / `report_th_v1.docx` / `ysc_proposal_filled.docx`)
+- ✅ ผม rebuild DOCX แล้ว (`report_th_v1.docx` / `ysc_proposal_filled.docx`)
 - ⬜ คุณเติม **ส่วน 14** (ประวัติผู้พัฒนา + อาจารย์ที่ปรึกษา) — ข้อมูลจริงของคุณ
 - ⬜ **Form 6** (Research Continuation) + **Form 3** (Risk) + CoC/PDPA
 - ⬜ **หน้าปก SIMS + รหัสโครงการ** (สร้างจากระบบเท่านั้น) → ประกอบ PDF

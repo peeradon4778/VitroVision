@@ -94,7 +94,7 @@
    ```
    python src/validate_verdict.py --summary data/processed/plant_growth_summary.csv --gt data/processed/ground_truth.csv --out data/processed/verdict_confusion.csv
    ```
-5. **รายงาน** — เติมผลลง `report_th_v1.md` + `proposal_th_draft.md` (เปลี่ยน `[PLAN]`→`[RESULT]`) + DEV_LOG + commit
+5. **รายงาน** — เติมผลลง `docs/deliverables/report_th_v1.md` (เปลี่ยน `[PLAN]`→`[RESULT]`) + DEV_LOG + commit
 
 ### 7.1 หมายเหตุรอง
 - **root_count:** จากผลรันจริง (1/100) การ validate ด้านราก**ยังไม่มีความหมาย**จนกว่าจะปรับปรุงการตรวจจับราก → แยกเป็นงานถัดไป ไม่บังคับในรอบนี้

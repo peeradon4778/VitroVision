@@ -15,7 +15,7 @@
 
 ### 🎯 Pipeline v2 (ภาพรวม)
 วิดีโอรอบขวด → segment ต้นออกจากแก้ว/glare → 3D reconstruction → ดึง trait เชิงสรีระ (ปริมาตร / leaf area จริง / architecture) แบบ non-destructive
-**คำถามชีววิทยา (CSBI anchor):** 3D-derived traits วัดการเจริญ/vigor ของต้น TC ได้ดีกว่า 2D projected area ไหม → เทียบ 3D vs 2D vs manual/destructive บน culture หลายชนิดที่มีในแล็บ
+**คำถามชีววิทยา (CSAI anchor):** 3D-derived traits วัดการเจริญ/vigor ของต้น TC ได้ดีกว่า 2D projected area ไหม → เทียบ 3D vs 2D vs manual/destructive บน culture หลายชนิดที่มีในแล็บ
 
 ---
 
@@ -70,7 +70,7 @@
 - `non-destructive phenotyping plant tissue culture` (รอ paper ใหม่จากรอบสืบค้น 2026-08)
 - `micropropagation image analysis` · `shoot multiplication rate quantification`
 
-### H. Validation / anchor ชีววิทยา (CSBI)
+### H. Validation / anchor ชีววิทยา (CSAI)
 - `3D vs 2D phenotyping accuracy comparison ground truth`
 - `image-derived traits correlation manual measurement R2 RMSE`
 

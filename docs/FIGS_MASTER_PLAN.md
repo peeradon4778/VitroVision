@@ -1,6 +1,6 @@
 # 🖼 Master Plan: ภาพประกอบข้อเสนอ VitroVision (ภาพเยอะแทน text)
 
-> สร้าง 2026-09 · ใช้คู่ `proposal_ysc.md` + `METHODOLOGY_FLOWCHART_TICKETS.md`
+> สร้าง 2026-09 · ใช้คู่ `docs/deliverables/proposal_ysc.md` + `docs/runbooks/METHODOLOGY_FLOWCHART_TICKETS.md`
 > หลักการ: งาน Tech → **ทุกหัวข้อสำคัญมีภาพกำกับ 1 ภาพ** · text ลดลง 30–50% · แต่ละรูป = 1 message ใหญ่
 
 ---
@@ -82,11 +82,11 @@ height_proxy สแกน 0.12–0.55 → เลือก Youden-balanced = 0.20
 3. **ใช้ icon/ลูกศร/สี** แทน sentence ยาว
 4. **ใช้ตาราง** แทนย่อหน้าบรรยาย (metric, วัสดุ, สถานที่)
 5. **label ภาษาอังกฤษ** ชัดเจน (กันฟอนต์ไทยเพี้ยน)
-6. **ชื่อไฟล์คงที่** เพื่อให้ `proposal_ysc.md` อ้าง path ได้ตรง
+6. **ชื่อไฟล์คงที่** เพื่อให้ `docs/deliverables/proposal_ysc.md` อ้าง path ได้ตรง
 
 ---
 
 ## 📌 สิ่งที่ต้องทำ (อ้างอิง ticket)
 - วาด 6 ภาพ (F1–F6) บน Draw.io
-- อัปเดต link ใน `proposal_ysc.md` (ทุกที่อ้าง `docs/assets/...`)
+- อัปเดต link ใน `docs/deliverables/proposal_ysc.md` (ทุกที่อ้าง `docs/assets/...`)
 - **commit + push** ทั้งภาพ + ข้อเสนอ

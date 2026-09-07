@@ -1,6 +1,6 @@
 """Annotation tool — ป้าย/แก้ mask มือ (ground truth) ของต้นในขวดผ่านเบราว์เซอร์
 
-สำหรับงานเลเวล A (mIoU/Dice เทียบมนุษย์) — ใช้ร่วมกับ `VALIDATION_PLAN.md` §2.2
+สำหรับงานเลเวล A (mIoU/Dice เทียบมนุษย์) — ใช้ร่วมกับ `docs/runbooks/VALIDATION_PLAN.md` §2.2
 ตัวช่วย: โหลด seed mask จาก SAM3 (pseudo) มาให้แก้ ไม่ต้องวาดใหม่ทั้งภาพ
 
 รัน:

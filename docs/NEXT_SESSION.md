@@ -22,7 +22,7 @@
 - **สถานะ:** clone ไฟล์รุ่นพี่ (`docs/deliverables/VitroVision_Proposal_YSC.docx` → Desktop `VitroVision_ข้อเสนอ_YSC_clone.docx`) เนื้อหา VitroVision + flowchart 3 รูป + ชิดซ้าย + เลขหน้ากลาง — **รอคุณเปิด Word ตรวจ**
 - ไฟล์ build: `docs/scripts/build_clone.py` (แก้+รันใหม่ได้), flowchart: `docs/scripts/_make_flowcharts.py`, header/footer: `docs/scripts/_copy_hf.py` + `docs/scripts/_fix_footer.py`
 - **ต่อครั้งหน้า:**
-  - [ ] คุณตรวจ docx (จัดวาง/เนื้อหา/รูป) → บอกจุดแก้ → ผมปรับ `build_clone.py` แล้ว rebuild
+  - [ ] คุณตรวจ docx (จัดวาง/เนื้อหา/รูป) → บอกจุดแก้ → ผมปรับ `docs/scripts/build_clone.py` แล้ว rebuild
   - [ ] เติมส่วน 14 (ประวัติผู้พัฒนา + อาจารย์ที่ปรึกษา — ข้อมูลจริงของคุณ)
   - [ ] Form 6 (Research Continuation) + Form 3 (Risk) + CoC/PDPA (ผมร่างให้ได้)
   - [ ] หน้าปก SIMS + รหัสโครงการ (มีแล้ว: `29YCSE00054T`) → ประกอบ PDF ไฟล์เดียว 3 ส่วน

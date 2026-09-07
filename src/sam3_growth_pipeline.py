@@ -64,7 +64,7 @@ SPECIES_THRESHOLDS = {
 
 def load_config(cfg_path=None):
     """โหลด config.json มาแทนค่าคงที่ (PIXEL_TO_CM, threshold, prompts, species thresholds)
-    โดยไม่ต้องแก้โค้ด — ใช้คู่กับ docs/CALIBRATION_GUIDE.md"""
+    โดยไม่ต้องแก้โค้ด — ใช้คู่กับ docs/runbooks/CALIBRATION_GUIDE.md"""
     global PROMPTS, SCORE_THRESHOLD, MASK_THRESHOLD, DETECT_BOTTLE, PIXEL_TO_CM
     global USE_SPECIES_THRESHOLDS, SPECIES_THRESHOLDS, COVERAGE_READY, COVERAGE_OVERDENSE, READY_HEIGHT
     if not cfg_path or not os.path.exists(cfg_path):
