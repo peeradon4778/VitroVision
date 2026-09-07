@@ -10,6 +10,14 @@
 
 ---
 
+## 2026-09-01 — อัปเดต requirements.txt ให้ตรงโค้ดจริง
+
+| เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |
+|---|---|---|---|
+| กลางคืน | เพิ่ม dependencies ที่ขาดจาก requirements.txt ให้ครบตามโค้ดจริง (`src/*.py`): scipy (interrater), flask (annotation_tool), segmentation-models-pytorch + timm (U-Net), scikit-learn (validate_verdict) + ปรับ comment ให้ตรงสถานะ (SAM3 teacher → U-Net กลั่น) | `requirements.txt` | ครอบครบไลบรารีที่ `src/` import (scipy/flask/smp/timm/sklearn + DL/CV/data ตัวเดิม) ✓ |
+
+---
+
 ## 2026-09-01 — เขียนใหม่ docs/planning/ ให้ตรงสถานะจริง (ลบสิ่งที่ pivot/ล้าสมัย)
 
 | เวลา | สิ่งที่ทำ | ไฟล์ | ผลการทดสอบ |

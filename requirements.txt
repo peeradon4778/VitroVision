@@ -1,14 +1,31 @@
-# VitroVision SAM3 pipeline — รันบน Colab (T4 GPU)
-# อัปเดตเวอร์ชันจริงหลังรันสำเร็จครั้งแรก (pip freeze) แล้วเก็บเป็น requirements.lock.txt
+# VitroVision — Research pipeline ที่ใช้จริง (SAM3 teacher → U-Net กลั่น + validation tools)
+# ครอบคลุม: src/*.py (pipeline, benchmark, annotate, validation) + notebooks (Colab T4)
+# pipeline.py หลัก: segmentation (S3 → U-Net/timm) + feature + rule verdict
+# บันทึก: อาจมี requirements.lock.txt แยก (pip freeze) สำหรับ reproducible build
+
+# --- แบบจำลอง / DL ---
 torch>=2.1
-transformers>=4.50        # ต้องมี Sam3Processor/Sam3Model (facebook/sam3 = gated)
-accelerate
+transformers>=4.50        # SAM3 teacher (facebook/sam3 = gated) — Sam3Processor/Sam3Model
 huggingface_hub
+accelerate
+segmentation-models-pytorch>=0.4   # U-Net + encoder (MobileNetV3)
+timm                              # encoder สำหรับ smp/segmentation
+
+# --- CV / ภาพ ---
 numpy
 opencv-python-headless
 pillow
-matplotlib
+
+# --- ข้อมูล / แสดงผล ---
 pandas
+matplotlib
 seaborn
 tabulate
 openpyxl
+
+# --- วิเคราะห์ / validation ---
+scipy              # interrater.py (ICC / Cohen's kappa)
+scikit-learn       # validate_verdict.py (confusion matrix, cohen_kappa, MCC)
+
+# --- เครื่องมือ / UI (annotation_tool.py เป็น web tool) ---
+flask
